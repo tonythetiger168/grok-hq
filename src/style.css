@@ -20,7 +20,8 @@ html, body, #app {
   background: #d5e0db;
 }
 
-body.simulating::before {
+body.simulating::before,
+body.day::before {
   content: "";
   position: fixed;
   top: 0;
@@ -31,6 +32,69 @@ body.simulating::before {
   z-index: 6;
   pointer-events: none;
 }
+
+body.day::before { background: #1e3d36; }
+
+.day-clock {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 92px;
+  padding: 4px 10px 5px;
+  border-radius: 14px;
+  background: #24312e;
+  color: #f7f3ea;
+}
+
+.day-clock[hidden] { display: none; }
+
+#day-time {
+  font-family: Fraunces, Georgia, serif;
+  font-size: 18px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+}
+
+.day-beat {
+  color: #e7c56a;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.assign-cloud { pointer-events: auto; }
+
+.assign-pop {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 220px;
+  padding: 8px 10px;
+  background: #fffef8;
+  border: 2.5px solid #241f1a;
+  border-radius: 16px;
+  box-shadow: 0 8px 18px rgba(48, 38, 28, 0.16);
+}
+
+.assign-pop input {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  font: 600 13px Outfit, sans-serif;
+  color: #241f1a;
+}
+
+.assign-pop input:focus { outline: none; }
+
+.assign-hint {
+  margin: 0;
+  color: #5e584f;
+  font-size: 11px;
+}
+
+.badge.is-day { background: #1e3d36; color: #f7f3ea; border-color: transparent; }
 
 #viewport {
   position: fixed;
@@ -378,8 +442,34 @@ a:focus-visible {
   box-shadow: 0 8px 18px rgba(48, 38, 28, 0.14);
 }
 
+.cloud.is-speech .cloud-body {
+  box-shadow: inset 3px 0 0 var(--who, #241f1a), 0 8px 18px rgba(48, 38, 28, 0.14);
+}
+
 .cloud.is-think .cloud-body {
   border-radius: 18px;
+}
+
+.spark { display: none; }
+
+.cloud.is-think .spark {
+  display: block;
+  position: absolute;
+  right: 7px;
+  top: 6px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #e2b340;
+  animation: spark 1.6s ease-in-out infinite;
+}
+
+.cloud.is-think[data-think="1"] .lobe-a { width: 26px; height: 16px; left: -8px; top: 6px; }
+.cloud.is-think[data-think="2"] .lobe-b { width: 24px; height: 24px; right: -12px; top: -10px; }
+
+@keyframes spark {
+  0%, 100% { transform: scale(0.7); opacity: 0.45; }
+  50% { transform: scale(1.15); opacity: 1; }
 }
 
 .cloud-line {

@@ -1,38 +1,12 @@
 import * as THREE from 'three'
 import { CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js'
-
-const MEET_A = ['Quick standup.', 'Anything blocked?', 'I can take the next pass.', 'Then it goes to musk.', 'Same plan as the board.']
-const MEET_B = ['Nothing blocked.', 'I will bring the folder.', 'Sounds right.', 'musk gets the handoff.', 'On it.']
-const REST_A = ['Quiet in the rest area.', 'Desks are empty for now.', 'We still report to musk.', 'Good seat.', 'No task yet.']
-const REST_B = ['Fine by me.', 'Nameplates are still up.', "Corner office is musk's.", 'I will sit this one out.', 'Until there is work.']
-const MUSK_REST = ['The team reports here.', 'I am in the rest area too.', 'Bring work when it is done.', 'Quiet morning.']
-const MUSK_REPLY = ['Leave it with me.', 'I will review it.', 'Noted.']
-const SELF_IDLE = ['Talking it through.', 'Note to self.', 'That outline holds.', 'Just muttering.', 'I will wait for a task.']
-const SELF_WAIT = ['Waiting on a look.', 'I can wave from here.', 'Still by the door.', 'Need a person for this.']
-const THINK_IDLE = ['Nothing queued.', 'Resting until there is work.', 'Desk can wait.', 'Hmm.']
-const THINK_WAIT = ['Waiting on a look.', 'Need a person for this.']
-const THINK_ERROR = ['Stuck on a question.', 'This needs a nudge.']
-const THINK_ERRAND = ['Taking this to musk.', 'Folder is ready.', 'Walk it to the corner office.']
-const DELIVER_A = ['For you, musk.', 'Finished pass.', 'Folder from my desk.']
-const THINK_MUSK = ['Reviewing the pile.', 'Who is next?', 'Handoffs come here.', 'The corner office is open.']
+import { decisionFor, pairLines, selfLine, thinkLine } from './lines.js'
 
 const _headA = new THREE.Vector3()
 const _headB = new THREE.Vector3()
 const _hip = new THREE.Vector3()
 const _screenA = new THREE.Vector3()
 const _screenB = new THREE.Vector3()
-
-function pick(list, bot, bucket) {
-  if (!list.length) return 'Hmm.'
-  const n = Math.abs(Math.floor((bot?.phase || 0) * 8) + bucket) % list.length
-  return list[n]
-}
-
-function clip(text, max) {
-  const clean = String(text).replace(/\s+/g, ' ').trim()
-  if (clean.length <= max) return clean
-  return `${clean.slice(0, max - 1).trim()}…`
-}
 
 function dist2(a, b) {
   const dx = a.root.position.x - b.root.position.x
@@ -42,43 +16,6 @@ function dist2(a, b) {
 
 function ready(bot, elapsed) {
   return !bot.moving && bot.goals.length <= 1 && bot.spinLeft <= 0 && !bot.carrying && bot.quietUntil <= elapsed
-}
-
-function workLine(bot, bucket) {
-  if (bot.def.id === 'musk') return pick(THINK_MUSK, bot, bucket)
-  const sim = (bot.def.sim || 'the work').replace(/^(studying|reviewing|growing)\s+/i, '')
-  const task = (bot.task || '').replace(/^Simulated\s*·\s*/i, '').trim()
-  const bank = ['One more pass.', 'Reading the notes.', 'Checking the shape.', 'Almost there.']
-  if (sim && !/\d{2,}/.test(sim)) bank.push(clip(sim, 28))
-  if (task && !/^simulated/i.test(bot.task || '') && task.length <= 42 && !/\d{2,}/.test(task)) {
-    bank.push(clip(task, 34))
-  }
-  return pick(bank, bot, bucket)
-}
-
-function thinkLine(bot, bucket) {
-  if (bot.carrying && bot.routeKey === 'handoff' && !bot.holdStarted) return pick(THINK_ERRAND, bot, bucket)
-  if (bot.state === 'error') return pick(THINK_ERROR, bot, bucket)
-  if (bot.state === 'waiting') return pick(THINK_WAIT, bot, bucket)
-  if (bot.state === 'working') return workLine(bot, bucket)
-  return pick(THINK_IDLE, bot, bucket)
-}
-
-function selfLine(bot, bucket) {
-  if (bot.def.id === 'musk') return pick(['Note to self.', 'The floor is quiet.', 'Talking it through.'], bot, bucket)
-  if (bot.state === 'waiting') return pick(SELF_WAIT, bot, bucket)
-  if (bot.state === 'error') return pick(THINK_ERROR, bot, bucket)
-  return pick(SELF_IDLE, bot, bucket)
-}
-
-function pairLines(context, a, b, bucket) {
-  const first = a.def.id === 'musk'
-    ? pick(MUSK_REST, a, bucket)
-    : pick(context === 'meet' ? MEET_A : REST_A, a, bucket)
-  const second = b.def.id === 'musk'
-    ? pick(MUSK_REPLY, b, bucket)
-    : pick(context === 'meet' ? MEET_B : REST_B, b, bucket + 1)
-  return [first, second]
 }
 
 function bestPair(list, minD, maxD, bucket) {
@@ -138,23 +75,35 @@ function propose(slot, bots, booked, elapsed) {
       center: 'think',
     }
   }
-  if (slot.role === 'deliver') {
+  if (slot.role === 'decide') {
     const musk = bots.find((bot) => bot.def.id === 'musk')
     if (!musk || musk.moving || booked.has(musk)) return null
     const visitor = bots.find((bot) => (
-      bot.routeKey === 'handoff' && bot.holdStarted && !bot.moving && bot.handoffCloud < 2 && bot.def.id !== 'musk' && !booked.has(bot)
+      bot.routeKey === 'handoff'
+      && bot.holdStarted
+      && !bot.moving
+      && !bot.decided
+      && bot.def.id !== 'musk'
+      && !booked.has(bot)
     ))
     if (!visitor) return null
+    const decision = decisionFor(visitor)
     return {
-      kind: 'speech',
-      a: visitor,
-      b: musk,
-      lineA: pick(DELIVER_A, visitor, bucket),
-      lineB: pick(MUSK_REPLY, musk, bucket),
-      hold: 3.3,
-      flag: 2,
-      maxDist: 6,
-      center: 'pair',
+      kind: 'think',
+      a: musk,
+      lineA: decision.think,
+      hold: 7.6,
+      center: 'think',
+      script: [
+        { at: 0, kind: 'think', who: 'musk', text: decision.think },
+        { at: 2.4, kind: 'speech', who: 'musk', text: decision.say },
+        { at: 5.1, kind: 'speech', who: 'visitor', text: decision.react },
+      ],
+      b: visitor,
+      musk,
+      visitor,
+      muskLine: decision.say,
+      visitorLine: decision.react,
     }
   }
   if (slot.role === 'meet') {
@@ -165,7 +114,7 @@ function propose(slot, bots, booked, elapsed) {
     return { kind: 'speech', a: meet[0], b: meet[1], lineA, lineB, hold: 3.4, maxDist: 3.8, center: 'pair' }
   }
   if (slot.role === 'pair') {
-    const resting = bots.filter((bot) => ready(bot, elapsed) && bot.place === 'rest' && bot.state === 'idle' && !booked.has(bot))
+    const resting = bots.filter((bot) => ready(bot, elapsed) && ['rest', 'lobby', 'snack', 'pantry'].includes(bot.place) && (bot.state === 'idle' || bot.cup) && !booked.has(bot))
     const rest = bestPair(resting, 0.7, 2.35, bucket)
     if (!rest) return null
     const [lineA, lineB] = pairLines('rest', rest[0], rest[1], bucket)
@@ -186,7 +135,7 @@ function propose(slot, bots, booked, elapsed) {
   const free = (bot) => ready(bot, elapsed) && !booked.has(bot)
   let choice = null
   if (slot.role === 'muse') {
-    const working = bots.filter((bot) => free(bot) && bot.state === 'working' && (bot.place === 'desk' || bot.place === 'musk-desk'))
+    const working = bots.filter((bot) => free(bot) && bot.state === 'working' && ['desk', 'musk-desk', 'library', 'copy'].includes(bot.place))
     choice = working.length ? working[Math.abs(bucket) % working.length] : null
   }
   if (!choice) {
@@ -223,6 +172,9 @@ function makeElement(index) {
   dotB.hidden = true
   const line = document.createElement('span')
   line.className = 'cloud-line'
+  const spark = document.createElement('i')
+  spark.className = 'spark'
+  body.append(spark)
   for (const name of ['a', 'b', 'c', 'd']) {
     const lobe = document.createElement('span')
     lobe.className = `lobe lobe-${name}`
@@ -251,6 +203,7 @@ function setPhase(slot, name, reduce) {
 function applyLine(slot) {
   const speaker = slot.speaker === 0 ? slot.a : slot.b
   slot.line.textContent = slot.speaker === 0 ? slot.lineA : (slot.lineB || slot.lineA)
+  if (speaker?.def?.color) slot.root.style.setProperty('--who', speaker.def.color)
   const speech = slot.kind === 'speech'
   slot.dot.hidden = !speech
   if (!speech || !speaker) return
@@ -294,6 +247,10 @@ function aimTail(tail, from, to, camera, width, height) {
 
 function participantsOk(slot) {
   if (!slot.a) return false
+  if (slot.role === 'decide') {
+    const visitor = slot.visitor
+    return !!(visitor && visitor.routeKey === 'handoff' && visitor.holdStarted && !visitor.moving && slot.musk && !slot.musk.moving)
+  }
   if (slot.role === 'errand') {
     return slot.a.carrying && slot.a.routeKey === 'handoff' && !slot.a.holdStarted
   }
@@ -341,6 +298,15 @@ function activate(slot, idea, elapsed) {
   slot.swapped = false
   slot.maxDist = idea.maxDist || 3.2
   slot.flag = idea.flag || 0
+  slot.script = idea.script || null
+  slot.scriptStep = -1
+  slot.musk = idea.musk || null
+  slot.visitor = idea.visitor || null
+  slot.muskLine = idea.muskLine || ''
+  slot.visitorLine = idea.visitorLine || ''
+  slot.shared = false
+  if (idea.visitor) idea.visitor.decided = true
+  slot.root.dataset.think = idea.kind === 'think' ? String(Math.floor((idea.a?.phase || 0) * 2) % 3) : ''
   slot.root.classList.toggle('is-speech', idea.kind === 'speech')
   slot.root.classList.toggle('is-think', idea.kind === 'think')
   slot.object.visible = true
@@ -371,7 +337,7 @@ export function createCloudLayer() {
     { role: 'muse', cooldown: 1.2, rest: 2.15 },
     { role: 'muse-b', cooldown: 1.8, rest: 0.8 },
     { role: 'errand', cooldown: 0.35, rest: 0.25 },
-    { role: 'deliver', cooldown: 0.4, rest: 0.3 },
+    { role: 'decide', cooldown: 0.2, rest: 0.15 },
   ]
   const slots = roles.map((spec, index) => {
     const els = makeElement(index)
@@ -402,7 +368,21 @@ export function createCloudLayer() {
   return { group, slots }
 }
 
-export function updateClouds(layer, bots, camera, dt, elapsed, reduce, width, height) {
+export function updateClouds(layer, bots, camera, dt, elapsed, reduce, width, height, hooks = {}) {
+  if (layer.pendingBark?.bot) {
+    const slot = layer.slots.find((item) => item.role === 'self' && item.phase === 'idle')
+    if (slot && !layer.slots.some((item) => item.a === layer.pendingBark.bot && item.phase !== 'idle')) {
+      activate(slot, {
+        kind: 'speech',
+        a: layer.pendingBark.bot,
+        lineA: layer.pendingBark.text,
+        hold: 2.8,
+        center: 'self',
+      }, elapsed)
+      layer.pendingBark = null
+    }
+  }
+
   const booked = new Set()
   for (const slot of layer.slots) {
     if (slot.phase !== 'idle' && slot.a) {
@@ -456,10 +436,14 @@ export function updateClouds(layer, bots, camera, dt, elapsed, reduce, width, he
       continue
     }
 
-    if (slot.phase === 'hold' && slot.b && slot.lineB && !slot.swapped && slot.age > slot.hold * 0.46) {
+    if (slot.script && (slot.phase === 'hold' || slot.phase === 'in')) {
+      applyScript(slot, hooks)
+    } else if (slot.phase === 'hold' && slot.b && slot.lineB && !slot.swapped && slot.age > slot.hold * 0.46) {
       slot.swapped = true
       slot.speaker = 1
       applyLine(slot)
+      const fact = slot.b.fact || 'plan'
+      hooks.onShare?.(slot.a.def.id, fact)
     }
     if (slot.a) placeSlot(slot, camera, width, height)
   }
@@ -467,6 +451,7 @@ export function updateClouds(layer, bots, camera, dt, elapsed, reduce, width, he
   for (const bot of bots) {
     bot.lookAt = null
     bot.gaze = null
+    if (bot.def.id === 'musk') bot.receiving = false
   }
   for (const slot of layer.slots) {
     if (slot.phase === 'idle' || slot.phase === 'out' || !slot.a) continue
@@ -476,5 +461,45 @@ export function updateClouds(layer, bots, camera, dt, elapsed, reduce, width, he
       slot.a.lookAt = slot.b.root.position
       slot.b.lookAt = slot.a.root.position
     }
+    if (slot.role === 'decide' && slot.musk && slot.visitor) {
+      const musk = slot.musk
+      const visitor = slot.visitor
+      musk.receiving = true
+      musk.receiveYaw = Math.atan2(visitor.root.position.x - musk.root.position.x, visitor.root.position.z - musk.root.position.z)
+      musk.lookAt = visitor.root.position
+      visitor.lookAt = musk.root.position
+    }
   }
+}
+
+function applyScript(slot, hooks) {
+  const step = [...slot.script].reverse().find((item) => slot.age >= item.at) || slot.script[0]
+  if (slot.scriptStep === step.at) return
+  slot.scriptStep = step.at
+  slot.kind = step.kind
+  slot.muskLine = step.who === 'musk' && step.kind === 'speech' ? step.text : slot.muskLine
+  slot.visitorLine = step.who === 'visitor' ? step.text : slot.visitorLine
+  if (step.kind === 'think') {
+    slot.a = slot.musk
+    slot.b = null
+    slot.center = 'think'
+    slot.speaker = 0
+    slot.lineA = step.text
+    slot.lineB = ''
+  } else {
+    slot.a = slot.musk
+    slot.b = slot.visitor
+    slot.center = 'pair'
+    slot.speaker = step.who === 'visitor' ? 1 : 0
+    slot.lineA = slot.muskLine
+    slot.lineB = slot.visitorLine
+    if (step.who === 'visitor' && !slot.shared) {
+      slot.shared = true
+      hooks.onShare?.(slot.visitor.def.id, slot.visitor.fact || 'plan')
+    }
+  }
+  slot.root.dataset.think = step.kind === 'think' ? '1' : ''
+  slot.root.classList.toggle('is-speech', step.kind === 'speech')
+  slot.root.classList.toggle('is-think', step.kind === 'think')
+  applyLine(slot)
 }

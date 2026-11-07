@@ -3,11 +3,11 @@ import { CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js'
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js'
 import { damp, dampAngle, std } from './geom.js'
 import { glyphTexture } from './paint.js'
-import { CORNER, DOOR, MEETING_SEATS, VISITORS, WAIT_SPOTS } from './layout.js'
+import { COPY_SPOTS, LIBRARY_SPOTS, MEETING_SEATS, PANTRY_SPOTS, routeThrough, SNACK_SPOTS, VISITORS, WAIT_SPOTS } from './layout.js'
 
-const HIP_STAND = 0.4
-const HIP_SIT = 0.36
-const HIP_LOW = 0.2
+const HIP_STAND = 0.48
+const HIP_SIT = 0.4
+const HIP_LOW = 0.26
 
 const SKIN = ['#f3c7a8', '#e4aa7e', '#c6885c', '#8f5c40']
 const HAIR = {
@@ -76,9 +76,13 @@ const geo = {
   glint: new THREE.SphereGeometry(0.008, 8, 6),
   brow: new THREE.BoxGeometry(0.058, 0.013, 0.016),
   mouth: new THREE.TorusGeometry(0.042, 0.008, 6, 14, Math.PI),
-  arm: new RoundedBoxGeometry(0.078, 0.26, 0.072, 2, 0.03),
-  leg: new RoundedBoxGeometry(0.11, 0.3, 0.1, 2, 0.04),
+  arm: new RoundedBoxGeometry(0.072, 0.26, 0.066, 2, 0.028),
+  fore: new RoundedBoxGeometry(0.064, 0.16, 0.06, 2, 0.026),
+  thigh: new RoundedBoxGeometry(0.1, 0.22, 0.092, 2, 0.034),
+  shin: new RoundedBoxGeometry(0.084, 0.2, 0.078, 2, 0.03),
   shoe: new RoundedBoxGeometry(0.12, 0.06, 0.18, 2, 0.02),
+  mug: new THREE.CylinderGeometry(0.026, 0.02, 0.05, 10),
+  mugTop: new THREE.CylinderGeometry(0.02, 0.02, 0.01, 10),
   cuff: new THREE.BoxGeometry(0.088, 0.034, 0.08),
   hairCap: new THREE.SphereGeometry(0.15, 16, 12),
   hairBit: new THREE.SphereGeometry(0.07, 12, 10),
@@ -128,6 +132,8 @@ const sunMat = std('#e2b340', 0.45, { metalness: 0.25 })
 const folderMat = std('#d7c49a', 0.8)
 const pencilMat = std('#e6c56a', 0.6)
 const capBrimMat = std('#c9842a', 0.7)
+const mugMat = std('#f4efe6', 0.55)
+const coffeeMat = std('#6b3e2a', 0.45)
 
 function sharedMat(hex, roughness = 0.7, extra = {}) {
   const key = [
@@ -159,6 +165,16 @@ function mesh(geometry, material, shadow = false) {
   item.castShadow = shadow
   item.receiveShadow = shadow
   return item
+}
+
+function makeMug() {
+  const group = new THREE.Group()
+  const cup = mesh(geo.mug, mugMat, true)
+  const top = mesh(geo.mugTop, coffeeMat)
+  top.position.y = 0.02
+  group.add(cup, top)
+  group.visible = false
+  return group
 }
 
 function skinIndex(id) {
@@ -500,11 +516,15 @@ export function createBot(def, place) {
   belt.position.y = 0.1
   belt.scale.set(1.02, 1, 1.28)
   const neck = mesh(geo.neck, skinMat, true)
-  neck.position.y = 0.4
+  neck.position.y = 0.5
+  neck.scale.y = 1.55
+  torso.position.y = 0.28
+  torso.scale.y = 1.12
+  torso.scale.x *= 0.94
   hips.add(pelvis, torso, belt, neck)
 
   const head = new THREE.Group()
-  head.position.y = def.body === 'egg' ? 0.58 : 0.56
+  head.position.y = def.body === 'egg' ? 0.72 : 0.7
   const skull = mesh(geo.skull, skinMat, true)
   head.add(skull)
   for (const side of [-1, 1]) {
@@ -515,8 +535,9 @@ export function createBot(def, place) {
   }
   const face = addFace(head, skinMat)
   addHair(head, HAIR_STYLE[def.id] || 'crop', hairMat, def)
-  if (def.body === 'egg') head.scale.set(1.06, 1.14, 1.02)
-  else if (def.id === 'musk') head.scale.setScalar(1.04)
+  const headScale = def.body === 'egg' ? 0.9 : 0.8
+  if (def.body === 'egg') head.scale.set(headScale, headScale * 1.08, headScale)
+  else head.scale.setScalar(def.id === 'musk' ? headScale * 1.04 : headScale)
   hips.add(head)
 
   const reach = def.id === 'musk' ? 0.23 : 0.2
@@ -530,35 +551,66 @@ export function createBot(def, place) {
     return pivot
   }
 
-  const armL = limb(-1, 0.3, 0.26, geo.arm, clothMat)
-  const armR = limb(1, 0.3, 0.26, geo.arm, clothMat)
+  const armL = limb(-1, 0.36, 0.26, geo.arm, clothMat)
+  const armR = limb(1, 0.36, 0.26, geo.arm, clothMat)
   const cuffMat = jacket ? shirtWhite : sharedMat(shadeHex(clothHex, 0.74), 0.86)
+  const elbows = []
+  const mugs = []
   for (const arm of [armL, armR]) {
+    arm.children[0].scale.y = 0.62
+    arm.children[0].position.y = -0.08
+    const elbow = new THREE.Group()
+    elbow.position.y = -0.17
+    const fore = mesh(geo.fore, clothMat, true)
+    fore.position.y = -0.08
     const cuff = mesh(geo.cuff, cuffMat)
-    cuff.position.y = -0.22
+    cuff.position.y = -0.14
     const hand = mesh(geo.hand, skinMat, true)
-    hand.position.set(0, -0.28, 0.01)
-    hand.scale.set(1, 0.9, 0.85)
-    arm.add(cuff, hand)
+    hand.position.set(0, -0.18, 0.02)
+    hand.scale.set(0.9, 0.85, 0.8)
+    const mug = makeMug()
+    mug.position.set(0.02, -0.16, 0.05)
+    elbow.add(fore, cuff, hand, mug)
+    arm.add(elbow)
+    elbows.push(elbow)
+    mugs.push(mug)
     const shoulder = mesh(geo.shoulder, clothMat, true)
     shoulder.position.copy(arm.position)
+    shoulder.scale.set(0.9, 0.85, 0.9)
     hips.add(shoulder)
   }
+  const elbowL = elbows[0]
+  const elbowR = elbows[1]
+  const mug = mugs[0]
 
   const folder = mesh(new THREE.BoxGeometry(0.14, 0.035, 0.18), folderMat, true)
-  folder.position.set(0.02, -0.3, 0.08)
+  folder.position.set(0.04, -0.16, 0.06)
   folder.visible = false
-  armR.add(folder)
+  elbowR.add(folder)
 
-  const legL = limb(-1, 0.02, 0.3, geo.leg, jacket ? suitPantsMat : pantsMat)
-  const legR = limb(1, 0.02, 0.3, geo.leg, jacket ? suitPantsMat : pantsMat)
-  legL.position.x = -0.09
-  legR.position.x = 0.09
-  for (const leg of [legL, legR]) {
+  const legMat = jacket ? suitPantsMat : pantsMat
+  function addLeg(x) {
+    const pivot = new THREE.Group()
+    pivot.position.set(x, 0.05, 0)
+    const thigh = mesh(geo.thigh, legMat, true)
+    thigh.position.y = -0.11
+    const knee = new THREE.Group()
+    knee.position.y = -0.22
+    const shin = mesh(geo.shin, legMat, true)
+    shin.position.y = -0.1
     const shoe = mesh(geo.shoe, shoeMat, true)
-    shoe.position.set(0, -0.33, 0.04)
-    leg.add(shoe)
+    shoe.position.set(0, -0.2, 0.03)
+    knee.add(shin, shoe)
+    pivot.add(thigh, knee)
+    hips.add(pivot)
+    return { pivot, knee }
   }
+  const leftLeg = addLeg(-0.09)
+  const rightLeg = addLeg(0.09)
+  const legL = leftLeg.pivot
+  const legR = rightLeg.pivot
+  const kneeL = leftLeg.knee
+  const kneeR = rightLeg.knee
 
   addOutfit(hips, head, armL, def, clothMat)
 
@@ -589,15 +641,19 @@ export function createBot(def, place) {
   tag.append(nameEl, stateEl)
   const label = new CSS2DObject(tag)
   label.center.set(0.5, 1)
-  label.position.set(0, 1.12, 0)
+  label.position.set(0, 1.28, 0)
   label.visible = false
   hips.add(label)
 
   hips.position.y = place.lounge.low ? HIP_LOW : HIP_SIT
-  legL.rotation.x = -1.12
-  legR.rotation.x = -1.12
-  armL.rotation.x = -0.45
-  armR.rotation.x = -0.45
+  legL.rotation.x = -1.02
+  legR.rotation.x = -1.02
+  kneeL.rotation.x = 1.15
+  kneeR.rotation.x = 1.15
+  armL.rotation.x = -0.35
+  armR.rotation.x = -0.35
+  elbowL.rotation.x = -0.35
+  elbowR.rotation.x = -0.35
 
   const bot = {
     def,
@@ -644,6 +700,22 @@ export function createBot(def, place) {
     lookAt: null,
     gaze: null,
     moving: false,
+    kneeL,
+    kneeR,
+    elbowL,
+    elbowR,
+    mug,
+    cup: 'none',
+    spot: 0,
+    beat: '',
+    fact: 'plan',
+    follow: '',
+    returnPlace: 'desk',
+    bark: '',
+    receiving: false,
+    receiveYaw: 0,
+    homeYaw: place.lounge.yaw,
+    decided: false,
   }
   root.rotation.y = bot.yaw
   tagBotId(root, def.id)
@@ -662,19 +734,16 @@ function hashPhase(id) {
   return (h % 1000) / 1000 * Math.PI * 2
 }
 
-function insideCorner(point) {
-  return point.x > CORNER.x0 && point.x < CORNER.x1 && point.z > CORNER.z0 && point.z < CORNER.z1
+function routeTo(from, dest) {
+  const via = routeThrough(from.x, from.z, dest.x, dest.z)
+  const goals = via.map((point) => new THREE.Vector3(point.x, 0, point.z))
+  goals.push(dest.clone())
+  return goals
 }
 
-function routeTo(from, dest) {
-  const goals = []
-  const door = new THREE.Vector3(DOOR.x, 0, DOOR.z)
-  const target = dest.clone()
-  if ((insideCorner(from) || insideCorner(target)) && from.distanceTo(door) > 0.4 && target.distanceTo(door) > 0.4) {
-    goals.push(door)
-  }
-  goals.push(target)
-  return goals
+function spotGoal(list, index) {
+  const spot = list[(index || 0) % list.length]
+  return { dest: new THREE.Vector3(spot.x, 0, spot.z), yaw: spot.yaw, pose: spot.pose || 'sit' }
 }
 
 function syncRoute(bot) {
@@ -690,6 +759,7 @@ function syncRoute(bot) {
       bot.faceYaw = bot.visitor.yaw
       bot.pose = 'stand'
       bot.low = false
+      bot.homeYaw = bot.faceYaw
     }
     return
   }
@@ -703,11 +773,7 @@ function syncRoute(bot) {
   let yaw
   let pose = 'sit'
   let low = false
-  if (place === 'rest') {
-    dest = new THREE.Vector3(bot.lounge.x, 0, bot.lounge.z)
-    yaw = bot.lounge.yaw
-    low = !!bot.lounge.low
-  } else if (place === 'meeting') {
+  if (place === 'meeting') {
     const seat = MEETING_SEATS[(bot.meetIndex || 0) % MEETING_SEATS.length]
     dest = new THREE.Vector3(seat.x, 0, seat.z)
     yaw = seat.yaw
@@ -721,18 +787,54 @@ function syncRoute(bot) {
     yaw = bot.desk.yaw
     pose = 'stand'
   } else {
-    dest = new THREE.Vector3(bot.desk.x, 0, bot.desk.z)
-    yaw = bot.desk.yaw
+    const spot = spotFor(bot, place)
+    dest = spot.dest
+    yaw = spot.yaw
+    pose = spot.pose
+    low = spot.low
   }
   bot.goals = routeTo(bot.root.position, dest)
   bot.faceYaw = yaw
   bot.pose = pose
   bot.low = low
+  bot.homeYaw = yaw
+}
+
+function spotFor(bot, place) {
+  if (place === 'desk' || place === 'musk-desk') {
+    return { dest: new THREE.Vector3(bot.desk.x, 0, bot.desk.z), yaw: bot.desk.yaw, pose: 'sit', low: false }
+  }
+  if (place === 'library') {
+    const spot = spotGoal(LIBRARY_SPOTS, bot.spot)
+    return { ...spot, low: false }
+  }
+  if (place === 'pantry') {
+    const spot = spotGoal(PANTRY_SPOTS, bot.spot)
+    return { ...spot, pose: 'stand', low: false }
+  }
+  if (place === 'snack') {
+    const spot = spotGoal(SNACK_SPOTS, bot.spot)
+    return { ...spot, low: false }
+  }
+  if (place === 'copy') {
+    const spot = spotGoal(COPY_SPOTS, bot.spot)
+    return { ...spot, pose: 'stand', low: false }
+  }
+  return {
+    dest: new THREE.Vector3(bot.lounge.x, 0, bot.lounge.z),
+    yaw: bot.lounge.yaw,
+    pose: 'sit',
+    low: !!bot.lounge.low,
+  }
 }
 
 export function updateBot(bot, dt, elapsed, reduce) {
   syncRoute(bot)
-  if (bot.routeKey !== 'handoff') bot.handoffCloud = 0
+  if (bot.receiving) bot.faceYaw = bot.receiveYaw
+  if (bot.routeKey !== 'handoff') {
+    bot.handoffCloud = 0
+    bot.decided = false
+  }
   const pos = bot.root.position
   const goal = bot.goals[0]
   const dx = goal.x - pos.x
@@ -757,18 +859,19 @@ export function updateBot(bot, dt, elapsed, reduce) {
   if (!moving && bot.routeKey === 'handoff' && bot.goals.length <= 1) {
     if (!bot.holdStarted) {
       bot.holdStarted = true
-      bot.hold = reduce ? 0.35 : 1.15
+      bot.hold = reduce ? 0.8 : 8.2
       bot.spinLeft = Math.PI * 2
     }
     bot.hold -= dt
     if (bot.hold <= 0) {
       bot.carrying = false
       bot.routeKey = 'handoff-back'
-      const seat = new THREE.Vector3(bot.lounge.x, 0, bot.lounge.z)
-      bot.goals = routeTo(bot.root.position, seat)
-      bot.faceYaw = bot.lounge.yaw
-      bot.pose = 'sit'
-      bot.low = !!bot.lounge.low
+      const back = spotFor(bot, bot.returnPlace || 'lobby')
+      bot.goals = routeTo(bot.root.position, back.dest)
+      bot.faceYaw = back.yaw
+      bot.pose = back.pose
+      bot.low = back.low
+      bot.homeYaw = back.yaw
       moving = true
     }
   }
@@ -787,12 +890,16 @@ export function updateBot(bot, dt, elapsed, reduce) {
 
   const target = {
     hip: HIP_STAND,
-    legL: 0.05,
-    legR: -0.05,
+    legL: 0.08,
+    legR: -0.08,
+    kneeL: 0.12,
+    kneeR: 0.12,
     armLx: 0.12,
     armRx: 0.12,
     armLz: 0.04,
     armRz: -0.04,
+    elbowL: -0.28,
+    elbowR: -0.28,
     headX: 0,
     headY: 0,
   }
@@ -801,16 +908,24 @@ export function updateBot(bot, dt, elapsed, reduce) {
   if (moving) {
     const step = Math.sin(elapsed * 9.5 + bot.phase)
     target.hip = HIP_STAND
-    target.legL = step * 0.55
-    target.legR = -step * 0.55
-    target.armLx = -step * 0.4
-    target.armRx = step * 0.4
+    target.legL = step * 0.7
+    target.legR = -step * 0.7
+    target.kneeL = Math.max(0, -step) * 0.9
+    target.kneeR = Math.max(0, step) * 0.9
+    target.armLx = -step * 0.35
+    target.armRx = step * 0.35
+    target.elbowL = -0.35
+    target.elbowR = -0.35
   } else if (bot.pose === 'sit') {
     target.hip = bot.low ? HIP_LOW : HIP_SIT
-    target.legL = -1.12
-    target.legR = -1.12
-    target.armLx = -0.5
-    target.armRx = -0.5
+    target.legL = -1.02
+    target.legR = -1.02
+    target.kneeL = 1.15
+    target.kneeR = 1.15
+    target.armLx = -0.4
+    target.armRx = -0.4
+    target.elbowL = -0.35
+    target.elbowR = -0.35
     target.headY = Math.sin(elapsed * 0.55 + bot.phase) * 0.25
     target.headX = Math.sin(elapsed * 0.4 + bot.phase * 1.3) * 0.05
     if (bot.state === 'working' && (bot.place === 'desk' || bot.place === 'musk-desk')) {
@@ -842,9 +957,27 @@ export function updateBot(bot, dt, elapsed, reduce) {
   }
 
   if (bot.carrying) {
-    target.armRx = -1.05
-    target.armRz = -0.25
+    target.armRx = -0.85
+    target.armRz = -0.2
+    target.elbowR = -0.7
   }
+  if (!moving && bot.place === 'copy') {
+    target.armRx = -0.75
+    target.elbowR = -0.45
+    target.headX = 0.22
+  }
+  const sipping = (bot.cup === 'sip' || bot.cup === 'hand') && !bot.carrying
+  if (sipping && bot.cup === 'sip' && !moving) {
+    target.armLx = -1.15
+    target.armLz = 0.4
+    target.elbowL = -0.85
+    if (!bot.lookAt) target.headX = 0.2
+  } else if (sipping) {
+    target.armLx = -0.4
+    target.armLz = 0.5
+    target.elbowL = -0.5
+  }
+  if (bot.mug) bot.mug.visible = sipping
 
   if (!moving && bot.spinLeft <= 0 && bot.lookAt) {
     const lx = bot.lookAt.x - pos.x
@@ -861,6 +994,11 @@ export function updateBot(bot, dt, elapsed, reduce) {
     target.headX = -0.18
     target.headY *= 0.4
   }
+  if (bot.receiving && !moving) {
+    target.armRx = -0.9
+    target.armRz = 0.2
+    target.elbowR = -0.55
+  }
 
   if (!moving) {
     target.hip += Math.sin(elapsed * 1.5 + bot.phase) * (reduce ? 0 : 0.006)
@@ -876,6 +1014,14 @@ export function updateBot(bot, dt, elapsed, reduce) {
   bot.armR.rotation.x = damp(bot.armR.rotation.x, target.armRx, lambda, dt)
   bot.armL.rotation.z = dampAngle(bot.armL.rotation.z, target.armLz, lambda, dt)
   bot.armR.rotation.z = dampAngle(bot.armR.rotation.z, target.armRz, lambda, dt)
+  if (bot.kneeL) {
+    bot.kneeL.rotation.x = damp(bot.kneeL.rotation.x, target.kneeL, lambda, dt)
+    bot.kneeR.rotation.x = damp(bot.kneeR.rotation.x, target.kneeR, lambda, dt)
+  }
+  if (bot.elbowL) {
+    bot.elbowL.rotation.x = damp(bot.elbowL.rotation.x, target.elbowL, lambda, dt)
+    bot.elbowR.rotation.x = damp(bot.elbowR.rotation.x, target.elbowR, lambda, dt)
+  }
   bot.head.rotation.x = damp(bot.head.rotation.x, target.headX, 8, dt)
   bot.head.rotation.y = dampAngle(bot.head.rotation.y, target.headY, 6, dt)
 

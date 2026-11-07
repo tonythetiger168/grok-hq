@@ -2,13 +2,18 @@ import { DEPARTMENTS, departmentOf } from './roster.js'
 import { ZONE_CHIPS } from './layout.js'
 
 const WHERE = {
-  rest: 'In the rest area.',
+  rest: 'In the lobby.',
+  lobby: 'In the lobby.',
   desk: 'At their desk.',
   'musk-desk': 'In the corner office.',
   'wait-desk': 'Waiting by their desk.',
   'wait-meeting': 'Waiting at the meeting room.',
   meeting: 'In the meeting room.',
-  handoff: 'Carrying work to musk.',
+  handoff: 'Reporting to musk.',
+  library: 'In the library.',
+  pantry: 'Getting coffee.',
+  snack: 'At a snack bar.',
+  copy: 'At the copier.',
 }
 
 function esc(value) {
@@ -17,7 +22,7 @@ function esc(value) {
   ))
 }
 
-export function createUI({ onSimulate, onZone, onToggleRoster, onSelect }) {
+export function createUI({ onSimulate, onDay, onZone, onToggleRoster, onSelect }) {
   const root = document.getElementById('hud')
   root.innerHTML = `
     <div class="left-col">
@@ -29,7 +34,12 @@ export function createUI({ onSimulate, onZone, onToggleRoster, onSelect }) {
         </div>
         <div class="actions">
           <div class="badge" id="badge">ALL IDLE</div>
+          <div class="day-clock" id="day-clock" hidden>
+            <span id="day-time">9:00 AM</span>
+            <span class="day-beat" id="day-beat">Morning</span>
+          </div>
           <button type="button" class="primary" id="sim" aria-pressed="false">Simulate work</button>
+          <button type="button" class="primary" id="day" aria-pressed="false">Workday</button>
         </div>
       </div>
       <div class="zones" id="zones"></div>
@@ -49,6 +59,10 @@ export function createUI({ onSimulate, onZone, onToggleRoster, onSelect }) {
   const els = {
     badge: root.querySelector('#badge'),
     sim: root.querySelector('#sim'),
+    day: root.querySelector('#day'),
+    dayClock: root.querySelector('#day-clock'),
+    dayTime: root.querySelector('#day-time'),
+    dayBeat: root.querySelector('#day-beat'),
     count: root.querySelector('#count'),
     zones: root.querySelector('#zones'),
     roster: root.querySelector('#roster'),
@@ -97,6 +111,9 @@ export function createUI({ onSimulate, onZone, onToggleRoster, onSelect }) {
 
   els.sim.addEventListener('click', () => {
     onSimulate(els.sim.getAttribute('aria-pressed') !== 'true')
+  })
+  els.day.addEventListener('click', () => {
+    onDay(els.day.getAttribute('aria-pressed') !== 'true')
   })
 
   els.list.addEventListener('click', (event) => {
@@ -158,9 +175,11 @@ export function createUI({ onSimulate, onZone, onToggleRoster, onSelect }) {
     const task = bot.task
       ? esc(bot.task)
       : 'No task'
-    const simNote = snapshot.simulating
-      ? '<p class="sim-note">Shown only while Simulate work is on. It is not written to status.</p>'
-      : ''
+    const simNote = snapshot.day
+      ? '<p class="sim-note">Workday story in this browser. It is not written to status.</p>'
+      : snapshot.simulating
+        ? '<p class="sim-note">Shown only while Simulate work is on. It is not written to status.</p>'
+        : ''
     els.detail.innerHTML = `
       <p class="eyebrow">${esc(dept?.label || '')}</p>
       <h2>${esc(bot.name)}</h2>
@@ -188,16 +207,24 @@ export function createUI({ onSimulate, onZone, onToggleRoster, onSelect }) {
       const sign = next.bots.map((bot) => `${bot.id}:${bot.state}:${bot.place}:${bot.task}`).join('|') + next.badge + next.note
       els.badge.textContent = next.badge
       els.badge.title = next.note
-      els.badge.className = `badge is-${next.badge === 'SIMULATION' ? 'sim' : next.badge === 'LIVE' ? 'live' : 'idle'}`
-      els.sim.setAttribute('aria-pressed', String(next.simulating))
-      els.sim.textContent = next.simulating ? 'Stop simulation' : 'Simulate work'
-      document.body.classList.toggle('simulating', next.simulating)
+      els.badge.className = `badge is-${next.day ? 'day' : next.badge === 'SIMULATION' ? 'sim' : next.badge === 'LIVE' ? 'live' : 'idle'}`
+      els.sim.setAttribute('aria-pressed', String(next.mode === 'sim'))
+      els.sim.textContent = next.mode === 'sim' ? 'Stop simulation' : 'Simulate work'
+      els.day.setAttribute('aria-pressed', String(!!next.day))
+      els.day.textContent = next.day ? 'Stop workday' : 'Workday'
+      els.dayClock.hidden = !next.day
+      els.dayTime.textContent = next.clock || ''
+      els.dayBeat.textContent = next.beatLabel || ''
+      document.body.classList.toggle('simulating', next.mode === 'sim')
+      document.body.classList.toggle('day', !!next.day)
       const tally = { idle: 0, working: 0, waiting: 0, error: 0, done: 0 }
       for (const bot of next.bots) tally[bot.state] += 1
-      els.count.textContent = next.simulating
+      els.count.textContent = next.day
+        ? 'Click an idle bot to assign work. Nothing is saved.'
+        : next.simulating
         ? 'Browser-only animation. Nothing is saved.'
         : tally.idle === next.bots.length
-          ? `All ${next.bots.length} idle · in the rest area`
+          ? `All ${next.bots.length} idle · in the lobby`
           : `${tally.working} working · ${tally.waiting} waiting · ${tally.error} stuck · ${tally.done} done`
       if (sign !== signature) {
         signature = sign

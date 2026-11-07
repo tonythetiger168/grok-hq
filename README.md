@@ -38,10 +38,15 @@ npm run check
 - 開源研究的十位坐在南側一整排。
 - 預設每個人都是 **Idle**，坐在休息區。桌子是空的，名牌還在。沒有人在做「真的工作」。
 - 滑過角色會出現名字。點一下（或點名冊）會把鏡頭拉近，並跟著那位角色。
-- 兩個人說話時，中間會浮出對話雲；一個人自言自語也有。想事情是另一種思考雲：雲朵形，底下有一串小圓點連回頭上。休息時和模擬工作時都會出現。
+- 兩個人說話時，中間會浮出對話雲；一個人自言自語也有。想事情是另一種思考雲：雲朵形，底下有一串小圓點連回頭上。
+- 點一個 **Idle** 的人，在頭頂對話雲裡打工作內容，按 Enter。對方會離開休息去做事；若寫到 PR、CI 或 plan，之後向 musk 回報時會沿著這句話。
 - 拖曳旋轉、滾輪或雙指縮放、右鍵平移。手機上有放大、縮小、回到全景。
 - 上方的分區按鈕把鏡頭帶到該區。
 - 接待處有一面「每週用量」牆，只寫稍後再接，**沒有任何數字**。
+
+## 一日工作
+
+「Workday」按鈕，或網址 `?day=1`，用幾分鐘演完 9:00 AM 到 6:00 PM。畫面上的時鐘（大廳也有一面）帶著行程：先在大廳喝咖啡，站會，有人去影印，其他人在桌子、圖書館或點心吧想計畫。一次只有一個人把文件拿給 musk；musk 會想一下，再對那個人說 PR 要開著、關掉，或 CI 是綠的還是失敗，並派下一步。對方做完會再回來。`?at=10:30` 可以從那個時間開始。這只在這個分頁裡演，不會寫入 `status.json`。
 
 ## 模擬工作
 
@@ -116,7 +121,9 @@ Static build: `npm run build` then `npm run preview` (or host `dist/` yourself).
 
 Everyone starts **Idle** in the rest area. Each bot is a small stylized person — hair, face, and clothes in their own color. **musk** has the glass corner office and reads as the suited lead; the team reports to musk, and Grok Bot is a personal assistant at a regular desk. Rooms you can frame from the chips: Meeting, Rest, Library, Pantry, Reception, research screens, and Servers.
 
-Speech clouds sit between people who are talking, and a person talking to themselves gets one too. Thoughts use a different cloud: a scalloped bubble with small circles trailing back to the head. Both show while the office is idle and during Simulate work.
+Speech clouds sit between people who are talking, and a person talking to themselves gets one too. Thoughts use a scalloped cloud with small circles trailing back to the head. Click an idle bot and press Enter in the cloud by their head to assign work.
+
+**Workday** (`?day=1`, optional `?at=10:30`) plays 9:00 AM–6:00 PM in a few minutes. The clock on screen and in the lobby drives the story: lobby coffee, standup, a copier, snack bars, and one report to musk at a time. musk answers about the plan, whether a PR is open or closed, and whether CI is green or failed, then the bot follows up. It never writes `status.json`.
 
 **Simulate work** (`?simulate=1`, `?demo`, or `#demo`) plays a busy day in that browser tab only. Working bots sit at desks or gather for a standup. Waiting bots wave by a desk or at the meeting-room doorway. Finished bots carry a folder into musk's office, then return to the rest area. It never writes `status.json` and never POSTs to `/api/status`. A **SIMULATION** badge stays on screen.
 

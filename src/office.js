@@ -11,6 +11,7 @@ import {
   MEETING_TABLE,
   PLANTS,
   REST_TABLE,
+  PORTALS,
   SIGNS,
   SOFA_COLORS,
   ZONES,
@@ -18,6 +19,7 @@ import {
 import {
   carpetTexture,
   clockCanvas,
+  digitalClockTexture,
   glassWordTexture,
   nameplateTexture,
   signTexture,
@@ -490,7 +492,7 @@ export function buildOffice(roster) {
   addCarpetLabel(group, 'MEETING', -3.4, -15.6, 4.2)
   addCarpetLabel(group, 'PRODUCT', 13.2, -15.7, 4.4)
   addCarpetLabel(group, 'ASSISTANT', -16.6, -6.4, 3.8)
-  addCarpetLabel(group, 'REST', -2.2, -6.9, 2.8)
+  addCarpetLabel(group, 'LOBBY', -2.2, -6.9, 2.8)
   addCarpetLabel(group, 'LIBRARY', 15.2, -6.5, 3.6)
   addCarpetLabel(group, 'PANTRY', -17.6, 6.6, 2.8)
   addCarpetLabel(group, 'MARKETS / QUANT', -6.6, 7.2, 5.2)
@@ -546,12 +548,33 @@ export function buildOffice(roster) {
   addResearch(group, research)
   const clock = clockCanvas()
   clock.draw(new Date())
-  const clockMesh = new THREE.Mesh(
-    new THREE.CircleGeometry(0.22, 28),
-    new THREE.MeshBasicMaterial({ map: clock.tex, toneMapped: false }),
-  )
-  clockMesh.position.set(-6.6, 1.72, 2.42)
+  const clockMat = new THREE.MeshBasicMaterial({ map: clock.tex, toneMapped: false })
+  const clockMesh = new THREE.Mesh(new THREE.CircleGeometry(0.28, 28), clockMat)
+  clockMesh.position.set(-1.4, 1.55, 0.55)
   group.add(clockMesh)
+  const lobbyPost = cyl(group, 0.04, 0.05, 1.15, -1.4, 0.55, 0.55, mats.frame, 8)
+  lobbyPost.castShadow = true
+  const marketsClock = new THREE.Mesh(new THREE.CircleGeometry(0.2, 24), clockMat)
+  marketsClock.position.set(-6.6, 1.55, 2.55)
+  group.add(marketsClock)
+
+  const digital = digitalClockTexture()
+  digital.draw('9:00 AM', 'OFFICE TIME')
+  const board = new THREE.Group()
+  board.position.set(2.4, 1.42, 0.45)
+  group.add(board)
+  box(board, 1.45, 0.52, 0.06, 0, 0, 0, std('#24312e', 0.6))
+  const face = new THREE.Mesh(
+    new THREE.PlaneGeometry(1.3, 0.4),
+    new THREE.MeshBasicMaterial({ map: digital.tex, toneMapped: false }),
+  )
+  face.position.z = 0.04
+  board.add(face)
+
+  addStoryWalls(group)
+  addSnackBars(group)
+  const copier = addCopier(group)
+  addCupProps(group)
 
   const leds = []
   addServers(group, leds)
@@ -566,11 +589,145 @@ export function buildOffice(roster) {
     research,
     leds,
     clock,
+    digital,
+    copier,
     clockAt: 0,
+    clockLabel: '',
   }
 }
 
-export function updateOffice(office, time, stateById) {
+function addStoryWalls(parent) {
+  const plaster = new Map()
+  const paint = (hex) => {
+    if (!plaster.has(hex)) plaster.set(hex, std(hex, 0.92))
+    return plaster.get(hex)
+  }
+  const wood = std('#6a4b38', 0.75)
+  const finialMat = std('#e2b340', 0.45, { metalness: 0.2 })
+  const rugMat = std('#f4e2c4', 0.95)
+  for (const portal of PORTALS) {
+    if (portal.dir !== 'h' && portal.dir !== 'v') continue
+    const gap = 0.9
+    if (portal.dir === 'h') {
+      hSeg(parent, portal.from, portal.x - gap, portal.z, paint(portal.color), wood, finialMat)
+      hSeg(parent, portal.x + gap, portal.to, portal.z, paint(portal.color), wood, finialMat)
+      doorway(parent, portal.x, portal.z, 0, wood, finialMat)
+      box(parent, 1.5, 0.02, 0.7, portal.x, 0.03, portal.z, rugMat, false)
+    } else {
+      vSeg(parent, portal.from, portal.z - gap, portal.x, paint(portal.color), wood, finialMat)
+      vSeg(parent, portal.z + gap, portal.to, portal.x, paint(portal.color), wood, finialMat)
+      doorway(parent, portal.x, portal.z, Math.PI / 2, wood, finialMat)
+      box(parent, 0.7, 0.02, 1.5, portal.x, 0.03, portal.z, rugMat, false)
+    }
+  }
+}
+
+function hSeg(parent, x0, x1, z, mat, wood) {
+  if (x1 - x0 < 0.35) return
+  const mid = (x0 + x1) / 2
+  const len = x1 - x0
+  box(parent, len, 1.22, 0.12, mid, 0.61, z, mat, true)
+  box(parent, len, 0.08, 0.16, mid, 1.2, z, wood, false)
+  box(parent, 0.14, 1.28, 0.16, x0, 0.64, z, wood, true)
+  box(parent, 0.14, 1.28, 0.16, x1, 0.64, z, wood, true)
+}
+
+function vSeg(parent, z0, z1, x, mat, wood) {
+  if (z1 - z0 < 0.35) return
+  const mid = (z0 + z1) / 2
+  const len = z1 - z0
+  box(parent, 0.12, 1.22, len, x, 0.61, mid, mat, true)
+  box(parent, 0.16, 0.08, len, x, 1.2, mid, wood, false)
+  box(parent, 0.16, 1.28, 0.14, x, 0.64, z0, wood, true)
+  box(parent, 0.16, 1.28, 0.14, x, 0.64, z1, wood, true)
+}
+
+function doorway(parent, x, z, rot, wood, finial) {
+  const group = new THREE.Group()
+  group.position.set(x, 0, z)
+  group.rotation.y = rot
+  parent.add(group)
+  for (const side of [-0.95, 0.95]) {
+    const post = cyl(group, 0.07, 0.08, 1.35, side, 0.67, 0, wood, 8)
+    post.castShadow = true
+    const ball = new THREE.Mesh(new THREE.SphereGeometry(0.09, 10, 8), finial)
+    ball.position.set(side, 1.4, 0)
+    group.add(ball)
+  }
+  box(group, 2.05, 0.12, 0.16, 0, 1.32, 0, wood, false)
+}
+
+function addSnackBars(parent) {
+  const counter = std('#f3e2c4', 0.78)
+  const base = std('#c46a4a', 0.86)
+  const stool = std('#3e534c', 0.8)
+  const fruit = std('#de5d4a', 0.55)
+  const tin = std('#e2b340', 0.5)
+  const cracker = std('#f7f1e4', 0.7)
+  const spots = [
+    [5.6, 0.42, 0],
+    [12.2, -9.35, 0],
+    [7.1, 10.85, Math.PI],
+  ]
+  for (const [x, z, yaw] of spots) {
+    const group = new THREE.Group()
+    group.position.set(x, 0, z)
+    group.rotation.y = yaw
+    parent.add(group)
+    box(group, 1.8, 0.86, 0.42, 0, 0.43, 0, base, true)
+    box(group, 1.9, 0.08, 0.5, 0, 0.9, 0, counter, true)
+    box(group, 0.16, 0.1, 0.12, -0.55, 0.98, 0, cracker, false)
+    box(group, 0.14, 0.12, 0.1, -0.28, 1.0, 0.02, tin, false)
+    const bowl = new THREE.Mesh(new THREE.SphereGeometry(0.1, 12, 8), fruit)
+    bowl.scale.y = 0.55
+    bowl.position.set(0.15, 1.0, 0)
+    group.add(bowl)
+    cyl(group, 0.03, 0.022, 0.06, 0.5, 0.98, 0, std('#f4efe6', 0.55), 8, false)
+    for (const sx of [-0.55, 0.1, 0.7]) {
+      cyl(group, 0.12, 0.12, 0.06, sx, 0.42, -0.62, stool, 10, true)
+      cyl(group, 0.04, 0.05, 0.36, sx, 0.2, -0.62, woodSafe(), 8, true)
+    }
+  }
+}
+
+function woodSafe() {
+  return std('#8d684c', 0.75)
+}
+
+function addCopier(parent) {
+  const group = new THREE.Group()
+  group.position.set(17.2, 0, 3.35)
+  parent.add(group)
+  const body = std('#f7f1e6', 0.72)
+  const trim = std('#3e534c', 0.65)
+  box(group, 0.78, 0.72, 0.52, 0, 0.5, 0, body, true)
+  box(group, 0.7, 0.08, 0.46, 0, 0.9, 0, trim, true)
+  const lampMat = std('#d7f3c8', 0.4)
+  lampMat.emissive = new THREE.Color('#8dceb0')
+  lampMat.emissiveIntensity = 0.15
+  box(group, 0.42, 0.04, 0.08, 0, 0.78, 0.22, lampMat, false)
+  box(group, 0.5, 0.04, 0.28, 0, 0.72, -0.32, std('#e7d3b0', 0.8), false)
+  const papers = [0, 1, 2].map((index) => {
+    const page = box(group, 0.32, 0.012, 0.22, 0, 0.76 + index * 0.012, -0.32, std('#fffaf3', 0.9), false)
+    page.visible = false
+    return page
+  })
+  return { lamp: lampMat, papers }
+}
+
+function addCupProps(parent) {
+  const mug = new THREE.CylinderGeometry(0.035, 0.028, 0.06, 10)
+  const mat = std('#f4efe6', 0.55)
+  const spots = [[-3.35, 0.42, -3.2], [-2.9, 0.42, -3.35], [5.15, 0.98, 0.42], [-19.7, 0.96, 3.15]]
+  for (const [x, y, z] of spots) {
+    const cup = new THREE.Mesh(mug, mat)
+    cup.position.set(x, y, z)
+    cup.castShadow = true
+    parent.add(cup)
+  }
+}
+
+export function updateOffice(office, time, stateById, clockSample = null, copying = false) {
   for (const screen of office.screens) {
     screen.mat.uniforms.uTime.value = time
     const state = stateById.get(screen.id)
@@ -581,8 +738,29 @@ export function updateOffice(office, time, stateById) {
     const pulse = 0.5 + 0.5 * Math.sin(time * 2.1 + led.userData.phase)
     led.emissiveIntensity = 0.12 + pulse * 0.4
   }
-  if (time - office.clockAt > 1) {
-    office.clock.draw(new Date())
+  const label = clockSample?.label
+  if (label && label !== office.clockLabel) {
+    office.clock.draw(clockSample.date)
+    office.digital?.draw(label, clockSample.beat || 'OFFICE TIME')
+    office.clockLabel = label
     office.clockAt = time
+  } else if (!label && time - office.clockAt > 1) {
+    const now = new Date()
+    office.clock.draw(now)
+    const h = now.getHours()
+    const ap = h >= 12 ? 'PM' : 'AM'
+    const h12 = h % 12 || 12
+    const text = `${h12}:${String(now.getMinutes()).padStart(2, '0')} ${ap}`
+    office.digital?.draw(text, 'LOBBY CLOCK')
+    office.clockLabel = text
+    office.clockAt = time
+  }
+  if (office.copier) {
+    const pulse = copying ? 0.35 + 0.65 * (0.5 + 0.5 * Math.sin(time * 8)) : 0.12
+    office.copier.lamp.emissiveIntensity = pulse
+    const pages = copying ? 1 + Math.floor((time * 1.4) % 3) : 0
+    office.copier.papers.forEach((page, index) => {
+      page.visible = index < pages
+    })
   }
 }

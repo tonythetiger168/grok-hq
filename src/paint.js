@@ -172,6 +172,30 @@ export function usageTexture() {
   }).tex
 }
 
+export function digitalClockTexture() {
+  const pack = canvasTexture(1024, 320, () => {})
+  return {
+    tex: pack.tex,
+    draw(label, sub = 'OFFICE TIME') {
+      const ctx = pack.ctx
+      ctx.clearRect(0, 0, 1024, 320)
+      ctx.fillStyle = '#24312e'
+      ctx.fillRect(0, 0, 1024, 320)
+      ctx.fillStyle = '#e7c56a'
+      ctx.fillRect(0, 0, 1024, 14)
+      ctx.fillStyle = '#f7f3ea'
+      ctx.textAlign = 'center'
+      ctx.textBaseline = 'middle'
+      ctx.font = '600 150px Outfit, sans-serif'
+      ctx.fillText(label || '9:00 AM', 512, 145)
+      ctx.font = '500 40px Outfit, sans-serif'
+      ctx.fillStyle = '#e7c56a'
+      ctx.fillText(sub, 512, 250)
+      pack.tex.needsUpdate = true
+    },
+  }
+}
+
 export function clockCanvas() {
   const pack = canvasTexture(256, 256, () => {})
   return {

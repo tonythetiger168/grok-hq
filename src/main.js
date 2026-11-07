@@ -6,13 +6,13 @@ import './style.css'
 
 import * as THREE from 'three'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
-import { CSS2DRenderer } from 'three/addons/renderers/CSS2DRenderer.js'
+import { CSS2DObject, CSS2DRenderer } from 'three/addons/renderers/CSS2DRenderer.js'
 import { ROSTER, DEPARTMENTS } from './roster.js'
 import { PRESETS, assertLayout } from './layout.js'
 import { buildOffice, updateOffice } from './office.js'
 import { createBot, focusPoint, setBotHighlight, updateBot } from './bots.js'
 import { createCloudLayer, updateClouds } from './clouds.js'
-import { createStatus, wantsSimulation } from './status.js'
+import { createStatus, dayStartFromUrl, wantsDay, wantsSimulation } from './status.js'
 import { createUI } from './ui.js'
 
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -137,8 +137,9 @@ async function main() {
     for (const bot of bots) {
       const isSelected = bot.def.id === selected
       bot.label.visible = isSelected || bot.def.id === hovered
-      bot.stateEl.hidden = !isSelected
-      bot.stateEl.textContent = stateWord(bot.state)
+      const offer = bot.def.id === hovered && bot.state === 'idle'
+      bot.stateEl.hidden = !isSelected && !offer
+      bot.stateEl.textContent = offer && !isSelected ? 'Click to assign' : stateWord(bot.state)
       bot.stateEl.className = `tag-state is-${bot.state}`
     }
   }
@@ -188,7 +189,10 @@ async function main() {
     ui.setSelected(id)
     refreshHighlights()
     refreshLabels()
-    if (id) focusBot(byId.get(id), immediate)
+    if (id) {
+      focusBot(byId.get(id), immediate)
+      openAssign(byId.get(id))
+    }
   }
 
   function setHover(id) {
@@ -199,14 +203,96 @@ async function main() {
     renderer.domElement.style.cursor = id ? 'pointer' : ''
   }
 
+  function createAssignCloud() {
+    const root = document.createElement('form')
+    root.className = 'assign-cloud'
+    const pop = document.createElement('div')
+    pop.className = 'assign-pop'
+    const input = document.createElement('input')
+    input.maxLength = 80
+    input.placeholder = 'Assign work…'
+    input.setAttribute('aria-label', 'Assign work')
+    const hint = document.createElement('p')
+    hint.className = 'assign-hint'
+    hint.textContent = 'Enter to assign. Esc to close.'
+    pop.append(input, hint)
+    root.append(pop)
+    root.addEventListener('submit', (event) => {
+      event.preventDefault()
+      const bot = assign.target
+      if (!bot) return
+      const result = status.assign(bot.def.id, input.value)
+      if (!result.ok && result.reason === 'empty') {
+        hint.textContent = 'Type the work first.'
+        return
+      }
+      if (!result.ok) {
+        hint.textContent = 'Busy right now.'
+        return
+      }
+      hideAssign()
+    })
+    root.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') {
+        event.stopPropagation()
+        hideAssign()
+      }
+    })
+    const object = new CSS2DObject(root)
+    object.center.set(0.5, 1)
+    object.visible = false
+    return { object, root, input, hint, target: null, timer: 0 }
+  }
+
+  function openAssign(bot) {
+    if (!bot) return
+    window.clearTimeout(assign.timer)
+    assign.target = bot
+    bot.head.add(assign.object)
+    assign.object.position.set(0, 0.55, 0)
+    assign.object.visible = true
+    const idle = status.canAssign(bot.def.id)
+    assign.input.hidden = !idle
+    if (idle) {
+      assign.input.value = ''
+      assign.hint.textContent = 'Enter to assign. Esc to close.'
+      assign.input.focus()
+    } else {
+      assign.hint.textContent = 'Busy right now. Try an idle bot.'
+      assign.timer = window.setTimeout(hideAssign, 2200)
+    }
+  }
+
+  function hideAssign() {
+    assign.object.visible = false
+    assign.target = null
+    assign.input.blur()
+  }
+
+  const assign = createAssignCloud()
+  scene.add(assign.object)
+
   const ui = createUI({
     onSimulate(on) {
-      status.setSimulating(on)
+      status.setMode(on ? 'sim' : 'off')
       const url = new URL(location.href)
       if (on) url.searchParams.set('simulate', '1')
       else url.searchParams.delete('simulate')
+      url.searchParams.delete('day')
+      url.searchParams.delete('at')
       url.searchParams.delete('demo')
-      if (url.hash === '#demo' || url.hash === '#simulate') url.hash = ''
+      if (url.hash === '#demo' || url.hash === '#simulate' || url.hash === '#day') url.hash = ''
+      history.replaceState(null, '', url)
+    },
+    onDay(on) {
+      status.setMode(on ? 'day' : 'off')
+      const url = new URL(location.href)
+      if (on) url.searchParams.set('day', '1')
+      else url.searchParams.delete('day')
+      url.searchParams.delete('simulate')
+      url.searchParams.delete('demo')
+      url.searchParams.delete('at')
+      if (url.hash === '#demo' || url.hash === '#simulate' || url.hash === '#day') url.hash = ''
       history.replaceState(null, '', url)
     },
     onZone(id) {
@@ -244,15 +330,29 @@ async function main() {
       bot.state = item.state
       bot.place = item.place || 'rest'
       bot.meetIndex = item.meetIndex || 0
-      bot.task = item.task
+      bot.spot = item.spot || 0
+      bot.task = item.task || ''
+      bot.beat = item.beat || ''
+      bot.fact = item.fact || 'plan'
+      bot.follow = item.follow || ''
+      bot.cup = item.cup || 'none'
+      bot.returnPlace = item.returnPlace || 'desk'
+      bot.ci = item.ci || ''
+      if (item.bark && item.bark !== bot.bark) {
+        bot.bark = item.bark
+        clouds.pendingBark = { bot, text: item.bark }
+      } else if (!item.bark) {
+        bot.bark = ''
+      }
     }
     ui.update(snap)
     refreshLabels()
   })
 
-  if (wantsSimulation()) status.setSimulating(true)
+  if (wantsDay()) status.setMode('day', dayStartFromUrl())
+  else if (wantsSimulation()) status.setMode('sim')
   const params = new URLSearchParams(location.search)
-  const zoneAlias = { lounge: 'rest' }
+  const zoneAlias = { lounge: 'rest', lobby: 'rest' }
   const zoneParam = zoneAlias[params.get('zone')] || params.get('zone')
   if (zoneParam && PRESETS[zoneParam]) {
     ui.setZone(zoneParam)
@@ -360,10 +460,12 @@ async function main() {
       reduceMotion,
       renderer.domElement.clientWidth,
       renderer.domElement.clientHeight,
+      { onShare: (id, fact) => status.hear(id, fact) },
     )
     stateById.clear()
     for (const bot of bots) stateById.set(bot.def.id, bot.state)
-    updateOffice(office, elapsed, stateById)
+    const copying = bots.some((bot) => bot.place === 'copy' && !bot.moving)
+    updateOffice(office, elapsed, stateById, status.clockSample(), copying)
     if (follow) {
       const bot = byId.get(follow.id)
       if (bot) {

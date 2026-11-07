@@ -133,12 +133,115 @@ export const PLANTS = [
   { x: 2.2, z: -16.4, s: 0.7 },
 ]
 
+export const LIBRARY_SPOTS = [
+  { x: 14.55, z: -2.75, yaw: Math.PI },
+  { x: 15.9, z: -2.75, yaw: Math.PI },
+  { x: 15.2, z: -4.15, yaw: 0 },
+]
+
+export const PANTRY_SPOTS = [
+  { x: -20.15, z: 4.45, yaw: Math.PI },
+  { x: -19.35, z: 4.5, yaw: Math.PI },
+  { x: -18.5, z: 4.65, yaw: Math.PI },
+]
+
+export const COPY_SPOTS = [
+  { x: 17.2, z: 4.35, yaw: Math.PI },
+]
+
+/** Storybook grab-and-go bars. pose sit uses a low stool; stand is at the counter. */
+export const SNACK_SPOTS = [
+  { x: 5.05, z: -0.15, yaw: 0, pose: 'sit' },
+  { x: 5.75, z: -0.15, yaw: 0, pose: 'sit' },
+  { x: 6.4, z: -0.15, yaw: 0, pose: 'stand' },
+  { x: 11.5, z: -9.85, yaw: 0, pose: 'sit' },
+  { x: 12.3, z: -9.85, yaw: 0, pose: 'stand' },
+  { x: 6.6, z: 11.35, yaw: Math.PI, pose: 'sit' },
+  { x: 7.45, z: 11.35, yaw: Math.PI, pose: 'stand' },
+]
+
+/**
+ * Doorways between storybook rooms. dir h = wall runs along x at z.
+ * from/to are the wall ends. lead↔meeting is the existing glass door (no extra wall).
+ */
+export const PORTALS = [
+  { a: 'lead', b: 'meeting', x: DOOR.x, z: DOOR.z, dir: 'none' },
+  { a: 'meeting', b: 'product', x: 4.8, z: -13, dir: 'v', from: -17.6, to: -8.4, color: '#d5e4f2' },
+  { a: 'meeting', b: 'rest', x: -3.2, z: -8, dir: 'h', from: -10.6, to: 4.4, color: '#f6d0b0' },
+  { a: 'product', b: 'library', x: 14.2, z: -8, dir: 'h', from: 5.2, to: 21.6, color: '#d7ead4' },
+  { a: 'assistant', b: 'rest', x: -11, z: -3.6, dir: 'v', from: -7.6, to: 0.8, color: '#e4d4f0' },
+  { a: 'rest', b: 'library', x: 8.2, z: -3.6, dir: 'v', from: -7.6, to: 0.8, color: '#f0e2c0' },
+  { a: 'assistant', b: 'pantry', x: -17.6, z: 1.2, dir: 'h', from: -21.6, to: -13.4, color: '#f3c4b4' },
+  { a: 'rest', b: 'markets', x: -6.6, z: 1.2, dir: 'h', from: -10.6, to: -0.4, color: '#f8e0b4' },
+  { a: 'rest', b: 'reviews', x: 4.2, z: 1.2, dir: 'h', from: 0.4, to: 7.8, color: '#f3d4c8' },
+  { a: 'library', b: 'reviews', x: 9.6, z: 1.2, dir: 'h', from: 8.6, to: 10.6, color: '#eadfca' },
+  { a: 'library', b: 'reception', x: 16.2, z: 1.2, dir: 'h', from: 11.4, to: 21.6, color: '#f6e6cf' },
+  { a: 'pantry', b: 'markets', x: -13, z: 5, dir: 'v', from: 1.6, to: 8.8, color: '#f0c8b8' },
+  { a: 'markets', b: 'reviews', x: 0, z: 5, dir: 'v', from: 1.6, to: 8.8, color: '#f7e4c0' },
+  { a: 'reviews', b: 'reception', x: 11, z: 5, dir: 'v', from: 1.6, to: 8.8, color: '#f4d8cc' },
+  { a: 'pantry', b: 'servers', x: -17.4, z: 9.2, dir: 'h', from: -21.6, to: -13.4, color: '#ddd4f0' },
+  { a: 'markets', b: 'opensource', x: -6.4, z: 9.2, dir: 'h', from: -12.6, to: -0.4, color: '#eadcb4' },
+  { a: 'reviews', b: 'opensource', x: 5.4, z: 9.2, dir: 'h', from: 0.4, to: 10.6, color: '#f0d6ce' },
+  { a: 'reception', b: 'opensource', x: 16.2, z: 9.2, dir: 'h', from: 11.4, to: 21.6, color: '#efe4d0' },
+  { a: 'servers', b: 'opensource', x: -13, z: 13.5, dir: 'v', from: 9.6, to: 17.6, color: '#d8d4ee' },
+]
+
+const PORTAL_GRAPH = new Map()
+for (const portal of PORTALS) {
+  const door = { x: portal.x, z: portal.z }
+  if (!PORTAL_GRAPH.has(portal.a)) PORTAL_GRAPH.set(portal.a, [])
+  if (!PORTAL_GRAPH.has(portal.b)) PORTAL_GRAPH.set(portal.b, [])
+  PORTAL_GRAPH.get(portal.a).push({ zone: portal.b, door })
+  PORTAL_GRAPH.get(portal.b).push({ zone: portal.a, door })
+}
+
+export function zoneAt(x, z) {
+  let best = 'rest'
+  let bestD = Infinity
+  for (const zone of ZONES) {
+    const cx = Math.max(zone.x, Math.min(x, zone.x + zone.w))
+    const cz = Math.max(zone.z, Math.min(z, zone.z + zone.d))
+    const d = (x - cx) ** 2 + (z - cz) ** 2
+    if (d < bestD) {
+      bestD = d
+      best = zone.id
+    }
+  }
+  return best
+}
+
+export function routeThrough(ax, az, bx, bz) {
+  const start = zoneAt(ax, az)
+  const goal = zoneAt(bx, bz)
+  if (start === goal) return []
+  const prev = new Map([[start, null]])
+  const queue = [start]
+  while (queue.length) {
+    const current = queue.shift()
+    if (current === goal) break
+    for (const edge of PORTAL_GRAPH.get(current) || []) {
+      if (prev.has(edge.zone)) continue
+      prev.set(edge.zone, { from: current, door: edge.door })
+      queue.push(edge.zone)
+    }
+  }
+  if (!prev.has(goal)) return []
+  const doors = []
+  let cursor = goal
+  while (prev.get(cursor)) {
+    doors.push(prev.get(cursor).door)
+    cursor = prev.get(cursor).from
+  }
+  doors.reverse()
+  return doors
+}
+
 export const SIGNS = [
   { title: 'MUSK', sub: 'Reports to musk', x: -10.3, z: -8.15 },
   { title: 'MEETING', sub: 'Standup', x: 2.6, z: -8.15 },
   { title: 'PRODUCT', sub: 'Aevum · Helios', x: 13.2, z: -8.15 },
   { title: 'ASSISTANT', sub: 'Grok Bot', x: -16.6, z: 0.35 },
-  { title: 'REST', sub: 'Idle', x: -1.2, z: 0.35 },
+  { title: 'LOBBY', sub: 'Arrive', x: -1.2, z: 0.35 },
   { title: 'LIBRARY', sub: '', x: 15.2, z: 0.35 },
   { title: 'PANTRY', sub: '', x: -17.4, z: 8.35 },
   { title: 'MARKETS', sub: 'Quant', x: -6.4, z: 8.35 },
@@ -170,7 +273,7 @@ export const ZONE_CHIPS = [
   { id: 'lead', label: 'musk' },
   { id: 'assistant', label: 'Assistant' },
   { id: 'meeting', label: 'Meeting' },
-  { id: 'rest', label: 'Rest' },
+  { id: 'rest', label: 'Lobby' },
   { id: 'library', label: 'Library' },
   { id: 'product', label: 'Product' },
   { id: 'markets', label: 'Markets' },
