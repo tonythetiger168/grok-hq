@@ -1,0 +1,109 @@
+{
+  "bots": [
+    {
+      "name": "Grok Bot",
+      "state": "idle",
+      "task": ""
+    },
+    {
+      "name": "dr eggbot",
+      "state": "idle",
+      "task": ""
+    },
+    {
+      "name": "musk",
+      "state": "idle",
+      "task": ""
+    },
+    {
+      "name": "helios forge",
+      "state": "idle",
+      "task": ""
+    },
+    {
+      "name": "aevum",
+      "state": "idle",
+      "task": ""
+    },
+    {
+      "name": "zaolang",
+      "state": "idle",
+      "task": ""
+    },
+    {
+      "name": "julang",
+      "state": "idle",
+      "task": ""
+    },
+    {
+      "name": "minisim",
+      "state": "idle",
+      "task": ""
+    },
+    {
+      "name": "quant",
+      "state": "idle",
+      "task": ""
+    },
+    {
+      "name": "linkup",
+      "state": "idle",
+      "task": ""
+    },
+    {
+      "name": "wavelive",
+      "state": "idle",
+      "task": ""
+    },
+    {
+      "name": "vectorbt",
+      "state": "idle",
+      "task": ""
+    },
+    {
+      "name": "agent-display",
+      "state": "idle",
+      "task": ""
+    },
+    {
+      "name": "apscheduler",
+      "state": "idle",
+      "task": ""
+    },
+    {
+      "name": "duckdb",
+      "state": "idle",
+      "task": ""
+    },
+    {
+      "name": "skfolio",
+      "state": "idle",
+      "task": ""
+    },
+    {
+      "name": "ccxt",
+      "state": "idle",
+      "task": ""
+    },
+    {
+      "name": "cryptofeed",
+      "state": "idle",
+      "task": ""
+    },
+    {
+      "name": "freqtrade",
+      "state": "idle",
+      "task": ""
+    },
+    {
+      "name": "quantstats",
+      "state": "idle",
+      "task": ""
+    },
+    {
+      "name": "lightweight-charts",
+      "state": "idle",
+      "task": ""
+    }
+  ]
+}

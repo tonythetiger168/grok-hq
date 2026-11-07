@@ -1,0 +1,588 @@
+import * as THREE from 'three'
+import { box, cyl, std, worldPoint } from './geom.js'
+import {
+  BOUNDS,
+  CORNER,
+  DESKS,
+  DOOR_GAP,
+  LOUNGE,
+  LOUNGE_CHAIR_COLORS,
+  MEETING_SEATS,
+  MEETING_TABLE,
+  PLANTS,
+  REST_TABLE,
+  SIGNS,
+  SOFA_COLORS,
+  ZONES,
+} from './layout.js'
+import {
+  carpetTexture,
+  clockCanvas,
+  glassWordTexture,
+  nameplateTexture,
+  signTexture,
+  skyTexture,
+  usageTexture,
+} from './paint.js'
+import { deskScreenMaterial, researchScreenMaterial } from './screens.js'
+
+const WOOD = '#e4d7c6'
+const WOOD_TOP = '#d7b48a'
+const WOOD_LEG = '#8d684c'
+
+function basic(map, extra = {}) {
+  return new THREE.MeshBasicMaterial({
+    map,
+    transparent: true,
+    depthWrite: false,
+    toneMapped: false,
+    ...extra,
+  })
+}
+
+function addCarpetLabel(parent, text, x, z, width) {
+  if (!text) return
+  const tex = carpetTexture(text)
+  const mesh = new THREE.Mesh(new THREE.PlaneGeometry(width, width * 0.18), basic(tex))
+  mesh.rotation.x = -Math.PI / 2
+  mesh.position.set(x, 0.028, z)
+  mesh.renderOrder = 2
+  parent.add(mesh)
+}
+
+function addSign(parent, sign, frameMat, boardMat) {
+  const post = cyl(parent, 0.035, 0.04, 1.22, sign.x, 0.61, sign.z, frameMat, 8)
+  post.castShadow = true
+  const board = new THREE.Group()
+  board.position.set(sign.x, 1.42, sign.z)
+  parent.add(board)
+  box(board, sign.sub ? 1.7 : 1.45, 0.52, 0.05, 0, 0, 0, boardMat)
+  const tex = signTexture(sign.title, sign.sub)
+  const face = new THREE.Mesh(new THREE.PlaneGeometry(sign.sub ? 1.58 : 1.32, 0.42), basic(tex, { transparent: false, depthWrite: true }))
+  face.position.z = 0.03
+  board.add(face)
+}
+
+function addChair(parent, x, z, yaw, color, lounge = false) {
+  const group = new THREE.Group()
+  group.position.set(x, 0, z)
+  group.rotation.y = yaw
+  const fabric = std(color, 0.94)
+  const leg = std('#2c2926', 0.62)
+  const seatW = lounge ? 0.5 : 0.42
+  const seatD = lounge ? 0.48 : 0.4
+  box(group, seatW, 0.08, seatD, 0, 0.34, 0.02, fabric)
+  box(group, seatW, lounge ? 0.32 : 0.36, 0.07, 0, 0.56, -0.18, fabric)
+  box(group, 0.08, 0.22, seatD, -seatW / 2 - 0.01, 0.44, 0.02, fabric)
+  box(group, 0.08, 0.22, seatD, seatW / 2 + 0.01, 0.44, 0.02, fabric)
+  for (const [lx, lz] of [[-0.16, -0.12], [0.16, -0.12], [-0.16, 0.12], [0.16, 0.12]]) {
+    box(group, 0.045, 0.32, 0.045, lx, 0.16, lz, leg)
+  }
+  parent.add(group)
+  return group
+}
+
+function addSofa(parent, seats, color) {
+  const yaw = seats[0].yaw
+  const cx = seats.reduce((sum, seat) => sum + seat.x, 0) / seats.length
+  const cz = seats.reduce((sum, seat) => sum + seat.z, 0) / seats.length
+  const group = new THREE.Group()
+  group.position.set(cx, 0, cz)
+  group.rotation.y = yaw
+  parent.add(group)
+  group.updateMatrixWorld()
+  const locals = seats.map((seat) => group.worldToLocal(new THREE.Vector3(seat.x, 0, seat.z)))
+  const minX = Math.min(...locals.map((point) => point.x))
+  const maxX = Math.max(...locals.map((point) => point.x))
+  const mid = (minX + maxX) / 2
+  const len = Math.max(maxX - minX + 1.0, 1.1)
+  const fabric = std(color, 0.96)
+  const wood = std(WOOD_LEG, 0.72)
+  box(group, len, 0.14, 0.52, mid, 0.3, 0, fabric)
+  box(group, len, 0.36, 0.11, mid, 0.54, -0.22, fabric)
+  box(group, 0.1, 0.26, 0.52, minX - 0.5, 0.42, 0, fabric)
+  box(group, 0.1, 0.26, 0.52, maxX + 0.5, 0.42, 0, fabric)
+  for (const lx of [minX - 0.2, maxX + 0.2]) {
+    for (const lz of [-0.16, 0.16]) box(group, 0.06, 0.24, 0.06, lx, 0.12, lz, wood)
+  }
+}
+
+function addCushion(parent, seat) {
+  const group = new THREE.Group()
+  group.position.set(seat.x, 0, seat.z)
+  group.rotation.y = seat.yaw
+  const fabric = std(seat.bot === 'quantstats' ? '#c46a4a' : '#e4d2b8', 0.96)
+  box(group, 0.52, 0.14, 0.52, 0, 0.1, 0, fabric)
+  parent.add(group)
+}
+
+function workstation(parent, spec, bot, mats, screens) {
+  const group = new THREE.Group()
+  const deskPoint = worldPoint(spec.x, spec.z, spec.yaw, 0, 0.78)
+  group.position.set(deskPoint.x, 0, deskPoint.z)
+  group.rotation.y = spec.yaw
+  parent.add(group)
+
+  box(group, 1.18, 0.06, 0.62, 0, 0.49, 0, mats.desk)
+  for (const [lx, lz] of [[-0.5, -0.22], [0.5, -0.22], [-0.5, 0.22], [0.5, 0.22]]) {
+    box(group, 0.05, 0.46, 0.05, lx, 0.23, lz, mats.deskLeg)
+  }
+  box(group, 0.08, 0.16, 0.08, 0, 0.62, 0.16, mats.metal)
+  box(group, 0.68, 0.44, 0.045, 0, 0.9, 0.18, mats.bezel)
+  const screenMat = deskScreenMaterial((spec.x + spec.z) * 0.17)
+  const screen = new THREE.Mesh(new THREE.PlaneGeometry(0.58, 0.34), screenMat)
+  screen.position.set(0, 0.9, 0.15)
+  screen.rotation.y = Math.PI
+  group.add(screen)
+  screens.push({ id: spec.id, mat: screenMat })
+
+  box(group, 0.36, 0.025, 0.14, 0, 0.535, -0.12, mats.keys)
+
+  const plateTex = nameplateTexture(bot.name, bot.color)
+  const plate = new THREE.Sprite(new THREE.SpriteMaterial({
+    map: plateTex,
+    transparent: true,
+    depthWrite: false,
+    toneMapped: false,
+  }))
+  plate.position.set(0, 1.38, 0.12)
+  plate.scale.set(1.22, 0.3, 1)
+  plate.userData.botId = spec.id
+  group.add(plate)
+
+  if (spec.extras === 'files') {
+    for (let i = 0; i < 3; i += 1) {
+      const file = box(group, 0.16, 0.012, 0.12, -0.38, 0.54 + i * 0.016, 0.08, std(['#d7c4a4', '#e7d5c8', '#c9b79a'][i], 0.9))
+      file.userData.botId = spec.id
+    }
+  }
+  if (spec.extras === 'studio') {
+    const tray = box(group, 0.46, 0.03, 0.22, 0.28, 0.54, 0.08, std('#efe6d6', 0.85))
+    tray.userData.botId = spec.id
+    const swatches = ['#3c4f73', '#e09a4e', '#2f6f6a', '#d46a4c', '#e2b23a']
+    swatches.forEach((color, index) => {
+      const cube = box(group, 0.06, 0.06, 0.06, 0.12 + index * 0.08, 0.59, 0.08, std(color, 0.8))
+      cube.userData.botId = spec.id
+    })
+  }
+
+  group.traverse((child) => {
+    if (child.isMesh || child.isSprite) child.userData.botId = spec.id
+  })
+
+  const chair = addChair(parent, spec.x, spec.z, spec.yaw, bot.color, false)
+  chair.traverse((child) => {
+    if (child.isMesh) child.userData.botId = spec.id
+  })
+
+  const stand = worldPoint(spec.x, spec.z, spec.yaw, 0.56, 0.05)
+  return {
+    x: spec.x,
+    z: spec.z,
+    yaw: spec.yaw,
+    stand: new THREE.Vector3(stand.x, 0, stand.z),
+    via: spec.via ? spec.via[0] : null,
+  }
+}
+
+function addWindows(parent, mats) {
+  const z = BOUNDS.z0 + 0.02
+  const x0 = BOUNDS.x0 + 0.5
+  const x1 = BOUNDS.x1 - 0.5
+  const width = x1 - x0
+  box(parent, width, 0.1, 0.12, 0, 0.28, z, mats.mullion, true)
+  box(parent, width, 0.1, 0.12, 0, 1.46, z, mats.mullion, true)
+  const glass = new THREE.Mesh(new THREE.PlaneGeometry(width, 1.08), mats.window)
+  glass.position.set(0, 0.87, z)
+  glass.receiveShadow = false
+  glass.castShadow = false
+  parent.add(glass)
+  for (let x = x0; x <= x1 + 0.01; x += 2.4) {
+    box(parent, 0.05, 1.2, 0.08, x, 0.88, z, mats.mullion, true)
+  }
+}
+
+function addGlassPanel(parent, width, height, x, y, z, ry, mats, frost) {
+  const material = frost ? mats.frost : mats.glass
+  const mesh = new THREE.Mesh(new THREE.PlaneGeometry(width, height), material)
+  mesh.position.set(x, y, z)
+  mesh.rotation.y = ry
+  mesh.castShadow = false
+  mesh.receiveShadow = false
+  parent.add(mesh)
+  return mesh
+}
+
+function addCornerOffice(parent, mats) {
+  const x = CORNER.x1
+  const z0 = CORNER.z0
+  const z1 = CORNER.z1
+  const door0 = DOOR_GAP.z0
+  const door1 = DOOR_GAP.z1
+  addGlassPanel(parent, door0 - z0 - 0.08, 0.5, x, 0.34, (z0 + door0) / 2, Math.PI / 2, mats, true)
+  addGlassPanel(parent, door0 - z0 - 0.08, 0.78, x, 1.02, (z0 + door0) / 2, Math.PI / 2, mats, false)
+  addGlassPanel(parent, z1 - door1 - 0.08, 0.5, x, 0.34, (door1 + z1) / 2, Math.PI / 2, mats, true)
+  addGlassPanel(parent, z1 - door1 - 0.08, 0.78, x, 1.02, (door1 + z1) / 2, Math.PI / 2, mats, false)
+  box(parent, 0.08, 1.5, 0.08, x, 0.75, door0, mats.frame, false)
+  box(parent, 0.08, 1.5, 0.08, x, 0.75, door1, mats.frame, false)
+  box(parent, 0.08, 0.08, door1 - door0, x, 1.46, (door0 + door1) / 2, mats.frame, false)
+
+  const south = CORNER.z1
+  const width = CORNER.x1 - CORNER.x0
+  const midX = (CORNER.x0 + CORNER.x1) / 2
+  box(parent, width, 0.08, 0.08, midX, 1.46, south, mats.frame, false)
+  box(parent, width, 0.08, 0.08, midX, 0.08, south, mats.frame, false)
+  addGlassPanel(parent, width - 0.1, 0.5, midX, 0.34, south, 0, mats, true)
+  addGlassPanel(parent, width - 0.1, 0.78, midX, 1.02, south, 0, mats, false)
+
+  const word = new THREE.Mesh(new THREE.PlaneGeometry(2.8, 0.72), basic(glassWordTexture()))
+  word.position.set(midX, 1.12, south + 0.06)
+  parent.add(word)
+
+  const shelf = new THREE.Group()
+  shelf.position.set(-20.5, 0, -16.15)
+  shelf.rotation.y = Math.PI / 2
+  parent.add(shelf)
+  box(shelf, 1.3, 0.08, 0.28, 0, 0.7, 0, std(WOOD_TOP, 0.8))
+  box(shelf, 1.3, 0.08, 0.28, 0, 1.05, 0, std(WOOD_TOP, 0.8))
+  box(shelf, 0.06, 1.15, 0.28, -0.64, 0.58, 0, std(WOOD_LEG, 0.75))
+  box(shelf, 0.06, 1.15, 0.28, 0.64, 0.58, 0, std(WOOD_LEG, 0.75))
+  const bookColors = ['#3c4f73', '#e09a4e', '#2f6f6a', '#d46a4c', '#6b4c9a', '#3e8f6e']
+  bookColors.forEach((color, index) => {
+    box(shelf, 0.08, 0.22, 0.18, -0.42 + index * 0.16, 0.85, 0, std(color, 0.8))
+  })
+}
+
+function addResearch(parent, research) {
+  const z = 2.35
+  const xs = [-10.1, -6.6, -3.2]
+  box(parent, 8.2, 0.08, 0.28, -6.6, 0.62, z + 0.16, std('#d9c7a4', 0.85))
+  for (const lx of [-10.2, -3.0]) {
+    box(parent, 0.06, 0.62, 0.22, lx, 0.31, z + 0.16, std(WOOD_LEG, 0.75))
+  }
+  xs.forEach((x, index) => {
+    box(parent, 1.15, 0.72, 0.05, x, 1.12, z, std('#1c1e20', 0.6))
+    const mat = researchScreenMaterial(index * 1.7)
+    const screen = new THREE.Mesh(new THREE.PlaneGeometry(1.02, 0.6), mat)
+    screen.position.set(x, 1.12, z + 0.03)
+    parent.add(screen)
+    research.push(mat)
+  })
+}
+
+function addServers(parent, leds) {
+  const spots = [[-19.4, 11.4], [-19.4, 13.8], [-17.1, 12.6]]
+  const bodyMat = std('#262b30', 0.55, { metalness: 0.08 })
+  spots.forEach(([x, z], rack) => {
+    const group = new THREE.Group()
+    group.position.set(x, 0, z)
+    parent.add(group)
+    box(group, 0.72, 1.42, 0.46, 0, 0.71, 0, bodyMat)
+    for (let row = 0; row < 6; row += 1) {
+      const led = std('#14211b', 0.4)
+      led.emissive = new THREE.Color('#8dceb0')
+      led.emissiveIntensity = 0.25
+      led.userData.phase = rack * 1.3 + row * 0.6
+      const lamp = box(group, 0.46, 0.018, 0.02, 0, 0.28 + row * 0.18, 0.24, led, false)
+      lamp.castShadow = false
+      leds.push(led)
+    }
+  })
+}
+
+function addUsage(parent) {
+  const group = new THREE.Group()
+  group.position.set(16.6, 0.95, 6.15)
+  parent.add(group)
+  box(group, 3.15, 1.7, 0.08, 0, 0, 0, std('#e7dccb', 0.9))
+  const face = new THREE.Mesh(
+    new THREE.PlaneGeometry(2.95, 1.52),
+    new THREE.MeshBasicMaterial({ map: usageTexture(), toneMapped: false }),
+  )
+  face.position.z = 0.045
+  group.add(face)
+  box(group, 0.08, 0.7, 0.08, -1.2, -0.7, 0, std(WOOD_LEG, 0.75))
+  box(group, 0.08, 0.7, 0.08, 1.2, -0.7, 0, std(WOOD_LEG, 0.75))
+}
+
+function addPlants(parent) {
+  const potMat = std('#c46a4a', 0.85)
+  const leafA = std('#6d8f5e', 0.9)
+  const leafB = std('#4f7048', 0.9)
+  for (const plant of PLANTS) {
+    const group = new THREE.Group()
+    group.position.set(plant.x, 0, plant.z)
+    group.scale.setScalar(plant.s)
+    parent.add(group)
+    cyl(group, 0.16, 0.13, 0.18, 0, 0.09, 0, potMat, 14)
+    const blobs = [
+      [0, 0.38, 0, 0.2, leafA],
+      [-0.12, 0.5, 0.04, 0.16, leafB],
+      [0.12, 0.52, -0.02, 0.15, leafA],
+      [0.02, 0.64, 0, 0.12, leafB],
+    ]
+    for (const [x, y, z, r, mat] of blobs) {
+      const leaf = new THREE.Mesh(new THREE.SphereGeometry(r, 14, 12), mat)
+      leaf.position.set(x, y, z)
+      leaf.castShadow = true
+      leaf.receiveShadow = true
+      group.add(leaf)
+    }
+  }
+}
+
+function addPinboard(parent) {
+  const board = new THREE.Mesh(
+    new THREE.BoxGeometry(1.15, 0.8, 0.04),
+    std('#c6a36a', 0.95),
+  )
+  board.position.set(-20.7, 1.05, -5.4)
+  board.rotation.y = Math.PI / 2
+  parent.add(board)
+  const notes = ['#f7f4ee', '#f3d7c6', '#e4efe4']
+  notes.forEach((color, index) => {
+    const note = box(parent, 0.18, 0.22, 0.02, -20.66, 1.12, -5.7 + index * 0.28, std(color, 0.9), false)
+    note.rotation.y = Math.PI / 2
+  })
+}
+
+function addTable(parent) {
+  const wood = std(WOOD_TOP, 0.78)
+  const { x, z } = REST_TABLE
+  box(parent, 1.2, 0.06, 0.7, x, 0.34, z, wood)
+  for (const [dx, dz] of [[-0.45, -0.25], [0.45, -0.25], [-0.45, 0.25], [0.45, 0.25]]) {
+    box(parent, 0.05, 0.32, 0.05, x + dx, 0.16, z + dz, std(WOOD_LEG, 0.75))
+  }
+  cyl(parent, 0.05, 0.045, 0.08, x - 0.28, 0.41, z - 0.05, std('#f4f1ea', 0.55), 12, true)
+  cyl(parent, 0.045, 0.04, 0.07, x + 0.28, 0.4, z + 0.08, std('#3c4f73', 0.55), 12, true)
+}
+
+function addMeeting(parent) {
+  const wood = std(WOOD_TOP, 0.75)
+  const { x, z } = MEETING_TABLE
+  box(parent, 2.7, 0.08, 1.15, x, 0.74, z, wood)
+  for (const [dx, dz] of [[-1.1, -0.4], [1.1, -0.4], [-1.1, 0.4], [1.1, 0.4]]) {
+    box(parent, 0.06, 0.7, 0.06, x + dx, 0.35, z + dz, std(WOOD_LEG, 0.72))
+  }
+  for (const seat of MEETING_SEATS) addChair(parent, seat.x, seat.z, seat.yaw, '#3e534c', true)
+}
+
+function addShelfUnit(parent, x, z, yaw) {
+  const group = new THREE.Group()
+  group.position.set(x, 0, z)
+  group.rotation.y = yaw
+  parent.add(group)
+  const wood = std('#8d684c', 0.75)
+  box(group, 1.5, 0.06, 0.32, 0, 0.42, 0, wood)
+  box(group, 1.5, 0.06, 0.32, 0, 0.86, 0, wood)
+  box(group, 1.5, 0.06, 0.32, 0, 1.28, 0, wood)
+  box(group, 0.06, 1.4, 0.32, -0.72, 0.7, 0, wood)
+  box(group, 0.06, 1.4, 0.32, 0.72, 0.7, 0, wood)
+  const colors = ['#3c4f73', '#e09a4e', '#2f6f6a', '#d46a4c', '#6b4c9a', '#8e949e', '#3e8f6e']
+  colors.forEach((color, index) => {
+    const shelf = index < 4 ? 0.58 : 1.02
+    box(group, 0.08, 0.22, 0.2, -0.5 + (index % 4) * 0.28, shelf, 0, std(color, 0.8))
+  })
+}
+
+function addLibrary(parent) {
+  addShelfUnit(parent, 11.4, -7.15, 0)
+  addShelfUnit(parent, 14.6, -7.15, 0)
+  addShelfUnit(parent, 18.2, -7.15, 0)
+  addShelfUnit(parent, 20.85, -4.2, Math.PI / 2)
+  const wood = std(WOOD_TOP, 0.78)
+  box(parent, 1.6, 0.07, 0.8, 15.2, 0.72, -3.4, wood)
+  for (const [dx, dz] of [[-0.65, -0.28], [0.65, -0.28], [-0.65, 0.28], [0.65, 0.28]]) {
+    box(parent, 0.06, 0.68, 0.06, 15.2 + dx, 0.34, -3.4 + dz, std(WOOD_LEG, 0.72))
+  }
+  box(parent, 0.28, 0.04, 0.2, 14.7, 0.78, -3.4, std('#f4f1ea', 0.9))
+  box(parent, 0.22, 0.04, 0.16, 15.5, 0.78, -3.25, std('#3c4f73', 0.85))
+}
+
+function addPantry(parent) {
+  const counter = std('#efe6d6', 0.82)
+  box(parent, 2.4, 0.08, 0.62, -19.6, 0.86, 3.2, counter)
+  box(parent, 2.4, 0.7, 0.5, -19.6, 0.4, 3.35, std('#c46a4a', 0.9))
+  cyl(parent, 0.07, 0.06, 0.1, -20.3, 0.96, 3.15, std('#f7f4ee', 0.5), 12, true)
+  cyl(parent, 0.06, 0.055, 0.09, -19.9, 0.95, 3.05, std('#3c4f73', 0.55), 12, true)
+  cyl(parent, 0.05, 0.045, 0.08, -19.2, 0.94, 3.2, std('#e09a4e', 0.55), 12, true)
+  box(parent, 0.55, 0.9, 0.5, -18.2, 0.45, 5.6, std('#d8d4ce', 0.7))
+}
+
+function addReception(parent) {
+  const wood = std(WOOD_TOP, 0.78)
+  box(parent, 2.2, 0.08, 0.62, 13.6, 0.9, 4.0, wood)
+  box(parent, 2.2, 0.84, 0.5, 13.6, 0.42, 4.15, std('#3e534c', 0.9))
+  box(parent, 0.34, 0.05, 0.24, 13.2, 0.98, 3.9, std('#f7f4ee', 0.85))
+}
+
+export function buildOffice(roster) {
+  const byId = new Map(roster.map((bot) => [bot.id, bot]))
+  const group = new THREE.Group()
+  const mats = {
+    floor: std(WOOD, 0.95),
+    desk: std(WOOD_TOP, 0.78),
+    deskLeg: std(WOOD_LEG, 0.74),
+    metal: std('#8d9492', 0.45, { metalness: 0.12 }),
+    bezel: std('#1c1e20', 0.55),
+    keys: std('#2c2e30', 0.7),
+    frame: std('#2a312f', 0.62),
+    mullion: std('#6d655c', 0.72),
+    wall: std('#f4f0e8', 0.97),
+    plinth: std('#cfc6ba', 0.98),
+    ground: std('#c5cfca', 1),
+    board: std('#f7f4ee', 0.92),
+    glass: new THREE.MeshStandardMaterial({
+      color: '#e7f1ef',
+      roughness: 0.08,
+      metalness: 0,
+      transparent: true,
+      opacity: 0.18,
+      depthWrite: false,
+      side: THREE.DoubleSide,
+    }),
+    frost: new THREE.MeshStandardMaterial({
+      color: '#f7fbfa',
+      roughness: 0.45,
+      transparent: true,
+      opacity: 0.5,
+      depthWrite: false,
+      side: THREE.DoubleSide,
+    }),
+    window: new THREE.MeshStandardMaterial({
+      color: '#d5e4ec',
+      roughness: 0.05,
+      transparent: true,
+      opacity: 0.16,
+      depthWrite: false,
+      side: THREE.DoubleSide,
+    }),
+  }
+
+  const width = BOUNDS.x1 - BOUNDS.x0
+  const depth = BOUNDS.z1 - BOUNDS.z0
+  const ground = new THREE.Mesh(new THREE.PlaneGeometry(160, 160), mats.ground)
+  ground.rotation.x = -Math.PI / 2
+  ground.position.y = -0.39
+  ground.receiveShadow = true
+  group.add(ground)
+
+  box(group, width + 1.3, 0.28, depth + 1.3, 0, -0.24, 0, mats.plinth)
+
+  const floor = new THREE.Mesh(new THREE.BoxGeometry(width, 0.1, depth), mats.floor)
+  floor.position.y = -0.05
+  floor.receiveShadow = true
+  floor.castShadow = false
+  group.add(floor)
+
+  for (const zone of ZONES) {
+    const carpet = new THREE.Mesh(
+      new THREE.BoxGeometry(zone.w, 0.018, zone.d),
+      std(zone.color, 0.98),
+    )
+    carpet.position.set(zone.x + zone.w / 2, 0.012, zone.z + zone.d / 2)
+    carpet.receiveShadow = true
+    carpet.castShadow = false
+    group.add(carpet)
+  }
+
+  addCarpetLabel(group, 'REPORTS TO MUSK', -16.5, -10.2, 5.2)
+  addCarpetLabel(group, 'MEETING', -3.4, -15.6, 4.2)
+  addCarpetLabel(group, 'PRODUCT', 13.2, -15.7, 4.4)
+  addCarpetLabel(group, 'ASSISTANT', -16.6, -6.4, 3.8)
+  addCarpetLabel(group, 'REST', -2.2, -6.9, 2.8)
+  addCarpetLabel(group, 'LIBRARY', 15.2, -6.5, 3.6)
+  addCarpetLabel(group, 'PANTRY', -17.6, 6.6, 2.8)
+  addCarpetLabel(group, 'MARKETS / QUANT', -6.6, 7.2, 5.2)
+  addCarpetLabel(group, 'REVIEWS', 5.0, 7.0, 3.4)
+  addCarpetLabel(group, 'RECEPTION', 16.4, 2.4, 3.6)
+  addCarpetLabel(group, 'OPEN-SOURCE STUDY', 4.2, 11.2, 8.6)
+
+  const wallH = 1.08
+  box(group, 0.14, wallH, depth, BOUNDS.x0, wallH / 2, 0, mats.wall)
+  box(group, 0.14, wallH, depth, BOUNDS.x1, wallH / 2, 0, mats.wall)
+  box(group, width, 0.56, 0.14, 0, 0.28, BOUNDS.z1, mats.wall)
+  addWindows(group, mats)
+
+  const sky = new THREE.Mesh(new THREE.PlaneGeometry(80, 28), new THREE.MeshBasicMaterial({ map: skyTexture(), toneMapped: false }))
+  sky.position.set(0, 8, -28)
+  group.add(sky)
+
+  addCornerOffice(group, mats)
+  addMeeting(group)
+  addLibrary(group)
+  addPantry(group)
+  addReception(group)
+  addPinboard(group)
+
+  const screens = []
+  const desks = new Map()
+  for (const spec of DESKS) {
+    const bot = byId.get(spec.id)
+    desks.set(spec.id, workstation(group, spec, bot, mats, screens))
+  }
+
+  const lounge = new Map()
+  const sofaGroups = new Map()
+  let chairIndex = 0
+  for (const seat of LOUNGE) {
+    lounge.set(seat.bot, { x: seat.x, z: seat.z, yaw: seat.yaw, low: seat.seat === 'cushion' })
+    if (seat.seat === 'sofa') {
+      if (!sofaGroups.has(seat.sofa)) sofaGroups.set(seat.sofa, [])
+      sofaGroups.get(seat.sofa).push(seat)
+    } else if (seat.seat === 'chair') {
+      addChair(group, seat.x, seat.z, seat.yaw, LOUNGE_CHAIR_COLORS[chairIndex % LOUNGE_CHAIR_COLORS.length], true)
+      chairIndex += 1
+    } else {
+      addCushion(group, seat)
+    }
+  }
+  for (const [name, seats] of sofaGroups) addSofa(group, seats, SOFA_COLORS[name])
+
+  addTable(group)
+  addPlants(group)
+
+  const research = []
+  addResearch(group, research)
+  const clock = clockCanvas()
+  clock.draw(new Date())
+  const clockMesh = new THREE.Mesh(
+    new THREE.CircleGeometry(0.22, 28),
+    new THREE.MeshBasicMaterial({ map: clock.tex, toneMapped: false }),
+  )
+  clockMesh.position.set(-6.6, 1.72, 2.42)
+  group.add(clockMesh)
+
+  const leds = []
+  addServers(group, leds)
+  addUsage(group)
+  for (const sign of SIGNS) addSign(group, sign, mats.frame, mats.board)
+
+  return {
+    group,
+    lounge,
+    desks,
+    screens,
+    research,
+    leds,
+    clock,
+    clockAt: 0,
+  }
+}
+
+export function updateOffice(office, time, stateById) {
+  for (const screen of office.screens) {
+    screen.mat.uniforms.uTime.value = time
+    const state = stateById.get(screen.id)
+    screen.mat.uniforms.uOn.value = state === 'working' ? 1 : 0
+  }
+  for (const material of office.research) material.uniforms.uTime.value = time
+  for (const led of office.leds) {
+    const pulse = 0.5 + 0.5 * Math.sin(time * 2.1 + led.userData.phase)
+    led.emissiveIntensity = 0.12 + pulse * 0.4
+  }
+  if (time - office.clockAt > 1) {
+    office.clock.draw(new Date())
+    office.clockAt = time
+  }
+}
