@@ -11,6 +11,7 @@ import { ROSTER, DEPARTMENTS } from './roster.js'
 import { PRESETS, assertLayout } from './layout.js'
 import { buildOffice, updateOffice } from './office.js'
 import { createBot, focusPoint, setBotHighlight, updateBot } from './bots.js'
+import { createCloudLayer, updateClouds } from './clouds.js'
 import { createStatus, wantsSimulation } from './status.js'
 import { createUI } from './ui.js'
 
@@ -114,6 +115,8 @@ async function main() {
   scene.traverse((object) => {
     if ((object.isMesh || object.isSprite) && object.userData.botId) pickables.push(object)
   })
+  const clouds = createCloudLayer()
+  scene.add(clouds.group)
 
   viewport.appendChild(renderer.domElement)
   const labels = new CSS2DRenderer()
@@ -348,6 +351,16 @@ async function main() {
     elapsed += dt
     status.tick(dt)
     for (const bot of bots) updateBot(bot, dt, elapsed, reduceMotion)
+    updateClouds(
+      clouds,
+      bots,
+      camera,
+      dt,
+      elapsed,
+      reduceMotion,
+      renderer.domElement.clientWidth,
+      renderer.domElement.clientHeight,
+    )
     stateById.clear()
     for (const bot of bots) stateById.set(bot.def.id, bot.state)
     updateOffice(office, elapsed, stateById)

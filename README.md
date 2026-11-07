@@ -1,6 +1,6 @@
 # Grok Bot 虛擬辦公室
 
-一間可以在瀏覽器裡看的 3D 辦公室。每位 Grok Bot 隊友是一個小巧、方塊感的角色，有自己的顏色、桌子，以及休息區的位子。全員向 **musk** 回報。
+一間可以在瀏覽器裡看的 3D 辦公室。每位 Grok Bot 隊友是一個小巧的人物，有自己的髮型、臉和衣服顏色，以及自己的桌子和休息區位子。全員向 **musk** 回報。
 
 這是獨立作品，**不是 xAI 的官方產品，也與 xAI 沒有從屬或合作關係**。名稱只用來稱呼這支機器人團隊。
 
@@ -38,6 +38,7 @@ npm run check
 - 開源研究的十位坐在南側一整排。
 - 預設每個人都是 **Idle**，坐在休息區。桌子是空的，名牌還在。沒有人在做「真的工作」。
 - 滑過角色會出現名字。點一下（或點名冊）會把鏡頭拉近，並跟著那位角色。
+- 兩個人說話時，中間會浮出對話雲；一個人自言自語也有。想事情是另一種思考雲：雲朵形，底下有一串小圓點連回頭上。休息時和模擬工作時都會出現。
 - 拖曳旋轉、滾輪或雙指縮放、右鍵平移。手機上有放大、縮小、回到全景。
 - 上方的分區按鈕把鏡頭帶到該區。
 - 接待處有一面「每週用量」牆，只寫稍後再接，**沒有任何數字**。
@@ -86,6 +87,7 @@ curl -s -X POST http://127.0.0.1:4317/api/status \
 | `src/main.js` | 場景、燈光、鏡頭、點選、動畫迴圈 |
 | `src/office.js` | 房間、桌子、交誼區、植物、伺服器、用量牆 |
 | `src/bots.js` | 角色造型與動作 |
+| `src/clouds.js` | 對話雲與思考雲 |
 | `src/roster.js` | 名單、顏色、職務、倉庫名稱 |
 | `src/layout.js` | 平面配置與鏡頭預設 |
 | `src/status.js` | 輪詢狀態、模擬模式 |
@@ -112,7 +114,9 @@ npm run dev
 
 Static build: `npm run build` then `npm run preview` (or host `dist/` yourself).
 
-Everyone starts **Idle** in the rest area. **musk** has the glass corner office; the team reports to musk, and Grok Bot is a personal assistant at a regular desk. Rooms you can frame from the chips: Meeting, Rest, Library, Pantry, Reception, research screens, and Servers.
+Everyone starts **Idle** in the rest area. Each bot is a small stylized person — hair, face, and clothes in their own color. **musk** has the glass corner office and reads as the suited lead; the team reports to musk, and Grok Bot is a personal assistant at a regular desk. Rooms you can frame from the chips: Meeting, Rest, Library, Pantry, Reception, research screens, and Servers.
+
+Speech clouds sit between people who are talking, and a person talking to themselves gets one too. Thoughts use a different cloud: a scalloped bubble with small circles trailing back to the head. Both show while the office is idle and during Simulate work.
 
 **Simulate work** (`?simulate=1`, `?demo`, or `#demo`) plays a busy day in that browser tab only. Working bots sit at desks or gather for a standup. Waiting bots wave by a desk or at the meeting-room doorway. Finished bots carry a folder into musk's office, then return to the rest area. It never writes `status.json` and never POSTs to `/api/status`. A **SIMULATION** badge stays on screen.
 
