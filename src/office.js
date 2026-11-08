@@ -296,8 +296,8 @@ function addServers(parent, leds) {
 
 function addUsage(parent) {
   const group = new THREE.Group()
-  group.position.set(16.05, 0.72, 6.85)
-  group.rotation.y = -Math.PI / 2
+  group.position.set(-12.55, 0.7, 7.35)
+  group.rotation.y = Math.PI / 2
   group.scale.setScalar(0.55)
   parent.add(group)
   box(group, 3.15, 1.7, 0.08, 0, 0, 0, std('#e7dccb', 0.9))
@@ -392,7 +392,7 @@ function addCoffeeRoom(parent) {
     cyl(bar, 0.045, 0.035, 0.07, cx, 0.9, 0.05, std(cup, 0.55), 10, true)
   }
 
-  const tables = [[9.65, 0.95], [9.9, 2.85]]
+  const tables = [[9.7, 1.2], [10.3, 6.75]]
   for (const [x, z] of tables) {
     cyl(parent, 0.32, 0.32, 0.06, x, 0.7, z, wood, 16, true)
     cyl(parent, 0.04, 0.05, 0.66, x, 0.33, z, std(WOOD_LEG, 0.7), 8, true)
@@ -404,7 +404,7 @@ function addCoffeeRoom(parent) {
   const lampMat = std('#ffe0bf', 0.35)
   lampMat.emissive = new THREE.Color('#ffb15a')
   lampMat.emissiveIntensity = 1.1
-  for (const [x, z] of [[9.65, 0.95], [9.9, 2.85], [12.05, 1.7]]) {
+  for (const [x, z] of [[9.7, 1.2], [10.3, 6.75], [12.05, 1.7]]) {
     cyl(parent, 0.012, 0.012, 0.55, x, 1.55, z, std('#5c4636', 0.6), 6, false)
     const shade = new THREE.Mesh(new THREE.SphereGeometry(0.1, 12, 10), lampMat)
     shade.position.set(x, 1.22, z)
@@ -459,9 +459,9 @@ function addPantry(parent) {
 
 function addReception(parent) {
   const wood = std(WOOD_TOP, 0.78)
-  box(parent, 1.35, 0.08, 0.48, 4.5, 0.86, 7.05, wood)
-  box(parent, 1.35, 0.72, 0.4, 4.5, 0.4, 7.15, std('#3e534c', 0.9))
-  box(parent, 0.28, 0.04, 0.18, 4.2, 0.94, 6.95, std('#f7f4ee', 0.85))
+  box(parent, 1.15, 0.08, 0.42, -10.35, 0.86, 7.55, wood)
+  box(parent, 1.15, 0.72, 0.36, -10.35, 0.4, 7.65, std('#3e534c', 0.9))
+  box(parent, 0.24, 0.04, 0.16, -10.55, 0.94, 7.45, std('#f7f4ee', 0.85))
 }
 
 export function buildOffice(roster) {
@@ -535,11 +535,12 @@ export function buildOffice(roster) {
   }
 
   addCarpetLabel(group, 'REPORTS TO MUSK', -0.4, -6.7, 5.4)
-  addCarpetLabel(group, 'MEETING', 5.75, 3.2, 2.6)
-  addCarpetLabel(group, 'COFFEE', 10.6, 3.25, 2.5)
-  addCarpetLabel(group, 'PRINTERS', 14.7, 3.2, 2.6)
-  addCarpetLabel(group, 'DESKS', -4.2, 1.75, 3.1)
-  addCarpetLabel(group, 'LOBBY', 4.6, 6.15, 3.2)
+  addCarpetLabel(group, 'MEETING', 6.6, 6.7, 2.4)
+  addCarpetLabel(group, 'COFFEE', 10.7, 7.5, 2.4)
+  addCarpetLabel(group, 'PRINTERS', 14.7, 7.4, 2.3)
+  addCarpetLabel(group, 'DESKS', -4.2, 2.5, 3.1)
+  addCarpetLabel(group, 'LOBBY', -9.5, 7.7, 2.3)
+  addCarpetLabel(group, 'REST', -0.3, 7.55, 2.3)
   addCarpetLabel(group, 'LIBRARY', 8.8, -7.7, 3.2)
   addCarpetLabel(group, 'SNACKS', -9.1, -2.15, 2.6)
 
@@ -556,6 +557,7 @@ export function buildOffice(roster) {
   addCornerOffice(group, mats)
   addMeeting(group)
   addCoffeeRoom(group)
+  addRestRoom(group)
   addLibrary(group)
   addPantry(group)
   addReception(group)
@@ -594,15 +596,15 @@ export function buildOffice(roster) {
   clock.draw(new Date())
   const clockMat = new THREE.MeshBasicMaterial({ map: clock.tex, toneMapped: false })
   const clockMesh = new THREE.Mesh(new THREE.CircleGeometry(0.28, 28), clockMat)
-  clockMesh.position.set(2.15, 1.48, 8.35)
+  clockMesh.position.set(-11.7, 1.42, 8.4)
   group.add(clockMesh)
-  const lobbyPost = cyl(group, 0.04, 0.05, 1.15, 2.15, 0.55, 8.35, mats.frame, 8)
+  const lobbyPost = cyl(group, 0.04, 0.05, 1.15, -11.7, 0.55, 8.4, mats.frame, 8)
   lobbyPost.castShadow = true
 
   const digital = digitalClockTexture()
   digital.draw('9:00 AM', 'OFFICE TIME')
   const board = new THREE.Group()
-  board.position.set(3.85, 1.35, 8.35)
+  board.position.set(-9.85, 1.28, 8.4)
   group.add(board)
   box(board, 1.45, 0.52, 0.06, 0, 0, 0, std('#24312e', 0.6))
   const face = new THREE.Mesh(
@@ -731,6 +733,22 @@ function woodSafe() {
   return std('#8d684c', 0.75)
 }
 
+function addRestRoom(parent) {
+  const lampMat = std('#ffe7cf', 0.4)
+  lampMat.emissive = new THREE.Color('#ffc48a')
+  lampMat.emissiveIntensity = 0.7
+  for (const [x, z] of [[-2.4, 7.45], [2.1, 7.55]]) {
+    cyl(parent, 0.012, 0.012, 0.5, x, 1.5, z, std('#6a5344', 0.6), 6, false)
+    const shade = new THREE.Mesh(new THREE.SphereGeometry(0.09, 12, 10), lampMat)
+    shade.position.set(x, 1.18, z)
+    shade.scale.y = 0.65
+    parent.add(shade)
+    const bulb = new THREE.PointLight('#ffc48a', 0.32, 3.4, 2)
+    bulb.position.set(x, 1.1, z)
+    parent.add(bulb)
+  }
+}
+
 function addPrintersRoom(parent) {
   const copier = addCopier(parent)
   const mate = new THREE.Group()
@@ -740,7 +758,7 @@ function addPrintersRoom(parent) {
   box(mate, 0.62, 0.58, 0.42, 0, 0.42, 0, std('#ece7df', 0.75), true)
   box(mate, 0.5, 0.06, 0.36, 0, 0.74, 0, std('#3e534c', 0.65), true)
   box(mate, 0.28, 0.16, 0.22, 0.55, 0.2, 0, std('#f7f1e6', 0.8), true)
-  for (const [px, pz, tall] of [[13.55, 0.55, 0.28], [13.55, 0.85, 0.18], [14.55, 3.35, 0.22]]) {
+  for (const [px, pz, tall] of [[13.55, 0.55, 0.28], [13.55, 0.85, 0.18], [14.55, 7.35, 0.22]]) {
     box(parent, 0.32, 0.04, 0.24, px, 0.16 + tall, pz, std('#fffaf3', 0.9), false)
     box(parent, 0.34, tall, 0.26, px, tall / 2, pz, std('#d9c7a4', 0.85), true)
   }

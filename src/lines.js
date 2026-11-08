@@ -167,7 +167,7 @@ export function thinkLine(bot, bucket) {
   }
   if (bot.place === 'copy') return pick(['These copies are for standup.', 'One page on the PR, not a book.'], bot, bucket)
   if (bot.place === 'library') return pick([`Library: next step for ${bit}.`, 'Read the failure, skip the trivia.', 'An open PR needs a note, not a number.'], bot, bucket)
-  if (bot.place === 'snack' || bot.place === 'pantry' || bot.place === 'lobby' || bot.place === 'rest') {
+  if (bot.place === 'snack' || bot.place === 'pantry' || bot.place === 'lobby' || bot.place === 'rest' || bot.place === 'lounge') {
     return pick([
       `Chewing on ${bit}.`,
       'If CI is red, I go back to the desk.',

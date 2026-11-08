@@ -210,7 +210,7 @@ function focusRow(bot, minute) {
   if (roll < 0.64) return { state: 'working', place: 'library', fact, task: `Reading the plan for ${bitOf(bot.id)}`, spot: spot % 3, cup: 'none' }
   if (roll < 0.8) return { state: 'idle', place: 'snack', fact, task: `Snack break, still on ${bitOf(bot.id)}`, spot: spot % 7, cup: roll < 0.72 ? 'sip' : 'hand' }
   if (roll < 0.9) return { state: 'idle', place: 'pantry', fact, task: 'Coffee, then back to the plan', spot: spot % 3, cup: 'hand' }
-  return { state: 'idle', place: 'lobby', fact, task: 'Lobby pause on the plan', spot: 0, cup: 'sip' }
+  return { state: 'idle', place: 'lounge', fact, task: 'Resting with the plan', spot: spot % 4, cup: 'sip' }
 }
 
 function row(bot, extra) {
@@ -239,7 +239,11 @@ export function workdayAt(minute, intel = new Map()) {
     let next = row(bot, { beat })
     if (bot.id === 'musk') {
       if (minute < 9 * 60 + 6 || minute >= 17 * 60 + 35) {
-        next = row(bot, { beat, place: 'lobby', task: minute < 10 * 60 ? 'Opening the office' : 'Wind-down in the lobby' })
+        next = row(bot, {
+          beat,
+          place: minute < 10 * 60 ? 'lobby' : 'lounge',
+          task: minute < 10 * 60 ? 'Opening the office' : 'Wind-down in the rest room',
+        })
       } else {
         next = row(bot, {
           beat,
@@ -310,7 +314,7 @@ export function workdayAt(minute, intel = new Map()) {
         if (meet >= 0) {
           next = row(bot, { beat, state: 'working', place: 'meeting', meetIndex: meet, task: 'Standup: plan, PRs, and CI', fact: 'plan' })
         } else if (unit(bot.id) < 0.35) {
-          next = row(bot, { beat, place: 'lobby', cup: 'sip', task: 'Waiting on standup notes' })
+          next = row(bot, { beat, place: 'lounge', cup: 'sip', task: 'Waiting in the rest room' })
         } else {
           next = row(bot, { beat, ...focusRow(bot, minute), beat })
         }
@@ -318,13 +322,13 @@ export function workdayAt(minute, intel = new Map()) {
         const u = unit(bot.id)
         next = row(bot, {
           beat,
-          place: u < 0.4 ? 'lobby' : u < 0.75 ? 'snack' : 'pantry',
+          place: u < 0.28 ? 'lounge' : u < 0.5 ? 'lobby' : u < 0.75 ? 'snack' : 'pantry',
           spot: Math.floor(u * 7),
           cup: 'sip',
           task: 'Lunch. The plan can sit.',
         })
       } else if (beat === 'wind') {
-        next = row(bot, { beat, place: 'lobby', cup: unit(bot.id) < 0.4 ? 'sip' : 'none', task: 'Wind-down. musk has the updates.' })
+        next = row(bot, { beat, place: 'lounge', spot: Math.floor(unit(bot.id) * 4), cup: unit(bot.id) < 0.4 ? 'sip' : 'none', task: 'Wind-down in the rest room.' })
       } else {
         next = row(bot, { beat, ...focusRow(bot, minute) })
       }

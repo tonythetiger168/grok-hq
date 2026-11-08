@@ -4,6 +4,7 @@ import { ZONE_CHIPS } from './layout.js'
 const WHERE = {
   rest: 'In the lobby.',
   lobby: 'In the lobby.',
+  lounge: 'In the rest room.',
   desk: 'At their desk.',
   'musk-desk': 'In the corner office.',
   'wait-desk': 'Waiting by their desk.',
@@ -247,7 +248,7 @@ export function createUI({ onSimulate, onDay, onOps, onZone, onToggleRoster, onS
           : next.simulating
             ? 'Browser-only animation. Nothing is saved.'
             : tally.idle === next.bots.length
-              ? `All ${next.bots.length} idle · in the lobby`
+              ? `All ${next.bots.length} idle · lobby and rest room`
               : `${tally.working} working · ${tally.waiting} waiting · ${tally.error} stuck · ${tally.done} done`
       if (sign !== signature) {
         signature = sign

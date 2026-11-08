@@ -368,7 +368,7 @@ async function main() {
   else if (wantsDay()) status.setMode('day', dayStartFromUrl())
   else if (wantsSimulation()) status.setMode('sim')
   const params = new URLSearchParams(location.search)
-  const zoneAlias = { lounge: 'rest', lobby: 'rest' }
+  const zoneAlias = { lobby: 'rest' }
   const zoneParam = zoneAlias[params.get('zone')] || params.get('zone')
   if (zoneParam && PRESETS[zoneParam]) {
     ui.setZone(zoneParam)

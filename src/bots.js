@@ -3,7 +3,7 @@ import { CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js'
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js'
 import { damp, dampAngle, std } from './geom.js'
 import { glyphTexture } from './paint.js'
-import { COPY_SPOTS, LIBRARY_SPOTS, MEETING_SEATS, PANTRY_SPOTS, routeThrough, SNACK_SPOTS, VISITORS, WAIT_SPOTS } from './layout.js'
+import { COPY_SPOTS, LIBRARY_SPOTS, MEETING_SEATS, PANTRY_SPOTS, REST_SPOTS, routeThrough, SNACK_SPOTS, VISITORS, WAIT_SPOTS } from './layout.js'
 
 const HIP_STAND = 0.48
 const HIP_SIT = 0.4
@@ -819,6 +819,10 @@ function spotFor(bot, place) {
   if (place === 'copy') {
     const spot = spotGoal(COPY_SPOTS, bot.spot)
     return { ...spot, pose: 'stand', low: false }
+  }
+  if (place === 'lounge') {
+    const spot = spotGoal(REST_SPOTS, bot.spot)
+    return { ...spot, low: false }
   }
   return {
     dest: new THREE.Vector3(bot.lounge.x, 0, bot.lounge.z),
