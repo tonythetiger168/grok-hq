@@ -2,6 +2,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { defineConfig } from 'vite'
 import { blankBots, mergeStatus } from './src/status-model.js'
+import { enrichBots, githubOps } from './scripts/github-ops.mjs'
 
 function loadSeed() {
   try {
@@ -81,8 +82,39 @@ function statusApi() {
     res.end()
   }
 
+  async function opsHandler(req, res) {
+    res.setHeader('Access-Control-Allow-Origin', '*')
+    res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS')
+    res.setHeader('Cache-Control', 'no-store')
+    if (req.method === 'OPTIONS') {
+      res.statusCode = 204
+      res.end()
+      return
+    }
+    if (req.method !== 'GET') {
+      res.statusCode = 405
+      res.setHeader('Allow', 'GET, OPTIONS')
+      res.end()
+      return
+    }
+    let github = { map: {}, note: 'GitHub could not be read. PR and CI come only from status fields.', github: 'unavailable' }
+    try {
+      github = await githubOps()
+    } catch {
+      github = { map: {}, note: 'GitHub could not be read. PR and CI come only from status fields.', github: 'unavailable' }
+    }
+    res.setHeader('Content-Type', 'application/json')
+    res.end(JSON.stringify({
+      source: 'ops',
+      github: github.github || 'unavailable',
+      note: github.note,
+      bots: enrichBots(bots, github),
+    }))
+  }
+
   const attach = (server) => {
     server.middlewares.use('/api/status', handler)
+    server.middlewares.use('/api/ops', opsHandler)
   }
 
   return {

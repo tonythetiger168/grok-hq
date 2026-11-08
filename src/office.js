@@ -730,8 +730,12 @@ function addCupProps(parent) {
 export function updateOffice(office, time, stateById, clockSample = null, copying = false) {
   for (const screen of office.screens) {
     screen.mat.uniforms.uTime.value = time
-    const state = stateById.get(screen.id)
-    screen.mat.uniforms.uOn.value = state === 'working' ? 1 : 0
+    const info = stateById.get(screen.id)
+    const state = info && typeof info === 'object' ? info.state : info
+    const ci = info && typeof info === 'object' ? (info.ci || '') : ''
+    const mark = ci === 'green' ? 1 : ci === 'failed' ? 2 : ci === 'pending' ? 3 : 0
+    screen.mat.uniforms.uOn.value = state === 'working' || mark > 0 ? 1 : 0
+    if (screen.mat.uniforms.uMark) screen.mat.uniforms.uMark.value = mark
   }
   for (const material of office.research) material.uniforms.uTime.value = time
   for (const led of office.leds) {

@@ -22,7 +22,7 @@ function esc(value) {
   ))
 }
 
-export function createUI({ onSimulate, onDay, onZone, onToggleRoster, onSelect }) {
+export function createUI({ onSimulate, onDay, onOps, onZone, onToggleRoster, onSelect }) {
   const root = document.getElementById('hud')
   root.innerHTML = `
     <div class="left-col">
@@ -38,6 +38,7 @@ export function createUI({ onSimulate, onDay, onZone, onToggleRoster, onSelect }
             <span id="day-time">9:00 AM</span>
             <span class="day-beat" id="day-beat">Morning</span>
           </div>
+          <button type="button" class="primary" id="ops" aria-pressed="false">Operations</button>
           <button type="button" class="primary" id="sim" aria-pressed="false">Simulate work</button>
           <button type="button" class="primary" id="day" aria-pressed="false">Workday</button>
         </div>
@@ -58,6 +59,7 @@ export function createUI({ onSimulate, onDay, onZone, onToggleRoster, onSelect }
 
   const els = {
     badge: root.querySelector('#badge'),
+    ops: root.querySelector('#ops'),
     sim: root.querySelector('#sim'),
     day: root.querySelector('#day'),
     dayClock: root.querySelector('#day-clock'),
@@ -109,6 +111,9 @@ export function createUI({ onSimulate, onDay, onZone, onToggleRoster, onSelect }
     onZone(zone)
   })
 
+  els.ops.addEventListener('click', () => {
+    onOps(els.ops.getAttribute('aria-pressed') !== 'true')
+  })
   els.sim.addEventListener('click', () => {
     onSimulate(els.sim.getAttribute('aria-pressed') !== 'true')
   })
@@ -177,9 +182,18 @@ export function createUI({ onSimulate, onDay, onZone, onToggleRoster, onSelect }
       : 'No task'
     const simNote = snapshot.day
       ? '<p class="sim-note">Workday story in this browser. It is not written to status.</p>'
-      : snapshot.simulating
-        ? '<p class="sim-note">Shown only while Simulate work is on. It is not written to status.</p>'
-        : ''
+      : snapshot.mode === 'ops'
+        ? '<p class="sim-note">Operations. Typed work stays in this browser. PR and CI are labeled GitHub or status.</p>'
+        : snapshot.simulating
+          ? '<p class="sim-note">Shown only while Simulate work is on. It is not written to status.</p>'
+          : ''
+    const prLine = bot.pr && bot.pr !== 'none'
+      ? `<div><dt>PR</dt><dd>${esc(bot.pr)}${bot.prTitle ? ` · ${esc(bot.prTitle)}` : ''} · ${bot.prSource === 'github' ? 'GitHub' : 'status'}</dd></div>`
+      : ''
+    const ciLine = bot.ci && bot.ci !== 'none'
+      ? `<div><dt>CI</dt><dd>${esc(bot.ci)} · ${bot.ciSource === 'github' ? 'GitHub' : 'status'}</dd></div>`
+      : ''
+    const planLine = bot.plan ? `<div><dt>Plan</dt><dd>${esc(bot.plan)}</dd></div>` : ''
     els.detail.innerHTML = `
       <p class="eyebrow">${esc(dept?.label || '')}</p>
       <h2>${esc(bot.name)}</h2>
@@ -188,6 +202,9 @@ export function createUI({ onSimulate, onDay, onZone, onToggleRoster, onSelect }
         <div><dt>State</dt><dd class="state is-${esc(bot.state)}">${esc(labelState(bot.state))}</dd></div>
         <div><dt>Where</dt><dd>${esc(WHERE[bot.place] || WHERE.rest)}</dd></div>
         <div><dt>Task</dt><dd>${task}</dd></div>
+        ${planLine}
+        ${prLine}
+        ${ciLine}
         <div><dt>Desk</dt><dd>${esc(bot.focus)}</dd></div>
         ${bot.id === 'musk'
           ? '<div><dt>Reports</dt><dd>Everyone reports to musk.</dd></div>'
@@ -204,10 +221,13 @@ export function createUI({ onSimulate, onDay, onZone, onToggleRoster, onSelect }
     reset: els.reset,
     update(next) {
       snapshot = next
-      const sign = next.bots.map((bot) => `${bot.id}:${bot.state}:${bot.place}:${bot.task}`).join('|') + next.badge + next.note
+      const sign = next.bots.map((bot) => `${bot.id}:${bot.state}:${bot.place}:${bot.task}:${bot.pr || ''}:${bot.ci || ''}:${bot.prSource || ''}:${bot.ciSource || ''}`).join('|') + next.badge + next.note
       els.badge.textContent = next.badge
       els.badge.title = next.note
-      els.badge.className = `badge is-${next.day ? 'day' : next.badge === 'SIMULATION' ? 'sim' : next.badge === 'LIVE' ? 'live' : 'idle'}`
+      const tone = next.day ? 'day' : next.mode === 'ops' ? 'ops' : next.badge === 'SIMULATION' ? 'sim' : next.badge === 'LIVE' ? 'live' : 'idle'
+      els.badge.className = `badge is-${tone}`
+      els.ops.setAttribute('aria-pressed', String(next.mode === 'ops'))
+      els.ops.textContent = next.mode === 'ops' ? 'Stop operations' : 'Operations'
       els.sim.setAttribute('aria-pressed', String(next.mode === 'sim'))
       els.sim.textContent = next.mode === 'sim' ? 'Stop simulation' : 'Simulate work'
       els.day.setAttribute('aria-pressed', String(!!next.day))
@@ -217,15 +237,18 @@ export function createUI({ onSimulate, onDay, onZone, onToggleRoster, onSelect }
       els.dayBeat.textContent = next.beatLabel || ''
       document.body.classList.toggle('simulating', next.mode === 'sim')
       document.body.classList.toggle('day', !!next.day)
+      document.body.classList.toggle('ops', next.mode === 'ops')
       const tally = { idle: 0, working: 0, waiting: 0, error: 0, done: 0 }
       for (const bot of next.bots) tally[bot.state] += 1
       els.count.textContent = next.day
         ? 'Click an idle bot to assign work. Nothing is saved.'
-        : next.simulating
-        ? 'Browser-only animation. Nothing is saved.'
-        : tally.idle === next.bots.length
-          ? `All ${next.bots.length} idle · in the lobby`
-          : `${tally.working} working · ${tally.waiting} waiting · ${tally.error} stuck · ${tally.done} done`
+        : next.mode === 'ops'
+          ? 'Live status. Click an idle bot to assign. Nothing is written.'
+          : next.simulating
+            ? 'Browser-only animation. Nothing is saved.'
+            : tally.idle === next.bots.length
+              ? `All ${next.bots.length} idle · in the lobby`
+              : `${tally.working} working · ${tally.waiting} waiting · ${tally.error} stuck · ${tally.done} done`
       if (sign !== signature) {
         signature = sign
         renderRoster(next.bots)

@@ -95,11 +95,14 @@ const MEET_REPLY = {
 }
 
 export function pairLines(context, a, b, bucket) {
-  const fact = a.fact && a.fact === b.fact ? a.fact : (b.fact || a.fact)
+  const fact = a.fact && a.fact !== 'plan'
+    ? a.fact
+    : (b.fact && b.fact !== 'plan' ? b.fact : (a.fact || b.fact || 'plan'))
   if (fact && fact !== 'plan' && (context === 'rest' || context === 'snack' || context === 'lobby' || a.place === 'snack' || a.place === 'library')) {
     return exchange(fact, a, b)
   }
   if (a.place === 'meeting' || context === 'meet') {
+    if (fact && fact !== 'plan') return exchange(fact, a, b)
     const ask = pick(MEET[a.def.id] || ['Anything blocked on the pass?', 'Is CI green or red?'], a, bucket)
     const reply = pick(MEET_REPLY[b.def.id] || ['I will take a piece and report.', 'PR stays where it is.'], b, bucket + 1)
     return [ask, reply]

@@ -12,7 +12,7 @@ import { PRESETS, assertLayout } from './layout.js'
 import { buildOffice, updateOffice } from './office.js'
 import { createBot, focusPoint, setBotHighlight, updateBot } from './bots.js'
 import { createCloudLayer, updateClouds } from './clouds.js'
-import { createStatus, dayStartFromUrl, wantsDay, wantsSimulation } from './status.js'
+import { createStatus, dayStartFromUrl, wantsDay, wantsOps, wantsSimulation } from './status.js'
 import { createUI } from './ui.js'
 
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -273,15 +273,29 @@ async function main() {
   scene.add(assign.object)
 
   const ui = createUI({
+    onOps(on) {
+      status.setMode(on ? 'ops' : 'off')
+      if (on) status.poll()
+      const url = new URL(location.href)
+      if (on) url.searchParams.set('ops', '1')
+      else url.searchParams.delete('ops')
+      url.searchParams.delete('simulate')
+      url.searchParams.delete('day')
+      url.searchParams.delete('at')
+      url.searchParams.delete('demo')
+      if (url.hash === '#demo' || url.hash === '#simulate' || url.hash === '#day' || url.hash === '#ops') url.hash = ''
+      history.replaceState(null, '', url)
+    },
     onSimulate(on) {
       status.setMode(on ? 'sim' : 'off')
       const url = new URL(location.href)
       if (on) url.searchParams.set('simulate', '1')
       else url.searchParams.delete('simulate')
       url.searchParams.delete('day')
+      url.searchParams.delete('ops')
       url.searchParams.delete('at')
       url.searchParams.delete('demo')
-      if (url.hash === '#demo' || url.hash === '#simulate' || url.hash === '#day') url.hash = ''
+      if (url.hash === '#demo' || url.hash === '#simulate' || url.hash === '#day' || url.hash === '#ops') url.hash = ''
       history.replaceState(null, '', url)
     },
     onDay(on) {
@@ -290,9 +304,10 @@ async function main() {
       if (on) url.searchParams.set('day', '1')
       else url.searchParams.delete('day')
       url.searchParams.delete('simulate')
+      url.searchParams.delete('ops')
       url.searchParams.delete('demo')
       url.searchParams.delete('at')
-      if (url.hash === '#demo' || url.hash === '#simulate' || url.hash === '#day') url.hash = ''
+      if (url.hash === '#demo' || url.hash === '#simulate' || url.hash === '#day' || url.hash === '#ops') url.hash = ''
       history.replaceState(null, '', url)
     },
     onZone(id) {
@@ -349,7 +364,8 @@ async function main() {
     refreshLabels()
   })
 
-  if (wantsDay()) status.setMode('day', dayStartFromUrl())
+  if (wantsOps()) status.setMode('ops')
+  else if (wantsDay()) status.setMode('day', dayStartFromUrl())
   else if (wantsSimulation()) status.setMode('sim')
   const params = new URLSearchParams(location.search)
   const zoneAlias = { lounge: 'rest', lobby: 'rest' }
@@ -463,7 +479,7 @@ async function main() {
       { onShare: (id, fact) => status.hear(id, fact) },
     )
     stateById.clear()
-    for (const bot of bots) stateById.set(bot.def.id, bot.state)
+    for (const bot of bots) stateById.set(bot.def.id, { state: bot.state, ci: bot.ci })
     const copying = bots.some((bot) => bot.place === 'copy' && !bot.moving)
     updateOffice(office, elapsed, stateById, status.clockSample(), copying)
     if (follow) {

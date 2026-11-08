@@ -3,8 +3,9 @@ import { DEPARTMENTS, ROSTER } from '../src/roster.js'
 import { assertLayout } from '../src/layout.js'
 import { blankBots, mergeStatus, STATES } from '../src/status-model.js'
 import { formatOfficeTime, workdayAt } from '../src/day.js'
+import { factFromOps, summarizePulls } from '../src/ops-summary.js'
+import { arrangeOps, createStatus } from '../src/status.js'
 import { routeThrough } from '../src/layout.js'
-import { createStatus } from '../src/status.js'
 
 assertLayout(ROSTER)
 
@@ -31,11 +32,48 @@ for (const bot of seeded.bots) {
   if (!names.has(bot.name)) throw new Error(`Unexpected name ${bot.name}`)
 }
 
-const updated = mergeStatus(seeded.bots, { name: 'quant', state: 'working', task: '  reading notes \n' })
+const updated = mergeStatus(seeded.bots, { name: 'quant', state: 'working', task: '  reading notes \n', pr: 'open', ci: 'failed', plan: 'review the pass' })
 const quant = updated.bots.find((bot) => bot.name === 'quant')
 if (quant.state !== 'working' || quant.task !== 'reading notes') {
   throw new Error('POST merge failed')
 }
+if (quant.pr !== 'open' || quant.ci !== 'failed' || quant.plan !== 'review the pass') {
+  throw new Error('PR, CI, and plan should be kept')
+}
+const kept = mergeStatus(updated.bots, { name: 'quant', state: 'done', task: 'report' })
+const keptQuant = kept.bots.find((bot) => bot.name === 'quant')
+if (keptQuant.pr !== 'open' || keptQuant.ci !== 'failed' || keptQuant.plan !== 'review the pass') {
+  throw new Error('Omitting PR or CI should keep the previous values')
+}
+const badPr = mergeStatus(blankBots(), { name: 'quant', state: 'working', pr: '42' })
+if (!badPr.errors.length || badPr.bots.find((bot) => bot.name === 'quant').state !== 'idle') {
+  throw new Error('A bad PR value should be rejected')
+}
+const openFail = summarizePulls([{ state: 'OPEN', title: 'Fix clock', statusCheckRollup: [{ conclusion: 'FAILURE' }] }])
+if (openFail.pr !== 'open' || openFail.ci !== 'failed' || /http/.test(JSON.stringify(openFail))) {
+  throw new Error('Open PR with a failed check')
+}
+const merged = summarizePulls([{ state: 'MERGED', title: 'Ship', statusCheckRollup: [{ conclusion: 'SUCCESS' }] }])
+if (merged.pr !== 'merged' || merged.ci !== 'green') throw new Error('Merged PR should stay a word, not a number')
+if (summarizePulls([]).pr !== 'none') throw new Error('No pulls is none')
+if (factFromOps('open', 'failed') !== 'ci-failed') throw new Error('Failed CI wins')
+if (factFromOps('merged', 'green') !== 'pr-closed') throw new Error('Merged is closed for the office')
+if (factFromOps('open', 'green') !== 'ci-green') throw new Error('Open and green')
+if (factFromOps('', '') !== 'plan') throw new Error('Missing ops fields are a plan')
+const opsRows = arrangeOps([
+  { id: 'musk', state: 'idle', pr: '', ci: '' },
+  { id: 'quant', state: 'done', pr: 'open', ci: 'green', task: 'Reporting' },
+  { id: 'helios-forge', state: 'working', pr: 'open', ci: 'failed', task: 'Pass' },
+  { id: 'aevum', state: 'working', pr: 'merged', ci: 'green', task: 'Pass' },
+  { id: 'grok-bot', state: 'idle', pr: '', ci: '' },
+])
+const handing = opsRows.filter((row) => row.place === 'handoff')
+if (handing.length !== 1 || handing[0].id !== 'quant' || handing[0].fact !== 'ci-green') {
+  throw new Error('Operations should send one done bot to musk')
+}
+if (opsRows.filter((row) => row.place === 'meeting').length !== 2) throw new Error('Operations standup')
+if (opsRows.find((row) => row.id === 'musk').place !== 'musk-desk') throw new Error('musk should read from the office')
+if (opsRows.find((row) => row.id === 'grok-bot').place !== 'rest') throw new Error('Idle stays in the lobby')
 const reset = mergeStatus(updated.bots, { reset: true })
 if (reset.bots.some((bot) => bot.state !== 'idle')) throw new Error('Reset failed')
 const rejected = mergeStatus(blankBots(), { name: 'nobody', state: 'working' })

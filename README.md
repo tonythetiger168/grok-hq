@@ -58,6 +58,20 @@ npm run check
 
 畫面頂部會出現 **SIMULATION** 徽章，還有一條橘色細線。這段動畫**不會**寫入 `status.json`，也不會對 `/api/status` 送出資料。按「Stop simulation」之後，畫面回到伺服器或靜態檔上的狀態。
 
+## 營運
+
+「Operations」按鈕，或網址 `?ops=1`，把辦公室當成控制室。人的位置跟 `GET /api/status`（沒有 API 就用 `status.json`）的 `idle`、`working`、`waiting`、`error`、`done` 走：做事的人在桌子或站會，卡住的人停在桌邊，做完的人一次一個去找 musk。名冊裡有倉庫的人，開發伺服器會用 GitHub 讀最近的 PR 是開著、關掉還是已合併，以及 CI 是綠的、失敗還是還在跑。讀不到 GitHub 時，只用狀態裡寫明的 `pr`、`ci`、`plan`，畫面上會標 **status**，不會假裝那是即時數字。
+
+桌子螢幕下方有一條顏色：綠、紅、黃。點人名可以看到 PR、CI，以及來源是 GitHub 還是 status。musk 的決定、對話雲、還有你在頭頂雲朵打的工作，都用同一組詞：計畫、PR、CI、下一步。打字派工只留在這個分頁，不會 POST。Workday 和 Simulate 也不會寫狀態。
+
+```bash
+curl -s -X POST http://127.0.0.1:4317/api/status \
+  -H 'content-type: application/json' \
+  -d '{"name":"quant","state":"done","task":"reporting the open PR","pr":"open","ci":"green","plan":"review"}'
+```
+
+`pr` 是 `open`、`closed`、`merged`、`none`。`ci` 是 `green`、`failed`、`pending`、`none`。POST 若省略這三欄，會留下上一次的值。
+
 ## 接上真正的狀態
 
 程式先試 `GET /api/status`，失敗再讀 `/status.json`。格式：
@@ -65,12 +79,12 @@ npm run check
 ```json
 {
   "bots": [
-    { "name": "quant", "state": "working", "task": "reading the repo" }
+    { "name": "quant", "state": "working", "task": "reading the repo", "plan": "review", "pr": "open", "ci": "green" }
   ]
 }
 ```
 
-`state` 只能是 `idle`、`working`、`waiting`、`error`、`done`。沒寫到的人維持 `idle`。`task` 最長 140 字。名字要和名冊完全一致（大小寫不拘），例如 `Grok Bot`、`dr eggbot`、`helios forge`。
+`state` 只能是 `idle`、`working`、`waiting`、`error`、`done`。沒寫到的人維持 `idle`。`task` 最長 140 字。`plan`、`pr`、`ci` 可省略。名字要和名冊完全一致（大小寫不拘），例如 `Grok Bot`、`dr eggbot`、`helios forge`。
 
 `public/status.json` 預設全員 `idle`。改這個檔再重新整理，靜態站就會顯示新狀態。
 
@@ -99,8 +113,10 @@ curl -s -X POST http://127.0.0.1:4317/api/status \
 | `src/clouds.js` | 對話雲與思考雲 |
 | `src/roster.js` | 名單、顏色、職務、倉庫名稱 |
 | `src/layout.js` | 平面配置與鏡頭預設 |
-| `src/status.js` | 輪詢狀態、模擬模式 |
+| `src/status.js` | 輪詢狀態、營運、模擬、一日工作 |
 | `src/status-model.js` | 狀態格式，瀏覽器與開發伺服器共用 |
+| `src/ops-summary.js` | 把 PR / CI 收成辦公室用的詞 |
+| `scripts/github-ops.mjs` | 開發伺服器讀 GitHub，瀏覽器不直接打 |
 | `src/ui.js` | 名冊、徽章、模擬按鈕 |
 | `src/style.css` | 介面樣式 |
 | `src/geom.js` | 小幾何工具 |
@@ -133,6 +149,8 @@ Speech clouds sit between people who are talking, and a person talking to themse
 
 **Simulate work** (`?simulate=1`, `?demo`, or `#demo`) plays a busy day in that browser tab only. Working bots sit at desks or gather for a standup. Waiting bots wave by a desk or at the meeting-room doorway. Finished bots carry a folder into musk's office, then return to the rest area. It never writes `status.json` and never POSTs to `/api/status`. A **SIMULATION** badge stays on screen.
 
-Live status is `GET /api/status` on the dev server, or `public/status.json` anywhere static. Shape: `{ "bots": [{ "name", "state", "task" }] }` with `state` of `idle | working | waiting | error | done`. Omitted bots stay idle. POST the same shape to the dev stub; `{ "reset": true }` returns everyone to idle. The stub keeps the body in memory until the process restarts and does not accept the simulation. See the Chinese section for curl examples and the file map.
+**Operations** (`?ops=1`) is the live control room. Bot places follow `idle / working / waiting / error / done` from `GET /api/ops` (dev) or `status.json`. On the dev server, roster repos are read from GitHub: PR open, closed, or merged, and CI green, failed, or pending. A status field overrides GitHub. If GitHub cannot be read, only those fields are shown and they are labeled status — never as live numbers. Desk screens carry a green, red, or amber stripe. musk's decision, the speech clouds, and a typed assignment all use that same plan / PR / CI / follow-up. Click an idle bot and press Enter to assign; the assignment stays in the browser. Workday and Simulate do not write status.
+
+Live status is `GET /api/status` on the dev server, or `public/status.json` anywhere static. Shape: `{ "bots": [{ "name", "state", "task", "plan?", "pr?", "ci?" }] }` with `state` of `idle | working | waiting | error | done`. `pr` is `open | closed | merged | none`. `ci` is `green | failed | pending | none`. Omitted bots stay idle. POST the same shape to the dev stub; omitted `plan`, `pr`, and `ci` keep their previous values. `{ "reset": true }` returns everyone to idle. The stub keeps the body in memory until the process restarts and does not accept the simulation or the workday. See the Chinese section for curl examples and the file map.
 
 The south wall is a weekly-usage placeholder. It has no numbers.
