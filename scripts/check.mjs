@@ -115,6 +115,8 @@ if (!routeThrough(-2, 1.6, 8.6, -6.2).length) throw new Error('Library should be
 if (zoneAt(7.85, 7.45) !== 'rec') throw new Error('Rec should be its own room')
 if (!routeThrough(-9.2, 7.6, 6.15, 7.45).length) throw new Error('Rec should be reachable from the lobby')
 if (!routeThrough(-2, 1.6, 14.55, 7.55).length) throw new Error('Rec should be reachable from the desks')
+if (zoneAt(13.2, 10.6) !== 'balcony') throw new Error('Balcony should sit outside the rec room')
+if (!routeThrough(7.85, 7.45, 12.2, 10.5).length) throw new Error('Balcony should be reachable from Rec')
 
 const office = createStatus()
 if (office.assign('quant', '   ').ok) throw new Error('Empty assign should fail')

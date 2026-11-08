@@ -1,6 +1,6 @@
 /** Compact one-floor storybook HQ. Y is up. Yaw 0 faces +Z (south). */
 
-export const BOUNDS = { x0: -13, x1: 16.6, z0: -9.4, z1: 9.2 }
+export const BOUNDS = { x0: -13, x1: 16.6, z0: -9.4, z1: 12.2 }
 
 /** musk's glass corner. The door is on the east wall, at the end of the report path. */
 export const CORNER = { x0: -13, x1: -5, z0: -9.4, z1: -3.8 }
@@ -24,6 +24,7 @@ export const ZONES = [
   { id: 'coffee', title: 'COFFEE', sub: 'Café', carpet: 'COFFEE', x: 8.6, z: -1, w: 4.4, d: 6.6, color: '#f3c9a4' },
   { id: 'printers', title: 'PRINTERS', sub: 'Copy', carpet: 'PRINTERS', x: 13, z: -1, w: 3.6, d: 6.6, color: '#e4e7ea' },
   { id: 'rec', title: 'REC', sub: 'Play', carpet: 'REC', x: 4.6, z: 5.6, w: 12, d: 3.6, color: '#e3d4f2' },
+  { id: 'balcony', title: 'BALCONY', sub: 'Outside', carpet: '', x: 10.2, z: 9.2, w: 6.4, d: 3, color: '#d5e6c8' },
   { id: 'rest', title: 'LOBBY', sub: 'Arrive', carpet: 'LOBBY', x: -13, z: 5.6, w: 7.8, d: 3.6, color: '#f0d8c6' },
   { id: 'lounge', title: 'REST', sub: 'Sit', carpet: 'REST', x: -5.2, z: 5.6, w: 9.8, d: 3.6, color: '#e7d5c8' },
 ]
@@ -136,7 +137,9 @@ export const PLANTS = [
   { x: -0.4, z: -8.85, s: 0.6 },
   { x: -12.45, z: 8.45, s: 0.55 },
   { x: -4.55, z: 7.35, s: 0.6 },
-  { x: 3.7, z: 7.15, s: 0.55 },
+  { x: 4.2, z: 6.75, s: 0.5 },
+  { x: 11.15, z: 11.35, s: 0.55 },
+  { x: 15.7, z: 11.25, s: 0.6 },
   { x: -12.45, z: 0.15, s: 0.55 },
 ]
 
@@ -162,6 +165,11 @@ export const PANTRY_SPOTS = [
 ]
 
 /** Break spots in the rec room: two at ping-pong, two at the arcade. */
+export const BALCONY_SPOTS = [
+  { x: 11.5, z: 10.5, yaw: 0.6, pose: 'sit' },
+  { x: 14.2, z: 10.7, yaw: -0.8, pose: 'sit' },
+]
+
 export const REC_SPOTS = [
   { x: 6.15, z: 7.45, yaw: Math.PI / 2, pose: 'stand' },
   { x: 9.55, z: 7.45, yaw: -Math.PI / 2, pose: 'stand' },
@@ -202,19 +210,20 @@ export const PORTALS = [
   { a: 'pantry', b: 'corridor', x: -5, z: -2.4, dir: 'v', from: -3.8, to: -1, color: '#f3c4b0' },
   { a: 'pantry', b: 'desk', x: -9, z: -1, dir: 'h', from: -13, to: -5, color: '#f0d0bc' },
   { a: 'corridor', b: 'desk', x: -1.2, z: -1, dir: 'h', from: -5, to: 3.4, color: '#f8e6c8' },
-  { a: 'corridor', b: 'meeting', x: 6.6, z: -1, dir: 'h', from: 4.6, to: 8.6, color: '#d5e4f2' },
+  { a: 'corridor', b: 'meeting', x: 6.6, z: -1, dir: 'h', from: 4.6, to: 8.6, color: '#d5e4f2', glass: true },
   { a: 'corridor', b: 'coffee', x: 10.8, z: -1, dir: 'h', from: 8.6, to: 13, color: '#f6d7b8' },
-  { a: 'meeting', b: 'coffee', x: 8.6, z: 2.2, dir: 'v', from: -1, to: 5.6, color: '#f3dcc8' },
-  { a: 'desk', b: 'meeting', x: 4.6, z: 1.5, dir: 'v', from: -1, to: 5.6, color: '#d7e4d4' },
+  { a: 'meeting', b: 'coffee', x: 8.6, z: 2.2, dir: 'v', from: -1, to: 5.6, color: '#f3dcc8', glass: true },
+  { a: 'desk', b: 'meeting', x: 4.6, z: 1.5, dir: 'v', from: -1, to: 5.6, color: '#d7e4d4', glass: true },
   { a: 'lounge', b: 'rec', x: 4.6, z: 7.4, dir: 'v', from: 5.6, to: 9.2, color: '#e4d0f0' },
   { a: 'desk', b: 'rest', x: -9.2, z: 5.6, dir: 'h', from: -13, to: -5.2, color: '#f6d0b0' },
   { a: 'desk', b: 'lounge', x: -0.5, z: 5.6, dir: 'h', from: -5.2, to: 4.6, color: '#ead4c4' },
   { a: 'rest', b: 'lounge', x: -5.2, z: 7.5, dir: 'v', from: 5.6, to: 9.2, color: '#f0d2c0' },
   { a: 'coffee', b: 'printers', x: 13, z: 2.2, dir: 'v', from: -1, to: 5.6, color: '#e7e4de' },
   { a: 'corridor', b: 'printers', x: 14.8, z: -1, dir: 'h', from: 13, to: 16.6, color: '#e4e8ea' },
-  { a: 'meeting', b: 'rec', x: 6.6, z: 5.6, dir: 'h', from: 4.6, to: 8.6, color: '#d9c8ee' },
+  { a: 'meeting', b: 'rec', x: 6.6, z: 5.6, dir: 'h', from: 4.6, to: 8.6, color: '#d9c8ee', glass: true },
   { a: 'coffee', b: 'rec', x: 10.8, z: 5.6, dir: 'h', from: 8.6, to: 13, color: '#e6d4f4' },
   { a: 'printers', b: 'rec', x: 14.8, z: 5.6, dir: 'h', from: 13, to: 16.6, color: '#ddd0ee' },
+  { a: 'rec', b: 'balcony', x: 13.2, z: 9.2, dir: 'h', from: 10.2, to: 16.6, color: '#d5e8dc', glass: true },
 ]
 
 const PORTAL_GRAPH = new Map()
@@ -271,7 +280,7 @@ export const SIGNS = [
   { title: 'LOBBY', sub: 'Arrive', x: -12.15, z: 7.55 },
   { title: 'REST', sub: 'Sit', x: 0.2, z: 7.05 },
   { title: 'MEETING', sub: 'Standup', x: 5.35, z: 4.85 },
-  { title: 'COFFEE', sub: 'Café', x: 9.4, z: 4.7 },
+  { title: 'KITCHEN', sub: 'Café', x: 9.4, z: 4.7 },
   { title: 'PRINTERS', sub: 'Copy', x: 14.2, z: 4.55 },
   { title: 'REC', sub: 'Play', x: 11.4, z: 8.45 },
   { title: 'DESKS', sub: 'The team', x: 2.4, z: 2.4 },
@@ -282,7 +291,7 @@ export const SIGNS = [
 const deskShot = { pos: [-4, 11, 8], target: [-4, 0.4, 1.6] }
 
 export const PRESETS = {
-  all: { pos: [1.6, 28, 26], target: [1.4, 0.2, -0.2] },
+  all: { pos: [1.6, 32, 30], target: [1.2, 0.2, 0.4] },
   lead: { pos: [-1.5, 8, -1.2], target: [-9.2, 0.6, -6.6] },
   hall: { pos: [0, 8, 1], target: [-0.4, 0.4, -6.6] },
   assistant: deskShot,
@@ -293,7 +302,8 @@ export const PRESETS = {
   meeting: { pos: [6.6, 8, 8.2], target: [6.6, 0.4, 3.6] },
   coffee: { pos: [10.7, 8, 10], target: [10.8, 0.45, 4.2] },
   printers: { pos: [14.7, 8, 9], target: [14.8, 0.45, 2.4] },
-  rec: { pos: [10.4, 8.2, 12.2], target: [10.6, 0.4, 7.4] },
+  rec: { pos: [10.5, 13, 15.5], target: [11.2, 0.2, 7.6] },
+  balcony: { pos: [13.2, 6.5, 14.2], target: [13.2, 0.4, 10.6] },
   rest: { pos: [-9.4, 9.5, 11.2], target: [-9.6, 0.2, 7.6] },
   lounge: { pos: [-0.2, 9.2, 11.4], target: [-0.3, 0.2, 7.5] },
   library: { pos: [8.4, 7.5, 0.4], target: [8.6, 0.5, -6.4] },
@@ -310,9 +320,10 @@ export const ZONE_CHIPS = [
   { id: 'rest', label: 'Lobby' },
   { id: 'lounge', label: 'Rest' },
   { id: 'meeting', label: 'Meeting' },
-  { id: 'coffee', label: 'Coffee' },
+  { id: 'coffee', label: 'Kitchen' },
   { id: 'printers', label: 'Printers' },
   { id: 'rec', label: 'Rec' },
+  { id: 'balcony', label: 'Balcony' },
   { id: 'desk', label: 'Desks' },
   { id: 'library', label: 'Library' },
   { id: 'pantry', label: 'Snacks' },

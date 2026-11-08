@@ -384,6 +384,14 @@ function addCoffeeRoom(parent) {
   box(bar, 2.25, 0.08, 0.54, 0, 0.82, 0, cream, true)
   box(bar, 0.28, 0.22, 0.22, -0.55, 0.98, 0.02, std('#3e3430', 0.55), true)
   box(bar, 0.1, 0.1, 0.1, -0.55, 1.14, 0, std('#d7d2cc', 0.45), false)
+  const fridge = new THREE.Group()
+  fridge.position.set(12.35, 0, 3.55)
+  parent.add(fridge)
+  box(fridge, 0.62, 1.35, 0.5, 0, 0.68, 0, std('#f4f7f6', 0.7), true)
+  box(fridge, 0.5, 0.02, 0.42, 0, 0.95, 0.02, std('#d5ddd9', 0.6), false)
+  box(fridge, 0.04, 0.28, 0.04, 0.22, 1.15, 0.26, std('#8d9492', 0.4), false)
+  box(fridge, 0.04, 0.22, 0.04, 0.22, 0.55, 0.26, std('#8d9492', 0.4), false)
+
   const glow = std('#ffd2a8', 0.4)
   glow.emissive = new THREE.Color('#ff9a4a')
   glow.emissiveIntensity = 0.85
@@ -536,7 +544,7 @@ export function buildOffice(roster) {
 
   addCarpetLabel(group, 'REPORTS TO MUSK', -0.4, -6.7, 5.4)
   addCarpetLabel(group, 'MEETING', 6.6, 4.95, 2.2)
-  addCarpetLabel(group, 'COFFEE', 10.7, 4.85, 2.2)
+  addCarpetLabel(group, 'KITCHEN', 10.7, 4.85, 2.4)
   addCarpetLabel(group, 'PRINTERS', 14.7, 4.7, 2.1)
   addCarpetLabel(group, 'REC', 11.2, 8.35, 2.2)
   addCarpetLabel(group, 'DESKS', -4.2, 2.5, 3.1)
@@ -560,6 +568,7 @@ export function buildOffice(roster) {
   addCoffeeRoom(group)
   addRestRoom(group)
   addRecRoom(group)
+  addBalcony(group)
   addLibrary(group)
   addPantry(group)
   addReception(group)
@@ -650,17 +659,26 @@ function addStoryWalls(parent) {
   const wood = std('#6a4b38', 0.75)
   const finialMat = std('#e2b340', 0.45, { metalness: 0.2 })
   const rugMat = std('#f4e2c4', 0.95)
+  const glassMat = new THREE.MeshStandardMaterial({
+    color: '#e7f6f4',
+    roughness: 0.06,
+    transparent: true,
+    opacity: 0.28,
+    depthWrite: false,
+    side: THREE.DoubleSide,
+  })
   for (const portal of PORTALS) {
     if (portal.dir !== 'h' && portal.dir !== 'v') continue
     const gap = 0.9
+    const wallMat = portal.glass ? glassMat : paint(portal.color)
     if (portal.dir === 'h') {
-      hSeg(parent, portal.from, portal.x - gap, portal.z, paint(portal.color), wood, finialMat)
-      hSeg(parent, portal.x + gap, portal.to, portal.z, paint(portal.color), wood, finialMat)
+      hSeg(parent, portal.from, portal.x - gap, portal.z, wallMat, wood, finialMat)
+      hSeg(parent, portal.x + gap, portal.to, portal.z, wallMat, wood, finialMat)
       doorway(parent, portal.x, portal.z, 0, wood, finialMat)
       box(parent, 1.5, 0.02, 0.7, portal.x, 0.03, portal.z, rugMat, false)
     } else {
-      vSeg(parent, portal.from, portal.z - gap, portal.x, paint(portal.color), wood, finialMat)
-      vSeg(parent, portal.z + gap, portal.to, portal.x, paint(portal.color), wood, finialMat)
+      vSeg(parent, portal.from, portal.z - gap, portal.x, wallMat, wood, finialMat)
+      vSeg(parent, portal.z + gap, portal.to, portal.x, wallMat, wood, finialMat)
       doorway(parent, portal.x, portal.z, Math.PI / 2, wood, finialMat)
       box(parent, 0.7, 0.02, 1.5, portal.x, 0.03, portal.z, rugMat, false)
     }
@@ -793,6 +811,25 @@ function arcadeFace() {
   return canvas
 }
 
+function addBalcony(parent) {
+  const wood = std('#6a4b38', 0.75)
+  hSeg(parent, -13, 10.2, 9.2, std('#f4f0e8', 0.92), wood)
+  const bench = new THREE.Group()
+  bench.position.set(11.7, 0, 10.55)
+  parent.add(bench)
+  box(bench, 1.15, 0.08, 0.42, 0, 0.42, 0, std('#c9845a', 0.75), true)
+  for (const lx of [-0.42, 0.42]) box(bench, 0.06, 0.38, 0.36, lx, 0.2, 0, wood, true)
+  cyl(parent, 0.28, 0.28, 0.06, 14.35, 0.7, 10.85, std('#f3e2c4', 0.75), 14, true)
+  cyl(parent, 0.04, 0.05, 0.66, 14.35, 0.33, 10.85, wood, 8, true)
+  addChair(parent, 13.75, 10.85, Math.PI / 2, '#6e4f45', true)
+  addChair(parent, 14.95, 10.85, -Math.PI / 2, '#3e5a50', true)
+  const rail = std('#6a4b38', 0.7)
+  for (let x = 10.5; x <= 16.3; x += 0.7) cyl(parent, 0.04, 0.045, 0.85, x, 0.42, 12.05, rail, 6, false)
+  box(parent, 6.2, 0.06, 0.06, 13.4, 0.78, 12.05, rail, false)
+  for (let z = 9.5; z <= 11.8; z += 0.7) cyl(parent, 0.04, 0.045, 0.85, 10.35, 0.42, z, rail, 6, false)
+  box(parent, 0.06, 0.06, 2.5, 10.35, 0.78, 10.7, rail, false)
+}
+
 function addRestRoom(parent) {
   const lampMat = std('#ffe7cf', 0.4)
   lampMat.emissive = new THREE.Color('#ffc48a')
@@ -807,6 +844,28 @@ function addRestRoom(parent) {
     bulb.position.set(x, 1.1, z)
     parent.add(bulb)
   }
+  const tv = new THREE.Group()
+  tv.position.set(3.85, 0, 8.05)
+  tv.rotation.y = -Math.PI / 2
+  parent.add(tv)
+  box(tv, 0.9, 0.08, 0.28, 0, 0.32, 0, std('#6a4b38', 0.75), true)
+  box(tv, 0.72, 0.46, 0.06, 0, 0.72, 0, std('#1c1824', 0.55), true)
+  const screen = std('#8eb6ff', 0.4)
+  screen.emissive = new THREE.Color('#6aa4ff')
+  screen.emissiveIntensity = 0.55
+  box(tv, 0.58, 0.32, 0.02, 0, 0.72, 0.04, screen, false)
+  const juke = new THREE.Group()
+  juke.position.set(-4.75, 0, 8.45)
+  parent.add(juke)
+  box(juke, 0.48, 1.15, 0.4, 0, 0.58, 0, std('#f3e2c4', 0.7), true)
+  box(juke, 0.36, 0.42, 0.04, 0, 0.85, 0.21, std('#3a2a55', 0.5), true)
+  const tubes = ['#ef6d8a', '#7cf0d2', '#f2d15a', '#8eb6ff']
+  tubes.forEach((color, index) => {
+    const lamp = std(color, 0.35)
+    lamp.emissive = new THREE.Color(color)
+    lamp.emissiveIntensity = 0.9
+    box(juke, 0.05, 0.28, 0.03, -0.12 + index * 0.08, 0.86, 0.24, lamp, false)
+  })
 }
 
 function addPrintersRoom(parent) {

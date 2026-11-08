@@ -173,7 +173,8 @@ export function parseWork(text) {
     fact = 'plan'
   }
   let workPlace = 'desk'
-  if (/ping|pong|arcade/.test(t)) workPlace = 'rec'
+  if (/ping|pong|arcade|jukebox/.test(t)) workPlace = 'rec'
+  else if (/balcony|outside/.test(t)) workPlace = 'balcony'
   else if (/copy|print/.test(t)) workPlace = 'copy'
   else if (/coffee|snack|tea|lobby/.test(t)) workPlace = 'snack'
   else if (/library|read/.test(t)) workPlace = 'library'
@@ -207,11 +208,12 @@ function focusRow(bot, minute) {
   const facts = ['plan', 'pr-open', 'ci-green', 'ci-failed', 'pr-closed']
   const fact = facts[(block + Math.floor(u * 5)) % facts.length]
   const spot = Math.floor(u * 7)
-  if (roll < 0.42) return { state: 'working', place: 'desk', fact, task: factTask(bot, fact), spot, cup: 'none' }
-  if (roll < 0.56) return { state: 'working', place: 'library', fact, task: `Reading the plan for ${bitOf(bot.id)}`, spot: spot % 3, cup: 'none' }
-  if (roll < 0.7) return { state: 'idle', place: 'snack', fact, task: `Snack break, still on ${bitOf(bot.id)}`, spot: spot % 7, cup: roll < 0.66 ? 'sip' : 'hand' }
-  if (roll < 0.82) return { state: 'idle', place: 'pantry', fact, task: 'Coffee, then back to the plan', spot: spot % 3, cup: 'hand' }
-  if (roll < 0.93) return { state: 'idle', place: 'rec', fact, task: 'A game in the rec room, then the plan', spot: spot % 4, cup: 'none' }
+  if (roll < 0.38) return { state: 'working', place: 'desk', fact, task: factTask(bot, fact), spot, cup: 'none' }
+  if (roll < 0.5) return { state: 'working', place: 'library', fact, task: `Reading the plan for ${bitOf(bot.id)}`, spot: spot % 3, cup: 'none' }
+  if (roll < 0.62) return { state: 'idle', place: 'snack', fact, task: `Snack break, still on ${bitOf(bot.id)}`, spot: spot % 7, cup: roll < 0.58 ? 'sip' : 'hand' }
+  if (roll < 0.74) return { state: 'idle', place: 'pantry', fact, task: 'Coffee in the kitchen, then the plan', spot: spot % 3, cup: 'hand' }
+  if (roll < 0.86) return { state: 'idle', place: 'rec', fact, task: 'A game in the rec room, then the plan', spot: spot % 4, cup: 'none' }
+  if (roll < 0.93) return { state: 'idle', place: 'balcony', fact, task: 'A minute on the balcony', spot: spot % 2, cup: 'none' }
   return { state: 'idle', place: 'lounge', fact, task: 'Resting with the plan', spot: spot % 4, cup: 'sip' }
 }
 
