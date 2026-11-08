@@ -103,7 +103,9 @@ if (zoneAt(5.75, 1.5) !== 'meeting') throw new Error('Meeting should sit on its 
 if (zoneAt(10.6, 1.6) !== 'coffee') throw new Error('Coffee should be its own room')
 if (!routeThrough(0, 6.8, 11.45, 1.15).length) throw new Error('Coffee room should be reachable from the lobby')
 if (zoneAt(-9, -6.6) !== 'lead') throw new Error('musk keeps the glass corner')
-if (!routeThrough(0, 6.8, 11.2, -2.4).length) throw new Error('Copier should be reachable from the lobby')
+if (zoneAt(14.8, 1.6) !== 'printers') throw new Error('Printers should be its own room')
+if (!routeThrough(0, 6.8, 14.15, 1.55).length) throw new Error('Printers should be reachable from the lobby')
+if (!routeThrough(-2, 1.6, 14.15, 1.55).length) throw new Error('Copying should walk in from the desks')
 if (!routeThrough(0, 6.8, -9, -2.4).length) throw new Error('Snack nook should be reachable from the lobby')
 if (!routeThrough(-2, 1.6, 8.6, -6.2).length) throw new Error('Library should be reachable from the desks')
 

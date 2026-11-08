@@ -38,7 +38,7 @@ npm run check
 
 - **musk** 坐在玻璃隔間的角落辦公室。地毯與玻璃上都寫著大家向 musk 回報。
 - **Grok Bot** 是個人助理，桌子在 Assistant，不是主管。
-- 一層樓的故事總部，房間靠在一起：入口是大廳（沙發、時鐘，角落有一杯迎接客人的咖啡）。大廳旁邊是兩間關起來的房間，一間是 Meeting 會議室（會議桌、站會），一間是 Coffee 咖啡室（咖啡吧、杯子、暖燈，地上寫著 COFFEE）。團隊坐同一間桌子廳。走廊岔出圖書館和點心吧，影印機在走廊附近。musk 的玻璃辦公室在這條路的盡頭，地上寫著 REPORTS TO MUSK。
+- 一層樓的故事總部，房間靠在一起：入口是大廳（沙發、時鐘，角落有一杯迎接客人的咖啡）。大廳旁邊是三間關起來的房間：Meeting 會議室（會議桌、站會）、Coffee 咖啡室（咖啡吧、杯子、暖燈，地上寫著 COFFEE）、Printers 影印室（影印機、紙盤，地上寫著 PRINTERS）。團隊坐同一間桌子廳。走廊岔出圖書館和點心吧。musk 的玻璃辦公室在這條路的盡頭，地上寫著 REPORTS TO MUSK。
 - 開源研究的十位跟大家坐在同一間桌子廳。
 - 預設每個人都是 **Idle**，坐在休息區。桌子是空的，名牌還在。沒有人在做「真的工作」。
 - 滑過角色會出現名字。點一下（或點名冊）會把鏡頭拉近，並跟著那位角色。
@@ -50,7 +50,7 @@ npm run check
 
 ## 一日工作
 
-「Workday」按鈕，或網址 `?day=1`，用幾分鐘演完 9:00 AM 到 6:00 PM。畫面上的時鐘（大廳也有一面）帶著行程：先在大廳集合，有人走進 Coffee 咖啡室，站會在 Meeting，有人去影印，其他人在桌子、圖書館或點心吧想計畫。一次只有一個人把文件拿給 musk；musk 會想一下，再對那個人說 PR 要開著、關掉，或 CI 是綠的還是失敗，並派下一步。對方做完會再回來。`?at=10:30` 可以從那個時間開始。這只在這個分頁裡演，不會寫入 `status.json`。
+「Workday」按鈕，或網址 `?day=1`，用幾分鐘演完 9:00 AM 到 6:00 PM。畫面上的時鐘（大廳也有一面）帶著行程：先在大廳集合，有人走進 Coffee 咖啡室，站會在 Meeting，影印要走進 Printers。其他人在桌子、圖書館或點心吧想計畫。一次只有一個人把文件拿給 musk；musk 會想一下，再對那個人說 PR 要開著、關掉，或 CI 是綠的還是失敗，並派下一步。對方做完會再回來。`?at=10:30` 可以從那個時間開始。這只在這個分頁裡演，不會寫入 `status.json`。
 
 ## 模擬工作
 
@@ -141,11 +141,11 @@ npm run dev
 
 Static build: `npm run build` then `npm run preview` (or host `dist/` yourself).
 
-Everyone starts **Idle** in the lobby. Each bot is a small stylized person — hair, face, and clothes in their own color. The floor is one compact storybook HQ. The lobby is the entrance (sofas, clock, and a small greeting coffee nook). Beside it are two enclosed rooms: **Meeting** (the standup table) and **Coffee** (a café bar, cups, warm lamps, and a COFFEE sign). The team shares a desk hall. A corridor opens onto the library and a snack nook, with the copier nearby. **musk**'s glass corner office is at the end of that path; the floor there reads REPORTS TO MUSK. Grok Bot is a personal assistant at a desk in the hall, not a second boss. Chips frame Lobby, Meeting, Coffee, Desks, Library, Snacks, Copier, and musk.
+Everyone starts **Idle** in the lobby. Each bot is a small stylized person — hair, face, and clothes in their own color. The floor is one compact storybook HQ. The lobby is the entrance (sofas, clock, and a small greeting coffee nook). Beside it are three enclosed rooms: **Meeting** (the standup table), **Coffee** (a café bar, cups, warm lamps, and a COFFEE sign), and **Printers** (copiers, paper trays, and a PRINTERS sign). The team shares a desk hall. A corridor opens onto the library and a snack nook. **musk**'s glass corner office is at the end of that path; the floor there reads REPORTS TO MUSK. Grok Bot is a personal assistant at a desk in the hall, not a second boss. Chips frame Lobby, Meeting, Coffee, Printers, Desks, Library, Snacks, and musk.
 
 Speech clouds sit between people who are talking, and a person talking to themselves gets one too. Thoughts use a scalloped cloud with small circles trailing back to the head. Click an idle bot and press Enter in the cloud by their head to assign work.
 
-**Workday** (`?day=1`, optional `?at=10:30`) plays 9:00 AM–6:00 PM in a few minutes. The clock on screen and in the lobby drives the story: the lobby, coffee in the Coffee room, standup in Meeting, a copier, snack bars, and one report to musk at a time. musk answers about the plan, whether a PR is open or closed, and whether CI is green or failed, then the bot follows up. It never writes `status.json`.
+**Workday** (`?day=1`, optional `?at=10:30`) plays 9:00 AM–6:00 PM in a few minutes. The clock on screen and in the lobby drives the story: the lobby, coffee in the Coffee room, standup in Meeting, copies in the Printers room, snack bars, and one report to musk at a time. musk answers about the plan, whether a PR is open or closed, and whether CI is green or failed, then the bot follows up. It never writes `status.json`.
 
 **Simulate work** (`?simulate=1`, `?demo`, or `#demo`) plays a busy day in that browser tab only. Working bots sit at desks or gather for a standup. Waiting bots wave by a desk or at the meeting-room doorway. Finished bots carry a folder into musk's office, then return to the rest area. It never writes `status.json` and never POSTs to `/api/status`. A **SIMULATION** badge stays on screen.
 

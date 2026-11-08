@@ -296,7 +296,7 @@ function addServers(parent, leds) {
 
 function addUsage(parent) {
   const group = new THREE.Group()
-  group.position.set(12.72, 0.72, 6.85)
+  group.position.set(16.05, 0.72, 6.85)
   group.rotation.y = -Math.PI / 2
   group.scale.setScalar(0.55)
   parent.add(group)
@@ -537,6 +537,7 @@ export function buildOffice(roster) {
   addCarpetLabel(group, 'REPORTS TO MUSK', -0.4, -6.7, 5.4)
   addCarpetLabel(group, 'MEETING', 5.75, 3.2, 2.6)
   addCarpetLabel(group, 'COFFEE', 10.6, 3.25, 2.5)
+  addCarpetLabel(group, 'PRINTERS', 14.7, 3.2, 2.6)
   addCarpetLabel(group, 'DESKS', -4.2, 1.75, 3.1)
   addCarpetLabel(group, 'LOBBY', 4.6, 6.15, 3.2)
   addCarpetLabel(group, 'LIBRARY', 8.8, -7.7, 3.2)
@@ -613,7 +614,7 @@ export function buildOffice(roster) {
 
   addStoryWalls(group)
   addSnackBars(group)
-  const copier = addCopier(group)
+  const copier = addPrintersRoom(group)
   addCupProps(group)
 
   const leds = []
@@ -728,6 +729,22 @@ function addSnackBars(parent) {
 
 function woodSafe() {
   return std('#8d684c', 0.75)
+}
+
+function addPrintersRoom(parent) {
+  const copier = addCopier(parent)
+  const mate = new THREE.Group()
+  mate.position.set(COPIER.x, 0, 2.7)
+  mate.rotation.y = -Math.PI / 2
+  parent.add(mate)
+  box(mate, 0.62, 0.58, 0.42, 0, 0.42, 0, std('#ece7df', 0.75), true)
+  box(mate, 0.5, 0.06, 0.36, 0, 0.74, 0, std('#3e534c', 0.65), true)
+  box(mate, 0.28, 0.16, 0.22, 0.55, 0.2, 0, std('#f7f1e6', 0.8), true)
+  for (const [px, pz, tall] of [[13.55, 0.55, 0.28], [13.55, 0.85, 0.18], [14.55, 3.35, 0.22]]) {
+    box(parent, 0.32, 0.04, 0.24, px, 0.16 + tall, pz, std('#fffaf3', 0.9), false)
+    box(parent, 0.34, tall, 0.26, px, tall / 2, pz, std('#d9c7a4', 0.85), true)
+  }
+  return copier
 }
 
 function addCopier(parent) {
