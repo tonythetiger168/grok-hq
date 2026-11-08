@@ -366,11 +366,54 @@ function addTable(parent) {
 function addMeeting(parent) {
   const wood = std(WOOD_TOP, 0.75)
   const { x, z } = MEETING_TABLE
-  box(parent, 2.7, 0.08, 1.15, x, 0.74, z, wood)
-  for (const [dx, dz] of [[-1.1, -0.4], [1.1, -0.4], [-1.1, 0.4], [1.1, 0.4]]) {
+  box(parent, 2.05, 0.08, 1.05, x, 0.74, z, wood)
+  for (const [dx, dz] of [[-0.82, -0.36], [0.82, -0.36], [-0.82, 0.36], [0.82, 0.36]]) {
     box(parent, 0.06, 0.7, 0.06, x + dx, 0.35, z + dz, std(WOOD_LEG, 0.72))
   }
   for (const seat of MEETING_SEATS) addChair(parent, seat.x, seat.z, seat.yaw, '#3e534c', true)
+}
+
+function addCoffeeRoom(parent) {
+  const wood = std('#c9845a', 0.72)
+  const cream = std('#f6efe4', 0.8)
+  const bar = new THREE.Group()
+  bar.position.set(12.25, 0, 1.7)
+  bar.rotation.y = -Math.PI / 2
+  parent.add(bar)
+  box(bar, 2.15, 0.78, 0.46, 0, 0.39, 0, std('#8d4e32', 0.84), true)
+  box(bar, 2.25, 0.08, 0.54, 0, 0.82, 0, cream, true)
+  box(bar, 0.28, 0.22, 0.22, -0.55, 0.98, 0.02, std('#3e3430', 0.55), true)
+  box(bar, 0.1, 0.1, 0.1, -0.55, 1.14, 0, std('#d7d2cc', 0.45), false)
+  const glow = std('#ffd2a8', 0.4)
+  glow.emissive = new THREE.Color('#ff9a4a')
+  glow.emissiveIntensity = 0.85
+  box(bar, 0.08, 0.04, 0.06, -0.42, 1.02, 0.08, glow, false)
+  for (const [cx, cup] of [[-0.15, '#f7f4ee'], [0.15, '#f3e7d8'], [0.55, '#6b3e2a']]) {
+    cyl(bar, 0.045, 0.035, 0.07, cx, 0.9, 0.05, std(cup, 0.55), 10, true)
+  }
+
+  const tables = [[9.65, 0.95], [9.9, 2.85]]
+  for (const [x, z] of tables) {
+    cyl(parent, 0.32, 0.32, 0.06, x, 0.7, z, wood, 16, true)
+    cyl(parent, 0.04, 0.05, 0.66, x, 0.33, z, std(WOOD_LEG, 0.7), 8, true)
+    cyl(parent, 0.04, 0.032, 0.06, x + 0.08, 0.78, z, cream, 10, true)
+    addChair(parent, x - 0.62, z, Math.PI / 2, '#a6846c', true)
+    addChair(parent, x + 0.62, z, -Math.PI / 2, '#6e4f45', true)
+  }
+
+  const lampMat = std('#ffe0bf', 0.35)
+  lampMat.emissive = new THREE.Color('#ffb15a')
+  lampMat.emissiveIntensity = 1.1
+  for (const [x, z] of [[9.65, 0.95], [9.9, 2.85], [12.05, 1.7]]) {
+    cyl(parent, 0.012, 0.012, 0.55, x, 1.55, z, std('#5c4636', 0.6), 6, false)
+    const shade = new THREE.Mesh(new THREE.SphereGeometry(0.1, 12, 10), lampMat)
+    shade.position.set(x, 1.22, z)
+    shade.scale.y = 0.7
+    parent.add(shade)
+    const bulb = new THREE.PointLight('#ffb06a', 0.55, 3.2, 2)
+    bulb.position.set(x, 1.15, z)
+    parent.add(bulb)
+  }
 }
 
 function addShelfUnit(parent, x, z, yaw) {
@@ -492,7 +535,8 @@ export function buildOffice(roster) {
   }
 
   addCarpetLabel(group, 'REPORTS TO MUSK', -0.4, -6.7, 5.4)
-  addCarpetLabel(group, 'MEETING', 8.2, 3.25, 3.2)
+  addCarpetLabel(group, 'MEETING', 5.75, 3.2, 2.6)
+  addCarpetLabel(group, 'COFFEE', 10.6, 3.25, 2.5)
   addCarpetLabel(group, 'DESKS', -4.2, 1.75, 3.1)
   addCarpetLabel(group, 'LOBBY', 4.6, 6.15, 3.2)
   addCarpetLabel(group, 'LIBRARY', 8.8, -7.7, 3.2)
@@ -510,6 +554,7 @@ export function buildOffice(roster) {
 
   addCornerOffice(group, mats)
   addMeeting(group)
+  addCoffeeRoom(group)
   addLibrary(group)
   addPantry(group)
   addReception(group)

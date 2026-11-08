@@ -20,7 +20,8 @@ export const ZONES = [
   { id: 'pantry', title: 'SNACKS', sub: '', carpet: 'SNACKS', x: -13, z: -3.8, w: 8, d: 2.8, color: '#f0cbb8' },
   { id: 'corridor', title: 'CORRIDOR', sub: '', carpet: '', x: -5, z: -3.8, w: 18, d: 2.8, color: '#f3e6cf' },
   { id: 'desk', title: 'DESKS', sub: 'The team', carpet: 'DESKS', x: -13, z: -1, w: 16.4, d: 5, color: '#d5e0d4' },
-  { id: 'meeting', title: 'MEETING', sub: 'Standup', carpet: 'MEETING', x: 3.4, z: -1, w: 9.6, d: 5, color: '#d5dbe3' },
+  { id: 'meeting', title: 'MEETING', sub: 'Standup', carpet: 'MEETING', x: 3.4, z: -1, w: 4.9, d: 5, color: '#d5dbe3' },
+  { id: 'coffee', title: 'COFFEE', sub: 'Café', carpet: 'COFFEE', x: 8.3, z: -1, w: 4.7, d: 5, color: '#f3c9a4' },
   { id: 'rest', title: 'LOBBY', sub: 'Arrive', carpet: 'LOBBY', x: -13, z: 4, w: 26, d: 5.2, color: '#f0d8c6' },
 ]
 
@@ -69,22 +70,22 @@ export const DESKS = [
   })),
 ]
 
-export const MEETING_TABLE = { x: 8.2, z: 1.45 }
+export const MEETING_TABLE = { x: 5.75, z: 1.5 }
 export const MEETING_SEATS = [
-  { x: 7.2, z: 0.55, yaw: 0 },
-  { x: 8.2, z: 0.55, yaw: 0 },
-  { x: 9.2, z: 0.55, yaw: 0 },
-  { x: 7.2, z: 2.4, yaw: Math.PI },
-  { x: 8.2, z: 2.4, yaw: Math.PI },
-  { x: 9.2, z: 2.4, yaw: Math.PI },
-  { x: 6.55, z: 1.45, yaw: Math.PI / 2 },
-  { x: 9.85, z: 1.45, yaw: -Math.PI / 2 },
+  { x: 5.05, z: 0.7, yaw: 0 },
+  { x: 5.75, z: 0.7, yaw: 0 },
+  { x: 6.45, z: 0.7, yaw: 0 },
+  { x: 5.05, z: 2.3, yaw: Math.PI },
+  { x: 5.75, z: 2.3, yaw: Math.PI },
+  { x: 6.45, z: 2.3, yaw: Math.PI },
+  { x: 4.4, z: 1.5, yaw: Math.PI / 2 },
+  { x: 7.1, z: 1.5, yaw: -Math.PI / 2 },
 ]
 
 /** Waiting bots wave just outside the meeting room, on the lobby side of the door. */
 export const WAIT_SPOTS = [
-  { x: 6.5, z: 4.55, yaw: Math.PI },
-  { x: 9.9, z: 4.55, yaw: Math.PI },
+  { x: 4.55, z: 4.55, yaw: Math.PI },
+  { x: 6.95, z: 4.55, yaw: Math.PI },
 ]
 
 export const SOFA_COLORS = {
@@ -103,8 +104,8 @@ export const LOUNGE = [
   { bot: 'julang', x: 0, z: 4.85, yaw: 0, seat: 'sofa', sofa: 'north' },
   { bot: 'minisim', x: 1.6, z: 4.85, yaw: 0, seat: 'sofa', sofa: 'north' },
   { bot: 'quant', x: 3.2, z: 4.85, yaw: 0, seat: 'sofa', sofa: 'north' },
-  { bot: 'linkup', x: 10.6, z: 4.85, yaw: 0, seat: 'sofa', sofa: 'north' },
-  { bot: 'wavelive', x: 12.0, z: 4.85, yaw: 0, seat: 'sofa', sofa: 'north' },
+  { bot: 'linkup', x: 11.15, z: 4.85, yaw: 0, seat: 'sofa', sofa: 'north' },
+  { bot: 'wavelive', x: 12.05, z: 4.85, yaw: 0, seat: 'sofa', sofa: 'north' },
 
   { bot: 'duckdb', x: -9.2, z: 8.35, yaw: Math.PI, seat: 'sofa', sofa: 'south' },
   { bot: 'vectorbt', x: -7.6, z: 8.35, yaw: Math.PI, seat: 'sofa', sofa: 'south' },
@@ -141,10 +142,11 @@ export const LIBRARY_SPOTS = [
   { x: 8.5, z: -7.15, yaw: Math.PI },
 ]
 
+/** Coffee-room seats. The lobby counter stays a greeting nook. */
 export const PANTRY_SPOTS = [
-  { x: -10.15, z: 7.55, yaw: -Math.PI / 2 },
-  { x: -10.15, z: 8.15, yaw: -Math.PI / 2 },
-  { x: -10.15, z: 8.75, yaw: -Math.PI / 2 },
+  { x: 11.45, z: 1.15, yaw: Math.PI / 2, pose: 'stand' },
+  { x: 11.45, z: 2.15, yaw: Math.PI / 2, pose: 'stand' },
+  { x: 9.7, z: 1.55, yaw: Math.PI, pose: 'sit' },
 ]
 
 export const COPY_SPOTS = [
@@ -179,10 +181,13 @@ export const PORTALS = [
   { a: 'pantry', b: 'corridor', x: -5, z: -2.4, dir: 'v', from: -3.8, to: -1, color: '#f3c4b0' },
   { a: 'pantry', b: 'desk', x: -9, z: -1, dir: 'h', from: -13, to: -5, color: '#f0d0bc' },
   { a: 'corridor', b: 'desk', x: -1.2, z: -1, dir: 'h', from: -5, to: 3.4, color: '#f8e6c8' },
-  { a: 'corridor', b: 'meeting', x: 8.2, z: -1, dir: 'h', from: 3.4, to: 13, color: '#d5e4f2' },
+  { a: 'corridor', b: 'meeting', x: 5.75, z: -1, dir: 'h', from: 3.4, to: 8.3, color: '#d5e4f2' },
+  { a: 'corridor', b: 'coffee', x: 10.6, z: -1, dir: 'h', from: 8.3, to: 13, color: '#f6d7b8' },
+  { a: 'meeting', b: 'coffee', x: 8.3, z: 2.05, dir: 'v', from: -1, to: 4, color: '#f3dcc8' },
   { a: 'desk', b: 'meeting', x: 3.4, z: 1.5, dir: 'v', from: -1, to: 4, color: '#d7e4d4' },
   { a: 'desk', b: 'rest', x: -6.2, z: 4, dir: 'h', from: -13, to: 3.4, color: '#f6d0b0' },
-  { a: 'meeting', b: 'rest', x: 8.2, z: 4, dir: 'h', from: 3.4, to: 13, color: '#f3d7c4' },
+  { a: 'meeting', b: 'rest', x: 5.75, z: 4, dir: 'h', from: 3.4, to: 8.3, color: '#f3d7c4' },
+  { a: 'coffee', b: 'rest', x: 9.45, z: 4, dir: 'h', from: 8.3, to: 13, color: '#f6c9a8' },
 ]
 
 const PORTAL_GRAPH = new Map()
@@ -237,7 +242,8 @@ export function routeThrough(ax, az, bx, bz) {
 
 export const SIGNS = [
   { title: 'LOBBY', sub: 'Arrive', x: -10.4, z: 5.35 },
-  { title: 'MEETING', sub: 'Standup', x: 11.4, z: 0.35 },
+  { title: 'MEETING', sub: 'Standup', x: 4.15, z: 3.35 },
+  { title: 'COFFEE', sub: 'Café', x: 11.35, z: 3.35 },
   { title: 'DESKS', sub: 'The team', x: 2.15, z: 2.15 },
   { title: 'LIBRARY', sub: '', x: 5.15, z: -5.2 },
   { title: 'SNACKS', sub: '', x: -12.15, z: -1.7 },
@@ -254,7 +260,8 @@ export const PRESETS = {
   markets: deskShot,
   reviews: deskShot,
   opensource: { pos: [-4, 10, 9], target: [-4, 0.35, 3] },
-  meeting: { pos: [8.2, 8, 7.2], target: [8.2, 0.45, 1.4] },
+  meeting: { pos: [5.75, 7.2, 6.6], target: [5.75, 0.4, 1.5] },
+  coffee: { pos: [10.5, 6.2, 6.4], target: [10.7, 0.45, 1.55] },
   rest: { pos: [0, 10, 14], target: [0, 0.35, 6.4] },
   library: { pos: [8.4, 7.5, 0.4], target: [8.6, 0.5, -6.4] },
   pantry: { pos: [-7, 7, 1.5], target: [-9.2, 0.45, -2.5] },
@@ -269,6 +276,7 @@ export const ZONE_CHIPS = [
   { id: 'all', label: 'All' },
   { id: 'rest', label: 'Lobby' },
   { id: 'meeting', label: 'Meeting' },
+  { id: 'coffee', label: 'Coffee' },
   { id: 'desk', label: 'Desks' },
   { id: 'library', label: 'Library' },
   { id: 'pantry', label: 'Snacks' },
