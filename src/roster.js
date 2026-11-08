@@ -6,7 +6,7 @@ export const DEPARTMENTS = [
   { id: 'product', label: 'Product', blurb: 'Aevum · Helios' },
   { id: 'markets', label: 'Markets / Quant', blurb: 'Research nook' },
   { id: 'reviews', label: 'Reviews', blurb: 'Reads the work, then musk' },
-  { id: 'opensource', label: 'Open-source study', blurb: 'South wing' },
+  { id: 'opensource', label: 'Open-source study', blurb: 'Desk hall' },
 ]
 
 export const ROSTER = [

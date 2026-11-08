@@ -38,15 +38,15 @@ npm run check
 
 - **musk** 坐在玻璃隔間的角落辦公室。地毯與玻璃上都寫著大家向 musk 回報。
 - **Grok Bot** 是個人助理，桌子在 Assistant，不是主管。
-- 分得出來的房間：Meeting（會議桌）、Rest（休息區，閒置時坐這裡）、Library（書架與閱讀桌）、Pantry（茶水間）、Reception（接待處）、Markets 的研究螢幕、Servers，以及 Product、Reviews、Open-source study。
-- 開源研究的十位坐在南側一整排。
+- 一層樓的故事總部，房間靠在一起：入口是大廳（沙發、咖啡、時鐘），會議室就在旁邊，團隊坐同一間桌子廳。走廊岔出圖書館和點心吧，影印機在走廊盡頭附近。musk 的玻璃辦公室在這條路的盡頭，地上寫著 REPORTS TO MUSK。
+- 開源研究的十位跟大家坐在同一間桌子廳。
 - 預設每個人都是 **Idle**，坐在休息區。桌子是空的，名牌還在。沒有人在做「真的工作」。
 - 滑過角色會出現名字。點一下（或點名冊）會把鏡頭拉近，並跟著那位角色。
 - 兩個人說話時，中間會浮出對話雲；一個人自言自語也有。想事情是另一種思考雲：雲朵形，底下有一串小圓點連回頭上。
 - 點一個 **Idle** 的人，在頭頂對話雲裡打工作內容，按 Enter。對方會離開休息去做事；若寫到 PR、CI 或 plan，之後向 musk 回報時會沿著這句話。
 - 拖曳旋轉、滾輪或雙指縮放、右鍵平移。手機上有放大、縮小、回到全景。
 - 上方的分區按鈕把鏡頭帶到該區。
-- 接待處有一面「每週用量」牆，只寫稍後再接，**沒有任何數字**。
+- 大廳牆邊有一面「每週用量」板，只寫稍後再接，**沒有任何數字**。
 
 ## 一日工作
 
@@ -141,7 +141,7 @@ npm run dev
 
 Static build: `npm run build` then `npm run preview` (or host `dist/` yourself).
 
-Everyone starts **Idle** in the rest area. Each bot is a small stylized person — hair, face, and clothes in their own color. **musk** has the glass corner office and reads as the suited lead; the team reports to musk, and Grok Bot is a personal assistant at a regular desk. Rooms you can frame from the chips: Meeting, Rest, Library, Pantry, Reception, research screens, and Servers.
+Everyone starts **Idle** in the lobby. Each bot is a small stylized person — hair, face, and clothes in their own color. The floor is one compact storybook HQ: the lobby is the entrance (sofas, coffee, clock), the meeting room is beside it, and the team shares a desk hall. A corridor opens onto the library and a snack nook, with the copier nearby. **musk**'s glass corner office is at the end of that path; the floor there reads REPORTS TO MUSK. Grok Bot is a personal assistant at a desk in the hall, not a second boss. Chips frame Lobby, Meeting, Desks, Library, Snacks, Copier, and musk.
 
 Speech clouds sit between people who are talking, and a person talking to themselves gets one too. Thoughts use a scalloped cloud with small circles trailing back to the head. Click an idle bot and press Enter in the cloud by their head to assign work.
 
@@ -153,4 +153,4 @@ Speech clouds sit between people who are talking, and a person talking to themse
 
 Live status is `GET /api/status` on the dev server, or `public/status.json` anywhere static. Shape: `{ "bots": [{ "name", "state", "task", "plan?", "pr?", "ci?" }] }` with `state` of `idle | working | waiting | error | done`. `pr` is `open | closed | merged | none`. `ci` is `green | failed | pending | none`. Omitted bots stay idle. POST the same shape to the dev stub; omitted `plan`, `pr`, and `ci` keep their previous values. `{ "reset": true }` returns everyone to idle. The stub keeps the body in memory until the process restarts and does not accept the simulation or the workday. See the Chinese section for curl examples and the file map.
 
-The south wall is a weekly-usage placeholder. It has no numbers.
+A board in the lobby is a weekly-usage placeholder. It has no numbers.

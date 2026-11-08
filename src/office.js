@@ -11,8 +11,10 @@ import {
   MEETING_TABLE,
   PLANTS,
   REST_TABLE,
+  COPIER,
   PORTALS,
   SIGNS,
+  SNACK_BARS,
   SOFA_COLORS,
   ZONES,
 } from './layout.js'
@@ -242,7 +244,7 @@ function addCornerOffice(parent, mats) {
   parent.add(word)
 
   const shelf = new THREE.Group()
-  shelf.position.set(-20.5, 0, -16.15)
+  shelf.position.set(CORNER.x0 + 0.85, 0, CORNER.z0 + 1.45)
   shelf.rotation.y = Math.PI / 2
   parent.add(shelf)
   box(shelf, 1.3, 0.08, 0.28, 0, 0.7, 0, std(WOOD_TOP, 0.8))
@@ -256,10 +258,10 @@ function addCornerOffice(parent, mats) {
 }
 
 function addResearch(parent, research) {
-  const z = 2.35
-  const xs = [-10.1, -6.6, -3.2]
-  box(parent, 8.2, 0.08, 0.28, -6.6, 0.62, z + 0.16, std('#d9c7a4', 0.85))
-  for (const lx of [-10.2, -3.0]) {
+  const z = -5.05
+  const xs = [5.55, 6.85]
+  box(parent, 2.5, 0.08, 0.28, 6.2, 0.62, z + 0.16, std('#d9c7a4', 0.85))
+  for (const lx of [5.05, 7.35]) {
     box(parent, 0.06, 0.62, 0.22, lx, 0.31, z + 0.16, std(WOOD_LEG, 0.75))
   }
   xs.forEach((x, index) => {
@@ -273,7 +275,7 @@ function addResearch(parent, research) {
 }
 
 function addServers(parent, leds) {
-  const spots = [[-19.4, 11.4], [-19.4, 13.8], [-17.1, 12.6]]
+  const spots = [[5.05, -8.15], [5.05, -6.55]]
   const bodyMat = std('#262b30', 0.55, { metalness: 0.08 })
   spots.forEach(([x, z], rack) => {
     const group = new THREE.Group()
@@ -294,7 +296,9 @@ function addServers(parent, leds) {
 
 function addUsage(parent) {
   const group = new THREE.Group()
-  group.position.set(16.6, 0.95, 6.15)
+  group.position.set(12.72, 0.72, 6.85)
+  group.rotation.y = -Math.PI / 2
+  group.scale.setScalar(0.55)
   parent.add(group)
   box(group, 3.15, 1.7, 0.08, 0, 0, 0, std('#e7dccb', 0.9))
   const face = new THREE.Mesh(
@@ -338,12 +342,12 @@ function addPinboard(parent) {
     new THREE.BoxGeometry(1.15, 0.8, 0.04),
     std('#c6a36a', 0.95),
   )
-  board.position.set(-20.7, 1.05, -5.4)
+  board.position.set(CORNER.x0 + 0.16, 1.05, -7.55)
   board.rotation.y = Math.PI / 2
   parent.add(board)
   const notes = ['#f7f4ee', '#f3d7c6', '#e4efe4']
   notes.forEach((color, index) => {
-    const note = box(parent, 0.18, 0.22, 0.02, -20.66, 1.12, -5.7 + index * 0.28, std(color, 0.9), false)
+    const note = box(parent, 0.18, 0.22, 0.02, CORNER.x0 + 0.2, 1.12, -7.85 + index * 0.28, std(color, 0.9), false)
     note.rotation.y = Math.PI / 2
   })
 }
@@ -388,34 +392,33 @@ function addShelfUnit(parent, x, z, yaw) {
 }
 
 function addLibrary(parent) {
-  addShelfUnit(parent, 11.4, -7.15, 0)
-  addShelfUnit(parent, 14.6, -7.15, 0)
-  addShelfUnit(parent, 18.2, -7.15, 0)
-  addShelfUnit(parent, 20.85, -4.2, Math.PI / 2)
+  addShelfUnit(parent, 6.3, -8.55, 0)
+  addShelfUnit(parent, 8.7, -8.55, 0)
+  addShelfUnit(parent, 11.15, -8.55, 0)
+  addShelfUnit(parent, 12.45, -6.7, -Math.PI / 2)
   const wood = std(WOOD_TOP, 0.78)
-  box(parent, 1.6, 0.07, 0.8, 15.2, 0.72, -3.4, wood)
+  box(parent, 1.6, 0.07, 0.8, 8.5, 0.72, -6.35, wood)
   for (const [dx, dz] of [[-0.65, -0.28], [0.65, -0.28], [-0.65, 0.28], [0.65, 0.28]]) {
-    box(parent, 0.06, 0.68, 0.06, 15.2 + dx, 0.34, -3.4 + dz, std(WOOD_LEG, 0.72))
+    box(parent, 0.06, 0.68, 0.06, 8.5 + dx, 0.34, -6.35 + dz, std(WOOD_LEG, 0.72))
   }
-  box(parent, 0.28, 0.04, 0.2, 14.7, 0.78, -3.4, std('#f4f1ea', 0.9))
-  box(parent, 0.22, 0.04, 0.16, 15.5, 0.78, -3.25, std('#3c4f73', 0.85))
+  box(parent, 0.28, 0.04, 0.2, 8.05, 0.78, -6.35, std('#f4f1ea', 0.9))
+  box(parent, 0.22, 0.04, 0.16, 8.9, 0.78, -6.2, std('#3c4f73', 0.85))
 }
 
 function addPantry(parent) {
   const counter = std('#efe6d6', 0.82)
-  box(parent, 2.4, 0.08, 0.62, -19.6, 0.86, 3.2, counter)
-  box(parent, 2.4, 0.7, 0.5, -19.6, 0.4, 3.35, std('#c46a4a', 0.9))
-  cyl(parent, 0.07, 0.06, 0.1, -20.3, 0.96, 3.15, std('#f7f4ee', 0.5), 12, true)
-  cyl(parent, 0.06, 0.055, 0.09, -19.9, 0.95, 3.05, std('#3c4f73', 0.55), 12, true)
-  cyl(parent, 0.05, 0.045, 0.08, -19.2, 0.94, 3.2, std('#e09a4e', 0.55), 12, true)
-  box(parent, 0.55, 0.9, 0.5, -18.2, 0.45, 5.6, std('#d8d4ce', 0.7))
+  box(parent, 0.55, 0.08, 1.7, -11.35, 0.86, 8.15, counter)
+  box(parent, 0.48, 0.7, 1.6, -11.5, 0.4, 8.15, std('#c46a4a', 0.9))
+  cyl(parent, 0.06, 0.05, 0.09, -11.15, 0.95, 7.6, std('#f7f4ee', 0.5), 12, true)
+  cyl(parent, 0.055, 0.05, 0.08, -11.15, 0.94, 8.15, std('#3c4f73', 0.55), 12, true)
+  cyl(parent, 0.05, 0.045, 0.07, -11.15, 0.93, 8.65, std('#e09a4e', 0.55), 12, true)
 }
 
 function addReception(parent) {
   const wood = std(WOOD_TOP, 0.78)
-  box(parent, 2.2, 0.08, 0.62, 13.6, 0.9, 4.0, wood)
-  box(parent, 2.2, 0.84, 0.5, 13.6, 0.42, 4.15, std('#3e534c', 0.9))
-  box(parent, 0.34, 0.05, 0.24, 13.2, 0.98, 3.9, std('#f7f4ee', 0.85))
+  box(parent, 1.35, 0.08, 0.48, 4.5, 0.86, 7.05, wood)
+  box(parent, 1.35, 0.72, 0.4, 4.5, 0.4, 7.15, std('#3e534c', 0.9))
+  box(parent, 0.28, 0.04, 0.18, 4.2, 0.94, 6.95, std('#f7f4ee', 0.85))
 }
 
 export function buildOffice(roster) {
@@ -488,17 +491,12 @@ export function buildOffice(roster) {
     group.add(carpet)
   }
 
-  addCarpetLabel(group, 'REPORTS TO MUSK', -16.5, -10.2, 5.2)
-  addCarpetLabel(group, 'MEETING', -3.4, -15.6, 4.2)
-  addCarpetLabel(group, 'PRODUCT', 13.2, -15.7, 4.4)
-  addCarpetLabel(group, 'ASSISTANT', -16.6, -6.4, 3.8)
-  addCarpetLabel(group, 'LOBBY', -2.2, -6.9, 2.8)
-  addCarpetLabel(group, 'LIBRARY', 15.2, -6.5, 3.6)
-  addCarpetLabel(group, 'PANTRY', -17.6, 6.6, 2.8)
-  addCarpetLabel(group, 'MARKETS / QUANT', -6.6, 7.2, 5.2)
-  addCarpetLabel(group, 'REVIEWS', 5.0, 7.0, 3.4)
-  addCarpetLabel(group, 'RECEPTION', 16.4, 2.4, 3.6)
-  addCarpetLabel(group, 'OPEN-SOURCE STUDY', 4.2, 11.2, 8.6)
+  addCarpetLabel(group, 'REPORTS TO MUSK', -0.4, -6.7, 5.4)
+  addCarpetLabel(group, 'MEETING', 8.2, 3.25, 3.2)
+  addCarpetLabel(group, 'DESKS', -4.2, 1.75, 3.1)
+  addCarpetLabel(group, 'LOBBY', 4.6, 6.15, 3.2)
+  addCarpetLabel(group, 'LIBRARY', 8.8, -7.7, 3.2)
+  addCarpetLabel(group, 'SNACKS', -9.1, -2.15, 2.6)
 
   const wallH = 1.08
   box(group, 0.14, wallH, depth, BOUNDS.x0, wallH / 2, 0, mats.wall)
@@ -507,7 +505,7 @@ export function buildOffice(roster) {
   addWindows(group, mats)
 
   const sky = new THREE.Mesh(new THREE.PlaneGeometry(80, 28), new THREE.MeshBasicMaterial({ map: skyTexture(), toneMapped: false }))
-  sky.position.set(0, 8, -28)
+  sky.position.set(0, 6, -16)
   group.add(sky)
 
   addCornerOffice(group, mats)
@@ -550,18 +548,15 @@ export function buildOffice(roster) {
   clock.draw(new Date())
   const clockMat = new THREE.MeshBasicMaterial({ map: clock.tex, toneMapped: false })
   const clockMesh = new THREE.Mesh(new THREE.CircleGeometry(0.28, 28), clockMat)
-  clockMesh.position.set(-1.4, 1.55, 0.55)
+  clockMesh.position.set(2.15, 1.48, 8.35)
   group.add(clockMesh)
-  const lobbyPost = cyl(group, 0.04, 0.05, 1.15, -1.4, 0.55, 0.55, mats.frame, 8)
+  const lobbyPost = cyl(group, 0.04, 0.05, 1.15, 2.15, 0.55, 8.35, mats.frame, 8)
   lobbyPost.castShadow = true
-  const marketsClock = new THREE.Mesh(new THREE.CircleGeometry(0.2, 24), clockMat)
-  marketsClock.position.set(-6.6, 1.55, 2.55)
-  group.add(marketsClock)
 
   const digital = digitalClockTexture()
   digital.draw('9:00 AM', 'OFFICE TIME')
   const board = new THREE.Group()
-  board.position.set(2.4, 1.42, 0.45)
+  board.position.set(3.85, 1.35, 8.35)
   group.add(board)
   box(board, 1.45, 0.52, 0.06, 0, 0, 0, std('#24312e', 0.6))
   const face = new THREE.Mesh(
@@ -664,11 +659,7 @@ function addSnackBars(parent) {
   const fruit = std('#de5d4a', 0.55)
   const tin = std('#e2b340', 0.5)
   const cracker = std('#f7f1e4', 0.7)
-  const spots = [
-    [5.6, 0.42, 0],
-    [12.2, -9.35, 0],
-    [7.1, 10.85, Math.PI],
-  ]
+  const spots = SNACK_BARS.map((bar) => [bar.x, bar.z, bar.yaw])
   for (const [x, z, yaw] of spots) {
     const group = new THREE.Group()
     group.position.set(x, 0, z)
@@ -696,7 +687,8 @@ function woodSafe() {
 
 function addCopier(parent) {
   const group = new THREE.Group()
-  group.position.set(17.2, 0, 3.35)
+  group.position.set(COPIER.x, 0, COPIER.z)
+  group.rotation.y = -Math.PI / 2
   parent.add(group)
   const body = std('#f7f1e6', 0.72)
   const trim = std('#3e534c', 0.65)
@@ -718,7 +710,7 @@ function addCopier(parent) {
 function addCupProps(parent) {
   const mug = new THREE.CylinderGeometry(0.035, 0.028, 0.06, 10)
   const mat = std('#f4efe6', 0.55)
-  const spots = [[-3.35, 0.42, -3.2], [-2.9, 0.42, -3.35], [5.15, 0.98, 0.42], [-19.7, 0.96, 3.15]]
+  const spots = [[-2.45, 0.42, 6.4], [-1.85, 0.42, 6.7], [-11.05, 0.96, 7.6], [-7.2, 0.98, -2.7]]
   for (const [x, y, z] of spots) {
     const cup = new THREE.Mesh(mug, mat)
     cup.position.set(x, y, z)

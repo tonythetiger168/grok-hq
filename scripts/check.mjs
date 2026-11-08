@@ -1,11 +1,10 @@
 import { readFileSync } from 'node:fs'
 import { DEPARTMENTS, ROSTER } from '../src/roster.js'
-import { assertLayout } from '../src/layout.js'
+import { assertLayout, routeThrough, zoneAt } from '../src/layout.js'
 import { blankBots, mergeStatus, STATES } from '../src/status-model.js'
 import { formatOfficeTime, workdayAt } from '../src/day.js'
 import { factFromOps, summarizePulls } from '../src/ops-summary.js'
 import { arrangeOps, createStatus } from '../src/status.js'
-import { routeThrough } from '../src/layout.js'
 
 assertLayout(ROSTER)
 
@@ -97,8 +96,14 @@ const after = workdayAt(10 * 60 + 50).find((row) => row.id === 'grok-bot')
 if (!after || after.place === 'handoff') throw new Error('Follow-up should leave musk')
 if (!/plan|PR|CI/i.test(after.task)) throw new Error('Follow-up task should stay on the plan')
 
-const doors = routeThrough(12, -12, -16, -12)
-if (!doors.length) throw new Error('Product should walk through a doorway to musk')
+const doors = routeThrough(-2, 1.6, -9, -6.6)
+if (doors.length < 2) throw new Error('Desks should reach musk through the report path')
+if (zoneAt(0, 6.8) !== 'rest') throw new Error('Lobby should be the south entrance')
+if (zoneAt(8.2, 1.5) !== 'meeting') throw new Error('Meeting should sit on its own carpet')
+if (zoneAt(-9, -6.6) !== 'lead') throw new Error('musk keeps the glass corner')
+if (!routeThrough(0, 6.8, 11.2, -2.4).length) throw new Error('Copier should be reachable from the lobby')
+if (!routeThrough(0, 6.8, -9, -2.4).length) throw new Error('Snack nook should be reachable from the lobby')
+if (!routeThrough(-2, 1.6, 8.6, -6.2).length) throw new Error('Library should be reachable from the desks')
 
 const office = createStatus()
 if (office.assign('quant', '   ').ok) throw new Error('Empty assign should fail')
