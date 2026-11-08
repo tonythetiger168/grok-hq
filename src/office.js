@@ -258,10 +258,10 @@ function addCornerOffice(parent, mats) {
 }
 
 function addResearch(parent, research) {
-  const z = -5.05
-  const xs = [5.55, 6.85]
-  box(parent, 2.5, 0.08, 0.28, 6.2, 0.62, z + 0.16, std('#d9c7a4', 0.85))
-  for (const lx of [5.05, 7.35]) {
+  const z = -5.15
+  const xs = [12.2, 14.3]
+  box(parent, 3.2, 0.08, 0.28, 13.25, 0.62, z + 0.16, std('#d9c7a4', 0.85))
+  for (const lx of [11.7, 14.8]) {
     box(parent, 0.06, 0.62, 0.22, lx, 0.31, z + 0.16, std(WOOD_LEG, 0.75))
   }
   xs.forEach((x, index) => {
@@ -275,7 +275,7 @@ function addResearch(parent, research) {
 }
 
 function addServers(parent, leds) {
-  const spots = [[5.05, -8.15], [5.05, -6.55]]
+  const spots = [[15.7, -8.2], [15.7, -6.7]]
   const bodyMat = std('#262b30', 0.55, { metalness: 0.08 })
   spots.forEach(([x, z], rack) => {
     const group = new THREE.Group()
@@ -373,6 +373,60 @@ function addMeeting(parent) {
   for (const seat of MEETING_SEATS) addChair(parent, seat.x, seat.z, seat.yaw, '#3e534c', true)
 }
 
+function addSmallMeeting(parent) {
+  const wood = std(WOOD_TOP, 0.75)
+  cyl(parent, 0.55, 0.55, 0.07, 3.6, 0.7, 0.7, wood, 16, true)
+  cyl(parent, 0.05, 0.06, 0.64, 3.6, 0.32, 0.7, std(WOOD_LEG, 0.72), 8, true)
+  const seats = [
+    [3.6, -0.1, 0],
+    [3.6, 1.5, Math.PI],
+    [2.8, 0.7, Math.PI / 2],
+    [4.4, 0.7, -Math.PI / 2],
+  ]
+  for (const [x, z, yaw] of seats) addChair(parent, x, z, yaw, '#8d6a4a', true)
+}
+
+function addLargeMeeting(parent) {
+  const wood = std('#c4a574', 0.72)
+  box(parent, 3.15, 0.08, 1.35, 7.3, 0.74, -6.5, wood, true)
+  for (const [dx, dz] of [[-1.3, -0.48], [1.3, -0.48], [-1.3, 0.48], [1.3, 0.48]]) {
+    box(parent, 0.07, 0.7, 0.07, 7.3 + dx, 0.35, -6.5 + dz, std(WOOD_LEG, 0.72), true)
+  }
+  const seats = [
+    [5.45, -6.5, Math.PI / 2],
+    [9.15, -6.5, -Math.PI / 2],
+  ]
+  for (const x of [6.3, 7.0, 7.6, 8.2]) {
+    seats.push([x, -7.35, 0], [x, -5.65, Math.PI])
+  }
+  for (const [x, z, yaw] of seats) addChair(parent, x, z, yaw, '#3e534c', true)
+}
+
+function addJobsOffice(parent) {
+  const wood = std('#e7d3b0', 0.7)
+  box(parent, 1.7, 0.06, 0.7, 2.3, 0.74, -8.05, wood, true)
+  for (const [dx, dz] of [[-0.7, -0.25], [0.7, -0.25], [-0.7, 0.25], [0.7, 0.25]]) {
+    box(parent, 0.05, 0.7, 0.05, 2.3 + dx, 0.35, -8.05 + dz, std('#2c2926', 0.55), true)
+  }
+  addChair(parent, 2.3, -7.35, Math.PI, '#1c1e20', true)
+  const lamp = new THREE.Group()
+  lamp.position.set(3.55, 0, -8.7)
+  parent.add(lamp)
+  cyl(lamp, 0.12, 0.16, 0.04, 0, 0.04, 0, std('#c9845a', 0.7), 10, true)
+  cyl(lamp, 0.025, 0.025, 1.15, 0, 0.6, 0, std('#5c4636', 0.6), 6, false)
+  const shade = std('#ffe7c2', 0.4)
+  shade.emissive = new THREE.Color('#ffc56a')
+  shade.emissiveIntensity = 0.7
+  const shadeMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.22, 0.16, 12), shade)
+  shadeMesh.position.y = 1.2
+  lamp.add(shadeMesh)
+  const bulb = new THREE.PointLight('#ffc56a', 0.45, 3.5, 2)
+  bulb.position.set(3.55, 1.05, -8.7)
+  parent.add(bulb)
+  box(parent, 1.15, 0.7, 0.04, 2.2, 1.15, -9.15, std('#f7f4ee', 0.9), false)
+  box(parent, 0.9, 0.02, 0.01, 2.2, 1.15, -9.12, std('#3c4f73', 0.5), false)
+}
+
 function addCoffeeRoom(parent) {
   const wood = std('#c9845a', 0.72)
   const cream = std('#f6efe4', 0.8)
@@ -443,17 +497,16 @@ function addShelfUnit(parent, x, z, yaw) {
 }
 
 function addLibrary(parent) {
-  addShelfUnit(parent, 6.3, -8.55, 0)
-  addShelfUnit(parent, 8.7, -8.55, 0)
-  addShelfUnit(parent, 11.15, -8.55, 0)
-  addShelfUnit(parent, 12.45, -6.7, -Math.PI / 2)
+  addShelfUnit(parent, 11.3, -8.55, 0)
+  addShelfUnit(parent, 13.1, -8.55, 0)
+  addShelfUnit(parent, 14.9, -8.55, 0)
   const wood = std(WOOD_TOP, 0.78)
-  box(parent, 1.6, 0.07, 0.8, 8.5, 0.72, -6.35, wood)
+  box(parent, 1.6, 0.07, 0.8, 13.0, 0.72, -6.5, wood)
   for (const [dx, dz] of [[-0.65, -0.28], [0.65, -0.28], [-0.65, 0.28], [0.65, 0.28]]) {
-    box(parent, 0.06, 0.68, 0.06, 8.5 + dx, 0.34, -6.35 + dz, std(WOOD_LEG, 0.72))
+    box(parent, 0.06, 0.68, 0.06, 13.0 + dx, 0.34, -6.5 + dz, std(WOOD_LEG, 0.72))
   }
-  box(parent, 0.28, 0.04, 0.2, 8.05, 0.78, -6.35, std('#f4f1ea', 0.9))
-  box(parent, 0.22, 0.04, 0.16, 8.9, 0.78, -6.2, std('#3c4f73', 0.85))
+  box(parent, 0.28, 0.04, 0.2, 12.55, 0.78, -6.5, std('#f4f1ea', 0.9))
+  box(parent, 0.22, 0.04, 0.16, 13.4, 0.78, -6.35, std('#3c4f73', 0.85))
 }
 
 function addPantry(parent) {
@@ -543,14 +596,17 @@ export function buildOffice(roster) {
   }
 
   addCarpetLabel(group, 'REPORTS TO MUSK', -0.4, -6.7, 5.4)
-  addCarpetLabel(group, 'MEETING', 6.6, 4.95, 2.2)
+  addCarpetLabel(group, 'MEETING M', 6.6, 4.95, 2.3)
+  addCarpetLabel(group, 'MEETING S', 3.6, 2.15, 1.8)
+  addCarpetLabel(group, 'MEETING L', 7.3, -8.35, 2.6)
+  addCarpetLabel(group, 'JOBS', 2.3, -8.55, 1.8)
   addCarpetLabel(group, 'KITCHEN', 10.7, 4.85, 2.4)
   addCarpetLabel(group, 'PRINTERS', 14.7, 4.7, 2.1)
   addCarpetLabel(group, 'REC', 11.2, 8.35, 2.2)
   addCarpetLabel(group, 'DESKS', -4.2, 2.5, 3.1)
   addCarpetLabel(group, 'LOBBY', -9.5, 7.7, 2.3)
   addCarpetLabel(group, 'REST', -0.3, 7.55, 2.3)
-  addCarpetLabel(group, 'LIBRARY', 8.8, -7.7, 3.2)
+  addCarpetLabel(group, 'LIBRARY', 13.4, -7.6, 2.6)
   addCarpetLabel(group, 'SNACKS', -9.1, -2.15, 2.6)
 
   const wallH = 1.08
@@ -565,6 +621,9 @@ export function buildOffice(roster) {
 
   addCornerOffice(group, mats)
   addMeeting(group)
+  addSmallMeeting(group)
+  addLargeMeeting(group)
+  addJobsOffice(group)
   addCoffeeRoom(group)
   addRestRoom(group)
   addRecRoom(group)

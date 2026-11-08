@@ -38,7 +38,7 @@ npm run check
 
 - **musk** 坐在玻璃隔間的角落辦公室。地毯與玻璃上都寫著大家向 musk 回報。
 - **Grok Bot** 是個人助理，桌子在 Assistant，不是主管。
-- 一層樓的故事總部，樣子參考過別的 3D 辦公室，家具是自己畫的。入口是一小間大廳：沙發、迎接、時鐘。玻璃會議室 Meeting 看得到裡面的會議桌。Kitchen 是廚房兼咖啡室：流理台、冰箱、咖啡機。休息和遊戲在同一翼：Rest 有沙發和電視，Rec 有乒乓球桌、街機，還有一台會發光的點唱機。Printers 是影印室。Library 是書架。Rec 外面有一扇玻璃門，通到小陽台，上面有長椅、小桌和植物。團隊坐同一間桌子廳。走廊岔出點心吧。musk 的玻璃辦公室在路的盡頭，地上寫著 REPORTS TO MUSK。
+- 一層樓的故事總部，樣子參考過別的 3D 辦公室，家具是自己畫的。入口是一小間大廳。會議室有三間：Meeting S 是小間，Meeting M 是玻璃站會間，Meeting L 是大桌。Jobs 是另一間有名字的辦公室，跟 musk 的玻璃間分開；大家仍然向 musk 回報，musk 地上寫著 REPORTS TO MUSK。Kitchen 是廚房兼咖啡室。Rest 和 Rec 在同一翼：沙發、電視、乒乓球、街機、點唱機。Printers 是影印室。Library 是書架。Rec 外面是小陽台。團隊坐同一間桌子廳。走廊岔出點心吧。
 - 開源研究的十位跟大家坐在同一間桌子廳。
 - 預設每個人都是 **Idle**，坐在休息區。桌子是空的，名牌還在。沒有人在做「真的工作」。
 - 滑過角色會出現名字。點一下（或點名冊）會把鏡頭拉近，並跟著那位角色。
@@ -50,7 +50,7 @@ npm run check
 
 ## 一日工作
 
-「Workday」按鈕，或網址 `?day=1`，用幾分鐘演完 9:00 AM 到 6:00 PM。人從大廳進來，站會走進玻璃會議室，咖啡走進廚房，休息坐 Rest，玩一下在 Rec，影印走進 Printers，也有人到陽台坐一下。其他人在桌子、圖書館或點心吧。一次只有一個人把文件拿給 musk。這只在這個分頁裡演，不會寫入 `status.json`。
+「Workday」按鈕，或網址 `?day=1`，用幾分鐘演完 9:00 AM 到 6:00 PM。站會走進 Meeting M 的門口。咖啡在廚房，休息和遊戲在 Rest / Rec，影印走進 Printers。一次只有一個人把文件拿給 musk。這只在這個分頁裡演，不會寫入 `status.json`。
 
 ## 模擬工作
 
@@ -143,11 +143,11 @@ Static build: `npm run build` then `npm run preview` (or host `dist/` yourself).
 
 Everyone starts **Idle**, a few in the lobby and the rest in the Rest room. Each bot is a small stylized person. The floor is one compact storybook HQ. Other 3D offices were the map to aim at; the furniture here is original.
 
-The **lobby** is a small entrance nook: sofas, a greeting, and the clock. **Meeting** is a glass room, so the standup table is visible from outside. **Kitchen** is the café: counter, fridge, and coffee machine. **Rest** and **Rec** share one south wing: sofas and a TV on the rest side, ping-pong, arcade cabinets, and a glowing jukebox on the rec side. **Printers** is the copy room. **Library** is the bookshelf. Glass doors open from Rec onto a small **balcony** with a bench, a bistro table, and plants. The team shares a desk hall. A corridor still has the snack nook. **musk**'s glass office is at the end of the path; the carpet reads REPORTS TO MUSK. Grok Bot is a personal assistant at a desk in the hall. Chips frame Lobby, Rest, Meeting, Kitchen, Printers, Rec, Balcony, Desks, Library, Snacks, and musk.
+The **lobby** is a small entrance nook. There are three meeting rooms: **Meeting S** is a huddle, **Meeting M** is the glass standup room, and **Meeting L** is the larger all-hands table. **Jobs** is a second named office, with its own table, lamp, and whiteboard. It is not musk’s office. Everyone still reports to **musk**; that carpet still reads REPORTS TO MUSK. **Kitchen** is the café. **Rest** and **Rec** share the south wing: sofas, a TV, ping-pong, arcade cabinets, and a jukebox. **Printers**, **Library**, the snack nook, the desk hall, and the small **balcony** stay. Chips include Meet S, Meet M, Meet L, and Jobs.
 
 Speech clouds sit between people who are talking, and a person talking to themselves gets one too. Thoughts use a scalloped cloud with small circles trailing back to the head. Click an idle bot and press Enter in the cloud by their head to assign work.
 
-**Workday** (`?day=1`, optional `?at=10:30`) plays 9:00 AM–6:00 PM in a few minutes. People walk through doorways: standup in the glass meeting room, coffee in the kitchen, rest on the sofas, a game in Rec, copies in Printers, a minute on the balcony, snacks off the corridor, and one report to musk at a time. It never writes `status.json`.
+**Workday** (`?day=1`, optional `?at=10:30`) plays 9:00 AM–6:00 PM in a few minutes. Standup walks through the doorway into Meeting M. Coffee, rest, rec, copies, the balcony, and one report to musk still use their own doors. It never writes `status.json`.
 
 **Simulate work** (`?simulate=1`, `?demo`, or `#demo`) plays a busy day in that browser tab only. Working bots sit at desks or gather for a standup. Waiting bots wave by a desk or at the meeting-room doorway. Finished bots carry a folder into musk's office, then return to the rest area. It never writes `status.json` and never POSTs to `/api/status`. A **SIMULATION** badge stays on screen.
 
