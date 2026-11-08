@@ -112,6 +112,9 @@ if (!routeThrough(-9.2, 7.6, -9, -2.4).length) throw new Error('Snack nook shoul
 const wind = workdayAt(17 * 60 + 40).find((row) => row.id === 'aevum')
 if (!wind || wind.place !== 'lounge') throw new Error('Wind-down should walk into the rest room')
 if (!routeThrough(-2, 1.6, 8.6, -6.2).length) throw new Error('Library should be reachable from the desks')
+if (zoneAt(7.85, 7.45) !== 'rec') throw new Error('Rec should be its own room')
+if (!routeThrough(-9.2, 7.6, 6.15, 7.45).length) throw new Error('Rec should be reachable from the lobby')
+if (!routeThrough(-2, 1.6, 14.55, 7.55).length) throw new Error('Rec should be reachable from the desks')
 
 const office = createStatus()
 if (office.assign('quant', '   ').ok) throw new Error('Empty assign should fail')

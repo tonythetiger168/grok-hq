@@ -392,7 +392,7 @@ function addCoffeeRoom(parent) {
     cyl(bar, 0.045, 0.035, 0.07, cx, 0.9, 0.05, std(cup, 0.55), 10, true)
   }
 
-  const tables = [[9.7, 1.2], [10.3, 6.75]]
+  const tables = [[9.7, 1.2], [10.3, 4.15]]
   for (const [x, z] of tables) {
     cyl(parent, 0.32, 0.32, 0.06, x, 0.7, z, wood, 16, true)
     cyl(parent, 0.04, 0.05, 0.66, x, 0.33, z, std(WOOD_LEG, 0.7), 8, true)
@@ -404,7 +404,7 @@ function addCoffeeRoom(parent) {
   const lampMat = std('#ffe0bf', 0.35)
   lampMat.emissive = new THREE.Color('#ffb15a')
   lampMat.emissiveIntensity = 1.1
-  for (const [x, z] of [[9.7, 1.2], [10.3, 6.75], [12.05, 1.7]]) {
+  for (const [x, z] of [[9.7, 1.2], [10.3, 4.15], [12.05, 1.7]]) {
     cyl(parent, 0.012, 0.012, 0.55, x, 1.55, z, std('#5c4636', 0.6), 6, false)
     const shade = new THREE.Mesh(new THREE.SphereGeometry(0.1, 12, 10), lampMat)
     shade.position.set(x, 1.22, z)
@@ -535,9 +535,10 @@ export function buildOffice(roster) {
   }
 
   addCarpetLabel(group, 'REPORTS TO MUSK', -0.4, -6.7, 5.4)
-  addCarpetLabel(group, 'MEETING', 6.6, 6.7, 2.4)
-  addCarpetLabel(group, 'COFFEE', 10.7, 7.5, 2.4)
-  addCarpetLabel(group, 'PRINTERS', 14.7, 7.4, 2.3)
+  addCarpetLabel(group, 'MEETING', 6.6, 4.95, 2.2)
+  addCarpetLabel(group, 'COFFEE', 10.7, 4.85, 2.2)
+  addCarpetLabel(group, 'PRINTERS', 14.7, 4.7, 2.1)
+  addCarpetLabel(group, 'REC', 11.2, 8.35, 2.2)
   addCarpetLabel(group, 'DESKS', -4.2, 2.5, 3.1)
   addCarpetLabel(group, 'LOBBY', -9.5, 7.7, 2.3)
   addCarpetLabel(group, 'REST', -0.3, 7.55, 2.3)
@@ -558,6 +559,7 @@ export function buildOffice(roster) {
   addMeeting(group)
   addCoffeeRoom(group)
   addRestRoom(group)
+  addRecRoom(group)
   addLibrary(group)
   addPantry(group)
   addReception(group)
@@ -733,6 +735,64 @@ function woodSafe() {
   return std('#8d684c', 0.75)
 }
 
+function addRecRoom(parent) {
+  const felt = std('#3f8f72', 0.72)
+  const line = std('#f7f4ee', 0.9)
+  const table = new THREE.Group()
+  table.position.set(7.85, 0, 7.45)
+  parent.add(table)
+  box(table, 2.35, 0.08, 1.22, 0, 0.74, 0, felt, true)
+  box(table, 2.45, 0.1, 0.08, 0, 0.7, 0.62, std('#6b4c38', 0.75), true)
+  box(table, 2.45, 0.1, 0.08, 0, 0.7, -0.62, std('#6b4c38', 0.75), true)
+  box(table, 0.08, 0.1, 1.28, -1.18, 0.7, 0, std('#6b4c38', 0.75), true)
+  box(table, 0.08, 0.1, 1.28, 1.18, 0.7, 0, std('#6b4c38', 0.75), true)
+  for (const lx of [-0.9, 0.9]) {
+    for (const lz of [-0.45, 0.45]) box(table, 0.06, 0.66, 0.06, lx, 0.33, lz, std('#8d684c', 0.75), true)
+  }
+  box(table, 0.02, 0.01, 1.05, 0, 0.785, 0, line, false)
+  box(table, 1.7, 0.01, 0.02, 0, 0.785, 0, line, false)
+  box(table, 0.04, 0.16, 1.05, 0, 0.9, 0, std('#f4efe6', 0.85), false)
+  box(table, 0.16, 0.02, 0.28, -0.85, 0.8, 0.28, std('#d4533c', 0.6), false)
+  box(table, 0.16, 0.02, 0.28, 0.85, 0.8, -0.22, std('#3c5f8a', 0.6), false)
+  const ball = new THREE.Mesh(new THREE.SphereGeometry(0.045, 12, 10), std('#fffaf3', 0.4))
+  ball.position.set(0.2, 0.84, 0.15)
+  table.add(ball)
+
+  const screenTex = new THREE.CanvasTexture(arcadeFace())
+  screenTex.colorSpace = THREE.SRGBColorSpace
+  const glow = new THREE.MeshBasicMaterial({ map: screenTex, toneMapped: false })
+  const cabinets = [[15.55, 6.7], [15.55, 7.55], [15.55, 8.4]]
+  cabinets.forEach(([x, z], index) => {
+    const cab = new THREE.Group()
+    cab.position.set(x, 0, z)
+    cab.rotation.y = -Math.PI / 2
+    parent.add(cab)
+    const body = std(index === 1 ? '#3a2a55' : '#2c3148', 0.6)
+    box(cab, 0.62, 1.35, 0.48, 0, 0.68, 0, body, true)
+    box(cab, 0.5, 0.08, 0.42, 0, 1.28, 0.08, std('#1c1824', 0.5), true)
+    const screen = new THREE.Mesh(new THREE.PlaneGeometry(0.36, 0.42), glow)
+    screen.position.set(0, 0.95, 0.25)
+    cab.add(screen)
+    cyl(cab, 0.025, 0.03, 0.08, -0.1, 0.62, 0.22, std('#e2b340', 0.45), 8, false)
+    box(cab, 0.08, 0.02, 0.05, 0.08, 0.58, 0.22, std('#d4533c', 0.55), false)
+  })
+}
+
+function arcadeFace() {
+  const canvas = document.createElement('canvas')
+  canvas.width = 64
+  canvas.height = 80
+  const ctx = canvas.getContext('2d')
+  ctx.fillStyle = '#1a1030'
+  ctx.fillRect(0, 0, 64, 80)
+  const pixels = ['#7cf0d2', '#f2d15a', '#ef6d8a', '#8eb6ff']
+  for (let i = 0; i < 18; i += 1) {
+    ctx.fillStyle = pixels[i % pixels.length]
+    ctx.fillRect(6 + (i * 7) % 48, 8 + (i * 11) % 58, 8, 8)
+  }
+  return canvas
+}
+
 function addRestRoom(parent) {
   const lampMat = std('#ffe7cf', 0.4)
   lampMat.emissive = new THREE.Color('#ffc48a')
@@ -758,7 +818,7 @@ function addPrintersRoom(parent) {
   box(mate, 0.62, 0.58, 0.42, 0, 0.42, 0, std('#ece7df', 0.75), true)
   box(mate, 0.5, 0.06, 0.36, 0, 0.74, 0, std('#3e534c', 0.65), true)
   box(mate, 0.28, 0.16, 0.22, 0.55, 0.2, 0, std('#f7f1e6', 0.8), true)
-  for (const [px, pz, tall] of [[13.55, 0.55, 0.28], [13.55, 0.85, 0.18], [14.55, 7.35, 0.22]]) {
+  for (const [px, pz, tall] of [[13.55, 0.55, 0.28], [13.55, 0.85, 0.18], [14.55, 4.45, 0.22]]) {
     box(parent, 0.32, 0.04, 0.24, px, 0.16 + tall, pz, std('#fffaf3', 0.9), false)
     box(parent, 0.34, tall, 0.26, px, tall / 2, pz, std('#d9c7a4', 0.85), true)
   }

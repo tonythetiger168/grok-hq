@@ -114,7 +114,7 @@ function propose(slot, bots, booked, elapsed) {
     return { kind: 'speech', a: meet[0], b: meet[1], lineA, lineB, hold: 3.4, maxDist: 3.8, center: 'pair' }
   }
   if (slot.role === 'pair') {
-    const resting = bots.filter((bot) => ready(bot, elapsed) && ['rest', 'lobby', 'lounge', 'snack', 'pantry'].includes(bot.place) && (bot.state === 'idle' || bot.cup) && !booked.has(bot))
+    const resting = bots.filter((bot) => ready(bot, elapsed) && ['rest', 'lobby', 'lounge', 'snack', 'pantry', 'rec'].includes(bot.place) && (bot.state === 'idle' || bot.cup) && !booked.has(bot))
     const rest = bestPair(resting, 0.7, 2.35, bucket)
     if (!rest) return null
     const [lineA, lineB] = pairLines('rest', rest[0], rest[1], bucket)

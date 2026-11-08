@@ -173,7 +173,8 @@ export function parseWork(text) {
     fact = 'plan'
   }
   let workPlace = 'desk'
-  if (/copy|print/.test(t)) workPlace = 'copy'
+  if (/ping|pong|arcade/.test(t)) workPlace = 'rec'
+  else if (/copy|print/.test(t)) workPlace = 'copy'
   else if (/coffee|snack|tea|lobby/.test(t)) workPlace = 'snack'
   else if (/library|read/.test(t)) workPlace = 'library'
   const follow = fact === 'ci-failed' ? 'fix-ci' : fact === 'pr-closed' ? 'next-step' : fact === 'pr-open' ? 'review-pr' : 'next-step'
@@ -206,10 +207,11 @@ function focusRow(bot, minute) {
   const facts = ['plan', 'pr-open', 'ci-green', 'ci-failed', 'pr-closed']
   const fact = facts[(block + Math.floor(u * 5)) % facts.length]
   const spot = Math.floor(u * 7)
-  if (roll < 0.48) return { state: 'working', place: 'desk', fact, task: factTask(bot, fact), spot, cup: 'none' }
-  if (roll < 0.64) return { state: 'working', place: 'library', fact, task: `Reading the plan for ${bitOf(bot.id)}`, spot: spot % 3, cup: 'none' }
-  if (roll < 0.8) return { state: 'idle', place: 'snack', fact, task: `Snack break, still on ${bitOf(bot.id)}`, spot: spot % 7, cup: roll < 0.72 ? 'sip' : 'hand' }
-  if (roll < 0.9) return { state: 'idle', place: 'pantry', fact, task: 'Coffee, then back to the plan', spot: spot % 3, cup: 'hand' }
+  if (roll < 0.42) return { state: 'working', place: 'desk', fact, task: factTask(bot, fact), spot, cup: 'none' }
+  if (roll < 0.56) return { state: 'working', place: 'library', fact, task: `Reading the plan for ${bitOf(bot.id)}`, spot: spot % 3, cup: 'none' }
+  if (roll < 0.7) return { state: 'idle', place: 'snack', fact, task: `Snack break, still on ${bitOf(bot.id)}`, spot: spot % 7, cup: roll < 0.66 ? 'sip' : 'hand' }
+  if (roll < 0.82) return { state: 'idle', place: 'pantry', fact, task: 'Coffee, then back to the plan', spot: spot % 3, cup: 'hand' }
+  if (roll < 0.93) return { state: 'idle', place: 'rec', fact, task: 'A game in the rec room, then the plan', spot: spot % 4, cup: 'none' }
   return { state: 'idle', place: 'lounge', fact, task: 'Resting with the plan', spot: spot % 4, cup: 'sip' }
 }
 
@@ -322,7 +324,7 @@ export function workdayAt(minute, intel = new Map()) {
         const u = unit(bot.id)
         next = row(bot, {
           beat,
-          place: u < 0.28 ? 'lounge' : u < 0.5 ? 'lobby' : u < 0.75 ? 'snack' : 'pantry',
+          place: u < 0.22 ? 'lounge' : u < 0.42 ? 'rec' : u < 0.68 ? 'snack' : 'pantry',
           spot: Math.floor(u * 7),
           cup: 'sip',
           task: 'Lunch. The plan can sit.',

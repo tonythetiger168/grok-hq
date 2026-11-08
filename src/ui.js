@@ -15,6 +15,7 @@ const WHERE = {
   pantry: 'Getting coffee.',
   snack: 'At a snack bar.',
   copy: 'At the copier.',
+  rec: 'In the rec room.',
 }
 
 function esc(value) {

@@ -20,9 +20,10 @@ export const ZONES = [
   { id: 'pantry', title: 'SNACKS', sub: '', carpet: 'SNACKS', x: -13, z: -3.8, w: 8, d: 2.8, color: '#f0cbb8' },
   { id: 'corridor', title: 'CORRIDOR', sub: '', carpet: '', x: -5, z: -3.8, w: 21.6, d: 2.8, color: '#f3e6cf' },
   { id: 'desk', title: 'DESKS', sub: 'The team', carpet: 'DESKS', x: -13, z: -1, w: 17.6, d: 6.6, color: '#d5e0d4' },
-  { id: 'meeting', title: 'MEETING', sub: 'Standup', carpet: 'MEETING', x: 4.6, z: -1, w: 4, d: 10.2, color: '#d5dbe3' },
-  { id: 'coffee', title: 'COFFEE', sub: 'Café', carpet: 'COFFEE', x: 8.6, z: -1, w: 4.4, d: 10.2, color: '#f3c9a4' },
-  { id: 'printers', title: 'PRINTERS', sub: 'Copy', carpet: 'PRINTERS', x: 13, z: -1, w: 3.6, d: 10.2, color: '#e4e7ea' },
+  { id: 'meeting', title: 'MEETING', sub: 'Standup', carpet: 'MEETING', x: 4.6, z: -1, w: 4, d: 6.6, color: '#d5dbe3' },
+  { id: 'coffee', title: 'COFFEE', sub: 'Café', carpet: 'COFFEE', x: 8.6, z: -1, w: 4.4, d: 6.6, color: '#f3c9a4' },
+  { id: 'printers', title: 'PRINTERS', sub: 'Copy', carpet: 'PRINTERS', x: 13, z: -1, w: 3.6, d: 6.6, color: '#e4e7ea' },
+  { id: 'rec', title: 'REC', sub: 'Play', carpet: 'REC', x: 4.6, z: 5.6, w: 12, d: 3.6, color: '#e3d4f2' },
   { id: 'rest', title: 'LOBBY', sub: 'Arrive', carpet: 'LOBBY', x: -13, z: 5.6, w: 7.8, d: 3.6, color: '#f0d8c6' },
   { id: 'lounge', title: 'REST', sub: 'Sit', carpet: 'REST', x: -5.2, z: 5.6, w: 9.8, d: 3.6, color: '#e7d5c8' },
 ]
@@ -160,6 +161,14 @@ export const PANTRY_SPOTS = [
   { x: 9.7, z: 1.55, yaw: Math.PI, pose: 'sit' },
 ]
 
+/** Break spots in the rec room: two at ping-pong, two at the arcade. */
+export const REC_SPOTS = [
+  { x: 6.15, z: 7.45, yaw: Math.PI / 2, pose: 'stand' },
+  { x: 9.55, z: 7.45, yaw: -Math.PI / 2, pose: 'stand' },
+  { x: 14.55, z: 6.75, yaw: Math.PI / 2, pose: 'stand' },
+  { x: 14.55, z: 8.15, yaw: Math.PI / 2, pose: 'stand' },
+]
+
 export const COPY_SPOTS = [
   { x: 14.15, z: 1.55, yaw: Math.PI / 2, pose: 'stand' },
   { x: 14.15, z: 2.55, yaw: Math.PI / 2, pose: 'stand' },
@@ -195,14 +204,17 @@ export const PORTALS = [
   { a: 'corridor', b: 'desk', x: -1.2, z: -1, dir: 'h', from: -5, to: 3.4, color: '#f8e6c8' },
   { a: 'corridor', b: 'meeting', x: 6.6, z: -1, dir: 'h', from: 4.6, to: 8.6, color: '#d5e4f2' },
   { a: 'corridor', b: 'coffee', x: 10.8, z: -1, dir: 'h', from: 8.6, to: 13, color: '#f6d7b8' },
-  { a: 'meeting', b: 'coffee', x: 8.6, z: 3.4, dir: 'v', from: -1, to: 9.2, color: '#f3dcc8' },
+  { a: 'meeting', b: 'coffee', x: 8.6, z: 2.2, dir: 'v', from: -1, to: 5.6, color: '#f3dcc8' },
   { a: 'desk', b: 'meeting', x: 4.6, z: 1.5, dir: 'v', from: -1, to: 5.6, color: '#d7e4d4' },
-  { a: 'lounge', b: 'meeting', x: 4.6, z: 7.4, dir: 'v', from: 5.6, to: 9.2, color: '#e7d8cc' },
+  { a: 'lounge', b: 'rec', x: 4.6, z: 7.4, dir: 'v', from: 5.6, to: 9.2, color: '#e4d0f0' },
   { a: 'desk', b: 'rest', x: -9.2, z: 5.6, dir: 'h', from: -13, to: -5.2, color: '#f6d0b0' },
   { a: 'desk', b: 'lounge', x: -0.5, z: 5.6, dir: 'h', from: -5.2, to: 4.6, color: '#ead4c4' },
   { a: 'rest', b: 'lounge', x: -5.2, z: 7.5, dir: 'v', from: 5.6, to: 9.2, color: '#f0d2c0' },
-  { a: 'coffee', b: 'printers', x: 13, z: 4.2, dir: 'v', from: -1, to: 9.2, color: '#e7e4de' },
+  { a: 'coffee', b: 'printers', x: 13, z: 2.2, dir: 'v', from: -1, to: 5.6, color: '#e7e4de' },
   { a: 'corridor', b: 'printers', x: 14.8, z: -1, dir: 'h', from: 13, to: 16.6, color: '#e4e8ea' },
+  { a: 'meeting', b: 'rec', x: 6.6, z: 5.6, dir: 'h', from: 4.6, to: 8.6, color: '#d9c8ee' },
+  { a: 'coffee', b: 'rec', x: 10.8, z: 5.6, dir: 'h', from: 8.6, to: 13, color: '#e6d4f4' },
+  { a: 'printers', b: 'rec', x: 14.8, z: 5.6, dir: 'h', from: 13, to: 16.6, color: '#ddd0ee' },
 ]
 
 const PORTAL_GRAPH = new Map()
@@ -258,9 +270,10 @@ export function routeThrough(ax, az, bx, bz) {
 export const SIGNS = [
   { title: 'LOBBY', sub: 'Arrive', x: -12.15, z: 7.55 },
   { title: 'REST', sub: 'Sit', x: 0.2, z: 7.05 },
-  { title: 'MEETING', sub: 'Standup', x: 5.35, z: 6.6 },
-  { title: 'COFFEE', sub: 'Café', x: 9.4, z: 7.2 },
-  { title: 'PRINTERS', sub: 'Copy', x: 15.15, z: 7.1 },
+  { title: 'MEETING', sub: 'Standup', x: 5.35, z: 4.85 },
+  { title: 'COFFEE', sub: 'Café', x: 9.4, z: 4.7 },
+  { title: 'PRINTERS', sub: 'Copy', x: 14.2, z: 4.55 },
+  { title: 'REC', sub: 'Play', x: 11.4, z: 8.45 },
   { title: 'DESKS', sub: 'The team', x: 2.4, z: 2.4 },
   { title: 'LIBRARY', sub: '', x: 5.15, z: -5.2 },
   { title: 'SNACKS', sub: '', x: -12.15, z: -1.7 },
@@ -279,7 +292,8 @@ export const PRESETS = {
   opensource: { pos: [-4, 10, 9], target: [-4, 0.35, 3] },
   meeting: { pos: [6.6, 8, 8.2], target: [6.6, 0.4, 3.6] },
   coffee: { pos: [10.7, 8, 10], target: [10.8, 0.45, 4.2] },
-  printers: { pos: [14.7, 8, 10], target: [14.8, 0.45, 4.2] },
+  printers: { pos: [14.7, 8, 9], target: [14.8, 0.45, 2.4] },
+  rec: { pos: [10.4, 8.2, 12.2], target: [10.6, 0.4, 7.4] },
   rest: { pos: [-9.4, 9.5, 11.2], target: [-9.6, 0.2, 7.6] },
   lounge: { pos: [-0.2, 9.2, 11.4], target: [-0.3, 0.2, 7.5] },
   library: { pos: [8.4, 7.5, 0.4], target: [8.6, 0.5, -6.4] },
@@ -298,6 +312,7 @@ export const ZONE_CHIPS = [
   { id: 'meeting', label: 'Meeting' },
   { id: 'coffee', label: 'Coffee' },
   { id: 'printers', label: 'Printers' },
+  { id: 'rec', label: 'Rec' },
   { id: 'desk', label: 'Desks' },
   { id: 'library', label: 'Library' },
   { id: 'pantry', label: 'Snacks' },
