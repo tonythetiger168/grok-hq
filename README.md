@@ -4,6 +4,10 @@
 
 這是獨立作品，**不是 xAI 的官方產品，也與 xAI 沒有從屬或合作關係**。名稱只用來稱呼這支機器人團隊。
 
+![Workday：大廳時鐘、站會，以及 musk 對一份還開著的 PR 做決定](docs/demo.gif)
+
+這段是 **Workday**（`?day=1`）：時鐘往前走，人在大廳和會議室之間移動，對話雲和思考雲會出現。點一個 **Idle** 的人，在頭頂雲朵裡打字，按 Enter 派工作。
+
 ## 怎麼跑
 
 需要 Node.js 20 或更新版本。
@@ -109,6 +113,8 @@ curl -s -X POST http://127.0.0.1:4317/api/status \
 ## English
 
 An independent 3D office for the Grok Bot team. It is not an official xAI product and is not affiliated with xAI. **musk** is the leader every bot reports to; that line is on the glass office and the floor.
+
+The clip at the top is **Workday** (`?day=1`): the clock runs, people move through the lobby and standup, and musk decides on an open PR. Click an idle bot and press Enter to assign work.
 
 ```bash
 git clone https://github.com/tonythetiger168/grok-hq.git
