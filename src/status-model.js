@@ -26,11 +26,11 @@ export function blankBots() {
   }))
 }
 
-const byLower = new Map(ROSTER.map((bot) => [bot.name.toLowerCase(), bot.name]))
-
 export function canonicalName(name) {
   if (typeof name !== 'string') return null
-  return byLower.get(name.trim().toLowerCase()) || null
+  const key = name.trim().toLowerCase()
+  const bot = ROSTER.find((item) => item.name.toLowerCase() === key)
+  return bot?.name || null
 }
 
 /**

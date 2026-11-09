@@ -3,6 +3,20 @@ import path from 'node:path'
 import { defineConfig } from 'vite'
 import { blankBots, mergeStatus } from './src/status-model.js'
 import { enrichBots, githubOps } from './scripts/github-ops.mjs'
+import { setTeam } from './src/team.js'
+
+function readTeam() {
+  const file = path.resolve('public/team.json')
+  setTeam(JSON.parse(fs.readFileSync(file, 'utf8')))
+}
+
+function syncRoster(current) {
+  readTeam()
+  const known = new Map(current.map((bot) => [bot.name.toLowerCase(), bot]))
+  return blankBots().map((slot) => known.get(slot.name.toLowerCase()) || slot)
+}
+
+readTeam()
 
 function loadSeed() {
   try {
@@ -30,6 +44,7 @@ function statusApi() {
     }
 
     if (req.method === 'GET') {
+      bots = syncRoster(bots)
       res.setHeader('Content-Type', 'application/json')
       res.end(JSON.stringify({ source: 'memory', bots }))
       return
@@ -62,6 +77,7 @@ function statusApi() {
             return
           }
         }
+        bots = syncRoster(bots)
         const result = mergeStatus(bots, payload)
         const changed = JSON.stringify(result.bots) !== JSON.stringify(bots)
         if (result.errors.length && !changed) {
@@ -97,6 +113,7 @@ function statusApi() {
       res.end()
       return
     }
+    bots = syncRoster(bots)
     let github = { map: {}, note: 'GitHub could not be read. PR and CI come only from status fields.', github: 'unavailable' }
     try {
       github = await githubOps()

@@ -3,9 +3,8 @@ import { box, cyl, std, worldPoint } from './geom.js'
 import {
   BOUNDS,
   CORNER,
-  DESKS,
   DOOR_GAP,
-  LOUNGE,
+  assignSeats,
   LOUNGE_CHAIR_COLORS,
   MEETING_SEATS,
   MEETING_TABLE,
@@ -18,6 +17,7 @@ import {
   SOFA_COLORS,
   ZONES,
 } from './layout.js'
+import { leaderId, leaderName } from './team.js'
 import {
   carpetTexture,
   clockCanvas,
@@ -239,7 +239,7 @@ function addCornerOffice(parent, mats) {
   addGlassPanel(parent, width - 0.1, 0.5, midX, 0.34, south, 0, mats, true)
   addGlassPanel(parent, width - 0.1, 0.78, midX, 1.02, south, 0, mats, false)
 
-  const word = new THREE.Mesh(new THREE.PlaneGeometry(2.8, 0.72), basic(glassWordTexture()))
+  const word = new THREE.Mesh(new THREE.PlaneGeometry(2.8, 0.72), basic(glassWordTexture(leaderName())))
   word.position.set(midX, 1.12, south + 0.06)
   parent.add(word)
 
@@ -663,7 +663,7 @@ export function buildOffice(roster) {
     group.add(carpet)
   }
 
-  addCarpetLabel(group, 'REPORTS TO MUSK', -0.4, -6.7, 5.4)
+  addCarpetLabel(group, `REPORTS TO ${leaderName().toUpperCase()}`, -0.4, -6.7, 5.4)
   addCarpetLabel(group, 'MEETING M', 6.6, 4.95, 2.3)
   addCarpetLabel(group, 'MEETING S', 3.6, 2.15, 1.8)
   addCarpetLabel(group, 'MEETING L', 7.3, -8.35, 2.6)
@@ -703,9 +703,10 @@ export function buildOffice(roster) {
   addReception(group)
   addPinboard(group)
 
+  const seats = assignSeats(roster, leaderId())
   const screens = []
   const desks = new Map()
-  for (const spec of DESKS) {
+  for (const spec of seats.desks) {
     const bot = byId.get(spec.id)
     desks.set(spec.id, workstation(group, spec, bot, mats, screens))
   }
@@ -713,7 +714,7 @@ export function buildOffice(roster) {
   const lounge = new Map()
   const sofaGroups = new Map()
   let chairIndex = 0
-  for (const seat of LOUNGE) {
+  for (const seat of seats.lounge) {
     lounge.set(seat.bot, { x: seat.x, z: seat.z, yaw: seat.yaw, low: seat.seat === 'cushion' })
     if (seat.seat === 'sofa') {
       if (!sofaGroups.has(seat.sofa)) sofaGroups.set(seat.sofa, [])

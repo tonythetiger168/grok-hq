@@ -7,7 +7,7 @@ import './style.css'
 import * as THREE from 'three'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 import { CSS2DObject, CSS2DRenderer } from 'three/addons/renderers/CSS2DRenderer.js'
-import { ROSTER, DEPARTMENTS } from './roster.js'
+import { ROSTER, DEPARTMENTS, leaderId, setTeam } from './roster.js'
 import { PRESETS, assertLayout } from './layout.js'
 import { buildOffice, updateOffice } from './office.js'
 import { createBot, focusPoint, setBotHighlight, updateBot } from './bots.js'
@@ -16,7 +16,6 @@ import { createStatus, dayStartFromUrl, wantsDay, wantsOps, wantsSimulation } fr
 import { createUI } from './ui.js'
 
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-const ORDER = DEPARTMENTS.flatMap((dept) => ROSTER.filter((bot) => bot.dept === dept.id))
 
 const boot = document.getElementById('boot')
 
@@ -26,7 +25,14 @@ function fail(message) {
 }
 
 async function main() {
-  assertLayout(ROSTER)
+  const params = new URLSearchParams(location.search)
+  const teamName = params.get('team')
+  const teamFile = teamName && /^[a-z0-9-]+$/.test(teamName) ? `/team.${teamName}.json` : '/team.json'
+  const teamResponse = await fetch(teamFile)
+  if (!teamResponse.ok) throw new Error(`Could not read ${teamFile}`)
+  setTeam(await teamResponse.json())
+  const ORDER = DEPARTMENTS.flatMap((dept) => ROSTER.filter((bot) => bot.dept === dept.id))
+  assertLayout(ROSTER, leaderId())
   await Promise.all([
     document.fonts.load('600 32px Outfit'),
     document.fonts.load('600 32px Fraunces'),
@@ -367,7 +373,6 @@ async function main() {
   if (wantsOps()) status.setMode('ops')
   else if (wantsDay()) status.setMode('day', dayStartFromUrl())
   else if (wantsSimulation()) status.setMode('sim')
-  const params = new URLSearchParams(location.search)
   const zoneAlias = { lobby: 'rest' }
   const zoneParam = zoneAlias[params.get('zone')] || params.get('zone')
   if (zoneParam && PRESETS[zoneParam]) {

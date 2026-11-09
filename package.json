@@ -1,7 +1,9 @@
 {
-  "name": "grok-bot-office",
+  "name": "grok-hq",
   "version": "1.0.0",
   "private": true,
+  "description": "A storybook 3D office for a team of bots. Edit public/team.json and point it at your own roster.",
+  "keywords": ["bots", "agents", "office", "three", "visualization"],
   "type": "module",
   "scripts": {
     "dev": "vite",

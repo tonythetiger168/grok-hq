@@ -1,0 +1,86 @@
+{
+  "leader": "ada",
+  "groups": [
+    { "id": "lead", "label": "ada", "blurb": "Corner office · everyone reports here" },
+    { "id": "crew", "label": "Crew", "blurb": "The desk hall" }
+  ],
+  "bots": [
+    {
+      "id": "ada",
+      "name": "ada",
+      "group": "lead",
+      "role": "Reviews the crew. Everyone reports to ada.",
+      "color": "#8e949e",
+      "accent": "#3e4652",
+      "hair": "swept",
+      "hairColor": "#f4efe6",
+      "accessory": "visor",
+      "outfit": "jacket",
+      "sim": "reviewing handoffs",
+      "bit": "the stack"
+    },
+    {
+      "id": "pixel",
+      "name": "pixel",
+      "group": "crew",
+      "role": "Keeps the notes.",
+      "color": "#3c6e9a",
+      "accent": "#d5e4f2",
+      "hair": "crop",
+      "hairColor": "#2c2826",
+      "sim": "the notes desk",
+      "bit": "the notes"
+    },
+    {
+      "id": "quill",
+      "name": "quill",
+      "group": "crew",
+      "role": "Writes the next plan step.",
+      "color": "#c47a4a",
+      "accent": "#f6ead4",
+      "hair": "bun",
+      "hairColor": "#4a3428",
+      "sim": "writing the plan",
+      "bit": "the plan page"
+    },
+    {
+      "id": "nimbus",
+      "name": "nimbus",
+      "group": "crew",
+      "role": "Watches the sandbox from the security desk.",
+      "color": "#3f8f72",
+      "accent": "#dcecdc",
+      "hair": "bob",
+      "hairColor": "#2a2422",
+      "sim": "watching the sandbox",
+      "bit": "the watch"
+    },
+    {
+      "id": "sprout",
+      "name": "sprout",
+      "group": "crew",
+      "role": "Checks the racks.",
+      "repo": "example/sprout",
+      "color": "#7dba6a",
+      "accent": "#e7f3df",
+      "hair": "pigtails",
+      "hairColor": "#6a4330",
+      "accessory": "leaf",
+      "sim": "checking the racks",
+      "bit": "the rack pass"
+    },
+    {
+      "id": "folio",
+      "name": "folio",
+      "group": "crew",
+      "role": "Carries the folder.",
+      "color": "#6b4c9a",
+      "accent": "#e6dff2",
+      "hair": "part",
+      "hairColor": "#241f1c",
+      "accessory": "folder",
+      "sim": "carrying the folder",
+      "bit": "the folder"
+    }
+  ]
+}

@@ -1,4 +1,4 @@
-import { DEPARTMENTS, departmentOf } from './roster.js'
+import { DEPARTMENTS, departmentOf, isLeader, leaderName } from './roster.js'
 import { ZONE_CHIPS } from './layout.js'
 
 const WHERE = {
@@ -89,7 +89,7 @@ export function createUI({ onSimulate, onDay, onOps, onZone, onToggleRoster, onS
   els.zones.innerHTML = `
     <button type="button" class="chip bots-chip" id="bots-toggle" aria-pressed="${rosterOpen}">Bots</button>
     ${ZONE_CHIPS.map((chip) => `
-      <button type="button" class="chip" data-zone="${chip.id}" aria-pressed="${chip.id === 'all'}">${esc(chip.label)}</button>
+      <button type="button" class="chip" data-zone="${chip.id}" aria-pressed="${chip.id === 'all'}">${esc(chip.id === 'lead' ? leaderName() : chip.label)}</button>
     `).join('')}
   `
 
@@ -205,15 +205,15 @@ export function createUI({ onSimulate, onDay, onOps, onZone, onToggleRoster, onS
       <p class="role">${esc(bot.role)}</p>
       <dl>
         <div><dt>State</dt><dd class="state is-${esc(bot.state)}">${esc(labelState(bot.state))}</dd></div>
-        <div><dt>Where</dt><dd>${esc(WHERE[bot.place] || WHERE.rest)}</dd></div>
+        <div><dt>Where</dt><dd>${esc(bot.place === 'handoff' ? `Reporting to ${leaderName()}.` : (WHERE[bot.place] || WHERE.rest))}</dd></div>
         <div><dt>Task</dt><dd>${task}</dd></div>
         ${planLine}
         ${prLine}
         ${ciLine}
         <div><dt>Desk</dt><dd>${esc(bot.focus)}</dd></div>
-        ${bot.id === 'musk'
-          ? '<div><dt>Reports</dt><dd>Everyone reports to musk.</dd></div>'
-          : '<div><dt>Reports to</dt><dd>musk</dd></div>'}
+        ${isLeader(bot.id)
+          ? `<div><dt>Reports</dt><dd>Everyone reports to ${esc(leaderName())}.</dd></div>`
+          : `<div><dt>Reports to</dt><dd>${esc(leaderName())}</dd></div>`}
         ${repo ? `<div><dt>Repo</dt><dd>${repo}</dd></div>` : ''}
       </dl>
       ${simNote}

@@ -86,16 +86,22 @@ export function carpetTexture(text) {
   }).tex
 }
 
-export function glassWordTexture() {
+export function glassWordTexture(name = 'musk') {
+  const word = String(name || 'lead').toUpperCase().slice(0, 12)
   return canvasTexture(1024, 320, (ctx) => {
     ctx.clearRect(0, 0, 1024, 320)
     ctx.fillStyle = 'rgba(28, 36, 34, 0.82)'
     ctx.textAlign = 'center'
     ctx.textBaseline = 'middle'
-    ctx.font = '600 150px Outfit, sans-serif'
-    ctx.fillText('MUSK', 512, 118)
+    let size = word.length > 6 ? 96 : 150
+    ctx.font = `600 ${size}px Outfit, sans-serif`
+    while (ctx.measureText(word).width > 900 && size > 64) {
+      size -= 8
+      ctx.font = `600 ${size}px Outfit, sans-serif`
+    }
+    ctx.fillText(word, 512, 118)
     ctx.font = '500 64px Outfit, sans-serif'
-    ctx.fillText('reports to musk', 512, 210)
+    ctx.fillText(`reports to ${name}`, 512, 210)
   }).tex
 }
 

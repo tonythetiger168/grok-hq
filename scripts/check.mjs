@@ -1,12 +1,14 @@
 import { readFileSync } from 'node:fs'
-import { DEPARTMENTS, ROSTER } from '../src/roster.js'
+import { DEPARTMENTS, ROSTER, leaderId, setTeam } from '../src/roster.js'
 import { assertLayout, routeThrough, zoneAt } from '../src/layout.js'
 import { blankBots, mergeStatus, STATES } from '../src/status-model.js'
 import { formatOfficeTime, workdayAt } from '../src/day.js'
 import { factFromOps, summarizePulls } from '../src/ops-summary.js'
 import { arrangeOps, createStatus } from '../src/status.js'
 
-assertLayout(ROSTER)
+setTeam(JSON.parse(readFileSync(new URL('../public/team.json', import.meta.url), 'utf8')))
+
+assertLayout(ROSTER, leaderId())
 
 const ids = new Set(ROSTER.map((bot) => bot.id))
 const names = new Set(ROSTER.map((bot) => bot.name))
@@ -161,5 +163,24 @@ const sandboxBot = sandboxOffice.snapshot().bots.find((bot) => bot.id === 'minis
 if (!sandboxBot || sandboxBot.place !== 'servers' || sandboxBot.fact !== 'sandbox-ok') {
   throw new Error('A sandbox assignment should walk into the server room')
 }
+
+const example = JSON.parse(readFileSync(new URL('../public/team.example.json', import.meta.url), 'utf8'))
+setTeam(example)
+assertLayout(ROSTER, leaderId())
+if (leaderId() !== 'ada') throw new Error('Example team should report to ada')
+if (ROSTER.some((bot) => bot.id === 'musk')) throw new Error('Example team should not require musk')
+for (const minute of [9 * 60 + 10, 10 * 60 + 10, 14 * 60 + 20, 15 * 60]) {
+  const rows = workdayAt(minute)
+  if (rows.filter((row) => row.place === 'handoff').length > 1) {
+    throw new Error(`Example roster overlapped a report at ${minute}`)
+  }
+}
+const exampleReport = workdayAt(15 * 60).find((row) => row.place === 'handoff')
+if (!exampleReport || exampleReport.id === 'ada' || exampleReport.fact !== 'sandbox-leak') {
+  throw new Error('Example roster should report a sandbox breach to its leader')
+}
+const exampleLead = workdayAt(15 * 60).find((row) => row.id === 'ada')
+if (!exampleLead || exampleLead.place !== 'musk-desk') throw new Error('Example leader should sit in the corner office')
+setTeam(JSON.parse(readFileSync(new URL('../public/team.json', import.meta.url), 'utf8')))
 
 console.log(`ok ${ROSTER.length} bots`)

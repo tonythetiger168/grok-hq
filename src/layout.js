@@ -372,10 +372,47 @@ export const ZONE_CHIPS = [
   { id: 'lead', label: 'musk' },
 ]
 
-export function assertLayout(roster) {
+export function assignSeats(roster, leader) {
+  const key = (x, z) => `${x},${z}`
+  const corner = DESKS.find((desk) => desk.id === 'musk')
+  const leadLounge = LOUNGE.find((seat) => seat.bot === 'musk')
+  const desks = [{ ...corner, id: leader }]
+  const lounge = [{ ...(LOUNGE.find((seat) => seat.bot === leader) || leadLounge), bot: leader }]
+  const deskTaken = new Set([key(corner.x, corner.z)])
+  const loungeTaken = new Set([key(lounge[0].x, lounge[0].z)])
+  const deskLeft = []
+  const loungeLeft = []
+  for (const bot of roster) {
+    if (bot.id === leader) continue
+    const pref = DESKS.find((desk) => desk.id === bot.id)
+    if (pref && !deskTaken.has(key(pref.x, pref.z))) {
+      desks.push({ ...pref, id: bot.id, extras: bot.extras || pref.extras })
+      deskTaken.add(key(pref.x, pref.z))
+    } else deskLeft.push(bot)
+    const seat = LOUNGE.find((item) => item.bot === bot.id)
+    if (seat && !loungeTaken.has(key(seat.x, seat.z))) {
+      lounge.push({ ...seat, bot: bot.id })
+      loungeTaken.add(key(seat.x, seat.z))
+    } else loungeLeft.push(bot)
+  }
+  const freeDesks = DESKS.filter((desk) => !deskTaken.has(key(desk.x, desk.z)))
+  const freeLounge = LOUNGE.filter((seat) => !loungeTaken.has(key(seat.x, seat.z)))
+  deskLeft.forEach((bot, index) => {
+    const slot = freeDesks[Math.min(index, freeDesks.length - 1)]
+    desks.push({ ...slot, id: bot.id, extras: bot.extras || undefined })
+  })
+  loungeLeft.forEach((bot, index) => {
+    const slot = freeLounge[Math.min(index, freeLounge.length - 1)]
+    lounge.push({ ...slot, bot: bot.id })
+  })
+  return { desks, lounge }
+}
+
+export function assertLayout(roster, leader) {
   const ids = new Set(roster.map((bot) => bot.id))
-  const loungeIds = LOUNGE.map((seat) => seat.bot)
-  const deskIds = DESKS.map((desk) => desk.id)
+  const seats = assignSeats(roster, leader)
+  const loungeIds = seats.lounge.map((seat) => seat.bot)
+  const deskIds = seats.desks.map((desk) => desk.id)
   if (new Set(loungeIds).size !== loungeIds.length) throw new Error('Duplicate rest seat')
   if (new Set(deskIds).size !== deskIds.length) throw new Error('Duplicate desk')
   if (loungeIds.length !== ids.size || deskIds.length !== ids.size) {
@@ -385,7 +422,11 @@ export function assertLayout(roster) {
     if (!loungeIds.includes(id)) throw new Error(`Missing rest seat for ${id}`)
     if (!deskIds.includes(id)) throw new Error(`Missing desk for ${id}`)
   }
-  if (!deskIds.includes('musk')) throw new Error('musk needs the suite desk')
+  const corner = DESKS.find((desk) => desk.id === 'musk')
+  const leadDesk = seats.desks.find((desk) => desk.id === leader)
+  if (!leadDesk || leadDesk.x !== corner.x || leadDesk.z !== corner.z) {
+    throw new Error('The leader needs the corner desk')
+  }
   const width = BOUNDS.x1 - BOUNDS.x0
   const depth = BOUNDS.z1 - BOUNDS.z0
   if (width > 30 || depth > 22) throw new Error('The floor should stay one compact story')

@@ -63,7 +63,7 @@ function propose(slot, bots, booked, elapsed) {
   const bucket = Math.floor(elapsed / 5)
   if (slot.role === 'errand') {
     const walker = bots.find((bot) => (
-      bot.carrying && bot.routeKey === 'handoff' && !bot.holdStarted && bot.handoffCloud < 1 && bot.def.id !== 'musk' && !booked.has(bot)
+      bot.carrying && bot.routeKey === 'handoff' && !bot.holdStarted && bot.handoffCloud < 1 && !bot.def.leader && !booked.has(bot)
     ))
     if (!walker) return null
     return {
@@ -76,14 +76,14 @@ function propose(slot, bots, booked, elapsed) {
     }
   }
   if (slot.role === 'decide') {
-    const musk = bots.find((bot) => bot.def.id === 'musk')
+    const musk = bots.find((bot) => bot.def.leader)
     if (!musk || musk.moving || booked.has(musk)) return null
     const visitor = bots.find((bot) => (
       bot.routeKey === 'handoff'
       && bot.holdStarted
       && !bot.moving
       && !bot.decided
-      && bot.def.id !== 'musk'
+      && !bot.def.leader
       && !booked.has(bot)
     ))
     if (!visitor) return null
@@ -470,7 +470,7 @@ export function updateClouds(layer, bots, camera, dt, elapsed, reduce, width, he
   for (const bot of bots) {
     bot.lookAt = null
     bot.gaze = null
-    if (bot.def.id === 'musk') bot.receiving = false
+    if (bot.def.leader) bot.receiving = false
   }
   for (const slot of layer.slots) {
     if (slot.phase === 'idle' || slot.phase === 'out' || !slot.a) continue
