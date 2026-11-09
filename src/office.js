@@ -402,7 +402,7 @@ function addLargeMeeting(parent) {
   for (const [x, z, yaw] of seats) addChair(parent, x, z, yaw, '#3e534c', true)
 }
 
-function addJobsOffice(parent) {
+function addVacantOffice(parent) {
   const wood = std('#e7d3b0', 0.7)
   box(parent, 1.7, 0.06, 0.7, 2.3, 0.74, -8.05, wood, true)
   for (const [dx, dz] of [[-0.7, -0.25], [0.7, -0.25], [-0.7, 0.25], [0.7, 0.25]]) {
@@ -599,7 +599,7 @@ export function buildOffice(roster) {
   addCarpetLabel(group, 'MEETING M', 6.6, 4.95, 2.3)
   addCarpetLabel(group, 'MEETING S', 3.6, 2.15, 1.8)
   addCarpetLabel(group, 'MEETING L', 7.3, -8.35, 2.6)
-  addCarpetLabel(group, 'JOBS', 2.3, -8.55, 1.8)
+  addCarpetLabel(group, 'VACANT', 2.3, -8.55, 2.2)
   addCarpetLabel(group, 'KITCHEN', 10.7, 4.85, 2.4)
   addCarpetLabel(group, 'PRINTERS', 14.7, 4.7, 2.1)
   addCarpetLabel(group, 'REC', 11.2, 8.35, 2.2)
@@ -623,7 +623,7 @@ export function buildOffice(roster) {
   addMeeting(group)
   addSmallMeeting(group)
   addLargeMeeting(group)
-  addJobsOffice(group)
+  addVacantOffice(group)
   addCoffeeRoom(group)
   addRestRoom(group)
   addRecRoom(group)

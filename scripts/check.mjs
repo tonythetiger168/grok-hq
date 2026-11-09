@@ -112,7 +112,7 @@ if (!routeThrough(-9.2, 7.6, -9, -2.4).length) throw new Error('Snack nook shoul
 const wind = workdayAt(17 * 60 + 40).find((row) => row.id === 'aevum')
 if (!wind || wind.place !== 'lounge') throw new Error('Wind-down should walk into the rest room')
 if (!routeThrough(-2, 1.6, 13, -6.5).length) throw new Error('Library should be reachable from the desks')
-if (zoneAt(2.3, -8) !== 'jobs') throw new Error('Jobs should have a separate office')
+if (zoneAt(2.3, -8) !== 'vacant') throw new Error('The former office should stay empty')
 if (zoneAt(3.6, 0.7) !== 'huddle') throw new Error('Small meeting should be its own room')
 if (zoneAt(7.3, -6.5) !== 'allhands') throw new Error('Large meeting should be its own room')
 if (!routeThrough(-2, 1.6, 6.6, 3.6).length) throw new Error('Standup should reach the medium meeting room')
