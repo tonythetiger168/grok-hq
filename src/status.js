@@ -41,7 +41,11 @@ function sandboxOf(task) {
 
 function simTask(bot, state, place) {
   if (place === 'handoff') return 'Simulated · handing work to musk'
-  if (place === 'servers') return 'Simulated · checking sandbox security'
+  if (place === 'servers') {
+    return bot.fact === 'sandbox-leak'
+      ? 'Simulated · sandbox breach. Raising the alarm.'
+      : 'Simulated · checking sandbox security'
+  }
   if (place === 'meeting') return 'Simulated · standup in the meeting room'
   if (state === 'working' && bot.id === 'musk') return 'Simulated · reviewing handoffs'
   if (state === 'working') return `Simulated · ${bot.sim}`
@@ -100,7 +104,7 @@ export function arrangeOps(rows) {
         place: 'musk-desk',
         fact: reportFact,
         task: reporter
-          ? (String(reportFact).startsWith('sandbox') ? 'Hearing the sandbox check' : 'Deciding on a report')
+          ? (reportFact === 'sandbox-leak' ? 'Hearing the sandbox breach' : String(reportFact).startsWith('sandbox') ? 'Hearing the sandbox check' : 'Deciding on a report')
           : 'Reading plan, PR, and CI',
       }
     }
@@ -119,7 +123,13 @@ export function arrangeOps(rows) {
     if (String(fact).startsWith('sandbox') && row.state !== 'idle') {
       const spot = rack % 2
       rack += 1
-      return { ...row, place: 'servers', spot, fact, task: row.task || 'Checking sandbox security' }
+      return {
+        ...row,
+        place: 'servers',
+        spot,
+        fact,
+        task: row.task || (fact === 'sandbox-leak' ? 'Raising the sandbox alarm' : 'Checking sandbox security'),
+      }
     }
     if (standup && row.state === 'working' && meet < 4) {
       const meetIndex = meet
@@ -147,7 +157,7 @@ function orderPhase(t) {
 }
 
 function heardTask(bot, fact) {
-  if (fact === 'sandbox-leak') return 'Using the chat: a sandbox boundary looks open'
+  if (fact === 'sandbox-leak') return 'Using the chat: sandbox breach, shared access is leaking'
   if (fact === 'sandbox-ok') return 'Using the chat: sandbox isolation looks tight'
   if (fact === 'ci-failed') return 'Using the chat: looking at failed CI'
   if (fact === 'ci-green') return 'Using the chat: CI is green, next step'
@@ -417,7 +427,7 @@ export function createStatus() {
       if (row.state !== 'idle' || orders.has(id)) return { ok: false, reason: 'busy' }
       const bot = ROSTER.find((item) => item.id === id)
       const followTask = parsed.fact === 'sandbox-leak'
-        ? 'Locking the sandbox'
+        ? 'Isolating the sandbox, then I re-check'
         : parsed.fact === 'sandbox-ok'
           ? 'Noting the sandbox lock'
           : parsed.fact === 'ci-failed'

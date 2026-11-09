@@ -293,15 +293,26 @@ function addServers(parent, leds) {
     parent.add(group)
     box(group, 0.62, 1.5, 0.42, 0, 0.75, 0, bodyMat, true)
     for (let row = 0; row < 7; row += 1) {
+      const warm = row % 5 === 0
       const led = std('#10202c', 0.4)
-      led.emissive = new THREE.Color(row % 5 === 0 ? '#e07a3d' : '#7ec8ff')
+      led.emissive = new THREE.Color(warm ? '#e07a3d' : '#7ec8ff')
       led.emissiveIntensity = 0.7
       led.userData.phase = rack * 1.3 + row * 0.55
+      led.userData.warm = warm
+      led.userData.alarm = rack === 1
       const lamp = box(group, 0.4, 0.016, 0.02, 0, 0.22 + row * 0.17, 0.22, led, false)
       lamp.castShadow = false
       leds.push(led)
     }
   })
+  const beacon = std('#3a2018', 0.4)
+  beacon.emissive = new THREE.Color('#7ec8ff')
+  beacon.emissiveIntensity = 0.08
+  const lamp = new THREE.Mesh(new THREE.SphereGeometry(0.09, 14, 12), beacon)
+  lamp.position.set(15.85, 1.64, -6.65)
+  lamp.castShadow = false
+  parent.add(lamp)
+  leds.beacon = beacon
   const cool = new THREE.PointLight('#9ecbff', 0.35, 4.2, 2)
   cool.position.set(14.8, 1.4, -6.6)
   parent.add(cool)
@@ -714,6 +725,7 @@ export function buildOffice(roster) {
     screens,
     research,
     leds,
+    beacon: leds.beacon,
     clock,
     digital,
     copier,
@@ -990,7 +1002,7 @@ function addCupProps(parent) {
   }
 }
 
-export function updateOffice(office, time, stateById, clockSample = null, copying = false) {
+export function updateOffice(office, time, stateById, clockSample = null, copying = false, breach = false) {
   for (const screen of office.screens) {
     screen.mat.uniforms.uTime.value = time
     const info = stateById.get(screen.id)
@@ -1002,8 +1014,15 @@ export function updateOffice(office, time, stateById, clockSample = null, copyin
   }
   for (const material of office.research) material.uniforms.uTime.value = time
   for (const led of office.leds) {
-    const pulse = 0.5 + 0.5 * Math.sin(time * 2.1 + led.userData.phase)
-    led.emissiveIntensity = 0.12 + pulse * 0.4
+    const alarm = breach && led.userData.alarm
+    const pulse = 0.5 + 0.5 * Math.sin(time * (alarm ? 7.5 : 2.1) + led.userData.phase)
+    led.emissive.set(alarm ? '#e23b2f' : (led.userData.warm ? '#e07a3d' : '#7ec8ff'))
+    led.emissiveIntensity = alarm ? 0.5 + pulse * 0.95 : 0.12 + pulse * 0.4
+  }
+  if (office.beacon) {
+    const pulse = 0.5 + 0.5 * Math.sin(time * 6.2)
+    office.beacon.emissive.set(breach ? '#e23b2f' : '#7ec8ff')
+    office.beacon.emissiveIntensity = breach ? 0.7 + pulse * 1.15 : 0.08
   }
   const label = clockSample?.label
   if (label && label !== office.clockLabel) {

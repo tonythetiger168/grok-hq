@@ -865,7 +865,8 @@ export function updateBot(bot, dt, elapsed, reduce) {
       moving = true
     }
   } else {
-    const speed = reduce ? 28 : 6.4
+    const hurry = bot.fact === 'sandbox-leak' && (bot.carrying || bot.routeKey === 'handoff')
+    const speed = (reduce ? 28 : 6.4) * (hurry ? 1.85 : 1)
     const step = Math.min(dist, speed * dt)
     pos.x += (dx / dist) * step
     pos.z += (dz / dist) * step

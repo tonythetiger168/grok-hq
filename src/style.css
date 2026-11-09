@@ -448,6 +448,15 @@ a:focus-visible {
   box-shadow: inset 3px 0 0 var(--who, #241f1a), 0 8px 18px rgba(48, 38, 28, 0.14);
 }
 
+.cloud.is-alarm .cloud-body {
+  background: #fff6ee;
+  border-color: #c4512c;
+}
+
+.cloud.is-alarm .cloud-line {
+  color: #6a2c1c;
+}
+
 .cloud.is-think .cloud-body {
   border-radius: 18px;
 }

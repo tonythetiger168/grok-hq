@@ -97,8 +97,14 @@ if (checkers.length < 2 || checkers.some((row) => row.fact !== 'sandbox-leak')) 
   throw new Error('A pair should check sandbox security in the server room')
 }
 const sandReport = workdayAt(15 * 60).find((row) => row.place === 'handoff')
-if (!sandReport || sandReport.id !== 'duckdb' || sandReport.fact !== 'sandbox-leak') {
-  throw new Error('The sandbox check should be reported to musk')
+if (!sandReport || sandReport.id !== 'duckdb' || sandReport.fact !== 'sandbox-leak' || !/breach/i.test(sandReport.task)) {
+  throw new Error('The sandbox breach should be reported to musk')
+}
+const hearing = workdayAt(15 * 60).find((row) => row.id === 'musk')
+if (!hearing || hearing.fact !== 'sandbox-leak') throw new Error('musk should hear the sandbox breach')
+const watch = workdayAt(15 * 60).find((row) => row.id === 'minisim')
+if (!watch || watch.place !== 'servers' || watch.fact !== 'sandbox-leak') {
+  throw new Error('Someone should keep watch while the breach is reported')
 }
 const locked = workdayAt(15 * 60 + 40).find((row) => row.id === 'duckdb')
 if (!locked || locked.place !== 'servers' || !/sandbox/i.test(locked.task)) {

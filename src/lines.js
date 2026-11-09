@@ -38,9 +38,9 @@ const CALL = {
     react: () => 'Isolation is tight. I will note it and come back.',
   },
   'sandbox-leak': {
-    think: (name) => `${name}: a sandbox boundary looks open.`,
-    say: (name) => `Lock that sandbox, ${name}. A leak is not done.`,
-    react: () => 'I will close the leak and report again.',
+    think: (name) => `${name}: story breach. The sandbox is leaking shared access.`,
+    say: (name) => `Lock it down, ${name}. Isolate that box, then re-check.`,
+    react: () => 'I will isolate it, re-check, and keep watch.',
   },
 }
 
@@ -62,7 +62,7 @@ export function ackFor(bot, order) {
   if (order.fact === 'ci-green') return 'CI is green. I will take the next step.'
   if (order.fact === 'pr-open') return 'PR stays open. I will work the review.'
   if (order.fact === 'pr-closed') return 'PR is closed. Next plan step.'
-  if (order.fact === 'sandbox-leak') return 'I will check the sandbox boundary.'
+  if (order.fact === 'sandbox-leak') return 'Breach. I will raise the alarm and tell musk.'
   if (order.fact === 'sandbox-ok') return 'I will confirm the sandbox is locked.'
   if (order.workPlace === 'copy') return 'I will run the copies.'
   if (order.workPlace === 'snack') return 'Coffee first, then the work.'
@@ -89,7 +89,7 @@ function exchange(fact, a, b) {
     return [`${left}: Sandbox passed. Isolation looks tight.`, `${right}: I will note the lock and tell musk.`]
   }
   if (fact === 'sandbox-leak') {
-    return [`${left}: Sandbox check failed. A boundary looks open.`, `${right}: I will follow up before anyone calls it locked.`]
+    return [`${left}: Breach. This sandbox is leaking shared access.`, `${right}: Alarm it. I will take the leak to musk.`]
   }
   return [`${left}: Next plan step is still open.`, `${right}: I will pick it up at my desk.`]
 }
@@ -163,13 +163,13 @@ export function selfLine(bot, bucket) {
       ], bot, bucket)
     }
     return pick([
-      'Sandbox check failed. A boundary looks open.',
-      'This sandbox needs a follow-up before anyone calls it locked.',
-      'Permissions first. Then I tell musk.',
+      'Breach. Shared access is leaking out of the jail.',
+      'Raise the alarm. musk decides the lockdown.',
+      'Do not walk away. Tell musk what escaped.',
     ], bot, bucket)
   }
   if (bot.cup === 'sip' || bot.cup === 'hand') return pick(['Coffee, then the plan.', 'Cup down after this thought.', 'Warm cup. Cold CI if it is red.'], bot, bucket)
-  if (bot.follow === 'lock-sandbox') return 'I will lock the sandbox and tell musk.'
+  if (bot.follow === 'lock-sandbox') return 'I will isolate it, re-check, and keep watch.'
   if (bot.follow === 'fix-ci') return 'I will fix CI and come back.'
   if (bot.follow === 'review-pr') return 'Review the open PR, then musk.'
   if (bot.follow === 'next-step') return 'Next plan step. Then I report.'
@@ -186,6 +186,12 @@ export function selfLine(bot, bucket) {
 export function thinkLine(bot, bucket) {
   const bit = bitOf(bot.def.id)
   if (bot.carrying || bot.place === 'handoff') {
+    if (bot.fact === 'sandbox-leak') {
+      return pick([
+        'Taking the sandbox breach to musk.',
+        'Shared access leaked. He decides the lockdown.',
+      ], bot, bucket)
+    }
     return pick([
       `Taking ${bit} to musk.`,
       'PR state first, story second.',
@@ -199,7 +205,7 @@ export function thinkLine(bot, bucket) {
     if (fact === 'pr-closed') return 'Closed. What plan step is next?'
     if (fact === 'ci-green') return 'Green. Do not merge on habit.'
     if (fact === 'sandbox-ok') return 'Sandbox passed. Who notes the lock?'
-    if (fact === 'sandbox-leak') return 'Sandbox leak. Who locks the boundary?'
+    if (fact === 'sandbox-leak') return 'Sandbox breach. Lock it down, then re-check.'
     return 'Who still owes a plan step?'
   }
   if (bot.place === 'copy') return pick(['These copies are for standup.', 'One page on the PR, not a book.'], bot, bucket)
@@ -214,9 +220,9 @@ export function thinkLine(bot, bucket) {
     }
     if (bot.fact === 'sandbox-leak') {
       return pick([
-        'A sandbox boundary looks open. Follow up.',
-        'Do not call a leak locked.',
-        'The jail is open. musk should hear it.',
+        'Breach. Shared access is leaking. Raise the alarm.',
+        'Jail escape in this story. Do not walk away.',
+        'musk should decide: lock down, isolate, or keep watch.',
       ], bot, bucket)
     }
     return pick([

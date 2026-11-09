@@ -18,6 +18,10 @@ const REPORTS = [
   { id: 'helios-forge', start: 16 * 60 + 30, end: 17 * 60 + 12, fact: 'ci-green', ci: 'green', follow: 'keep-open', update: true },
 ]
 
+const WATCH = [
+  { id: 'minisim', start: 14 * 60 + 20, end: 16 * 60, task: 'On watch. Shared access is still leaking.' },
+]
+
 const COPIES = [
   { id: 'grok-bot', start: 9 * 60 + 6, end: 9 * 60 + 20, task: 'Copies for standup' },
   { id: 'skfolio', start: 16 * 60 + 8, end: 16 * 60 + 24, task: 'Copies of the plan for musk' },
@@ -27,7 +31,7 @@ const EXCHANGES = [
   { start: 10 * 60 + 46, end: 10 * 60 + 58, a: 'linkup', b: 'wavelive', fact: 'ci-failed', where: 'snack', spot: 0 },
   { start: 13 * 60 + 56, end: 14 * 60 + 8, a: 'aevum', b: 'julang', fact: 'ci-failed', where: 'library', spot: 0 },
   { start: 13 * 60 + 16, end: 14 * 60 + 20, a: 'minisim', b: 'duckdb', fact: 'sandbox-leak', where: 'servers', spot: 0 },
-  { start: 14 * 60 + 46, end: 15 * 60, a: 'quant', b: 'minisim', fact: 'pr-open', where: 'snack', spot: 3 },
+  { start: 14 * 60 + 46, end: 15 * 60, a: 'quant', b: 'julang', fact: 'pr-open', where: 'snack', spot: 3 },
   { start: 17 * 60 + 14, end: 17 * 60 + 26, a: 'helios-forge', b: 'vectorbt', fact: 'ci-green', where: 'lobby', spot: 0 },
 ]
 
@@ -136,6 +140,10 @@ function followOf(id, minute) {
   return past[past.length - 1] || null
 }
 
+function watchOf(id, minute) {
+  return WATCH.find((item) => item.id === id && minute >= item.start && minute < item.end) || null
+}
+
 function exchangeOf(id, minute) {
   return EXCHANGES.find((item) => minute >= item.start && minute < item.end && (item.a === id || item.b === id)) || null
 }
@@ -152,8 +160,8 @@ export function parseWork(text) {
   const t = clipped.toLowerCase()
   let fact = 'plan'
   let ci = ''
-  if (/sandbox/.test(t)) {
-    fact = /leak|fail|open|loose|red/.test(t) ? 'sandbox-leak' : 'sandbox-ok'
+  if (/sandbox|breach|jail/.test(t)) {
+    fact = /leak|fail|open|loose|red|breach|escape|shared/.test(t) ? 'sandbox-leak' : 'sandbox-ok'
     ci = ''
   } else if (/fail|red|broken/.test(t)) {
     fact = 'ci-failed'
@@ -177,7 +185,7 @@ export function parseWork(text) {
     fact = 'plan'
   }
   let workPlace = 'desk'
-  if (/sandbox/.test(t)) workPlace = 'servers'
+  if (/sandbox|breach|jail/.test(t)) workPlace = 'servers'
   else if (/ping|pong|arcade|jukebox/.test(t)) workPlace = 'rec'
   else if (/balcony|outside/.test(t)) workPlace = 'balcony'
   else if (/copy|print/.test(t)) workPlace = 'copy'
@@ -197,7 +205,7 @@ export function parseWork(text) {
 
 function factTask(bot, fact) {
   const bit = bitOf(bot.id)
-  if (fact === 'sandbox-leak') return `Sandbox check: a boundary looks open on ${bit}`
+  if (fact === 'sandbox-leak') return `Sandbox breach: shared access is leaking on ${bit}`
   if (fact === 'sandbox-ok') return `Sandbox check: isolation looks tight on ${bit}`
   if (fact === 'ci-failed') return `Plan: failed CI on ${bit}`
   if (fact === 'ci-green') return `Plan: CI is green on ${bit}`
@@ -209,7 +217,7 @@ function factTask(bot, fact) {
 function followTask(follow, bot) {
   const bit = bitOf(bot.id)
   if (follow === 'fix-ci') return `Fixing failed CI on ${bit}`
-  if (follow === 'lock-sandbox') return `Locking the sandbox on ${bit}`
+  if (follow === 'lock-sandbox') return `Locking down the sandbox on ${bit}. Then I re-check.`
   if (follow === 'review-pr') return `Reviewing the open PR for ${bit}`
   if (follow === 'keep-open') return `Keeping the PR open on ${bit}`
   if (follow === 'write-plan') return `Writing the next plan step for ${bit}`
@@ -294,16 +302,26 @@ export function workdayAt(minute, intel = new Map()) {
         follow: report.follow,
         returnPlace: 'desk',
         task: String(report.fact).startsWith('sandbox')
-          ? 'Reporting the sandbox check'
+          ? (report.fact === 'sandbox-leak' ? 'Reporting the sandbox breach' : 'Reporting the sandbox check')
           : report.update ? 'Update for musk' : 'Reporting plan, PR, and CI',
       })
     } else {
       const copy = COPIES.find((item) => item.id === bot.id && minute >= item.start && minute < item.end)
+      const watch = watchOf(bot.id, minute)
       const exchange = exchangeOf(bot.id, minute)
       const heard = heardFollow(bot.id, minute)
       const follow = followOf(bot.id, minute)
       if (copy) {
         next = row(bot, { beat, state: 'working', place: 'copy', task: copy.task, fact: 'plan' })
+      } else if (watch) {
+        next = row(bot, {
+          beat,
+          state: 'working',
+          place: 'servers',
+          fact: 'sandbox-leak',
+          spot: 1,
+          task: watch.task,
+        })
       } else if (exchange) {
         const listener = exchange.b === bot.id
         next = row(bot, {
@@ -320,7 +338,9 @@ export function workdayAt(minute, intel = new Map()) {
           fact: exchange.fact,
           cup: exchange.where === 'snack' ? 'sip' : 'none',
           task: exchange.where === 'servers'
-            ? (listener ? 'Hearing the sandbox check' : 'Checking sandbox security')
+            ? (exchange.fact === 'sandbox-leak'
+              ? (listener ? 'Hearing the sandbox breach' : 'Raising the sandbox alarm')
+              : (listener ? 'Hearing the sandbox check' : 'Checking sandbox security'))
             : (listener ? 'Hearing a plan update' : 'Sharing a plan update'),
         })
       } else if (heard) {

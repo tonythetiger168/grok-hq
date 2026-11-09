@@ -481,7 +481,8 @@ async function main() {
     stateById.clear()
     for (const bot of bots) stateById.set(bot.def.id, { state: bot.state, ci: bot.ci })
     const copying = bots.some((bot) => bot.place === 'copy' && !bot.moving)
-    updateOffice(office, elapsed, stateById, status.clockSample(), copying)
+    const breach = bots.some((bot) => bot.fact === 'sandbox-leak')
+    updateOffice(office, elapsed, stateById, status.clockSample(), copying, breach)
     if (follow) {
       const bot = byId.get(follow.id)
       if (bot) {

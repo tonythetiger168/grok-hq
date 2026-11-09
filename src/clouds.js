@@ -218,6 +218,8 @@ function setPhase(slot, name, reduce) {
 function applyLine(slot) {
   const speaker = slot.speaker === 0 ? slot.a : slot.b
   slot.line.textContent = slot.speaker === 0 ? slot.lineA : (slot.lineB || slot.lineA)
+  const alarm = /breach|alarm|jail|isolat|leak|lock it down|lockdown|shared access/i.test(slot.line.textContent || '')
+  slot.root.classList.toggle('is-alarm', alarm)
   if (speaker?.def?.color) slot.root.style.setProperty('--who', speaker.def.color)
   const speech = slot.kind === 'speech'
   slot.dot.hidden = !speech
