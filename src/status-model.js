@@ -1,8 +1,10 @@
 /** Shared status shape for the dev stub and the browser. */
 
 import { ROSTER } from './roster.js'
+import { CI_STATES, PR_STATES, cleanOpsEnum, sanitizePlan } from './ops-summary.js'
 
 export const STATES = ['idle', 'working', 'waiting', 'error', 'done']
+export { CI_STATES, PR_STATES }
 
 export function sanitizeTask(task) {
   if (typeof task !== 'string') return ''
@@ -14,7 +16,14 @@ export function normalizeState(state) {
 }
 
 export function blankBots() {
-  return ROSTER.map((bot) => ({ name: bot.name, state: 'idle', task: '' }))
+  return ROSTER.map((bot) => ({
+    name: bot.name,
+    state: 'idle',
+    task: '',
+    plan: '',
+    pr: '',
+    ci: '',
+  }))
 }
 
 const byLower = new Map(ROSTER.map((bot) => [bot.name.toLowerCase(), bot.name]))
@@ -63,8 +72,24 @@ export function mergeStatus(current, payload) {
       errors.push(`Bad state for ${name}. Use ${STATES.join(', ')}.`)
       continue
     }
+    if (raw.pr !== undefined && raw.pr !== '' && !cleanOpsEnum(raw.pr, PR_STATES)) {
+      errors.push(`Bad pr for ${name}. Use ${PR_STATES.join(', ')}.`)
+      continue
+    }
+    if (raw.ci !== undefined && raw.ci !== '' && !cleanOpsEnum(raw.ci, CI_STATES)) {
+      errors.push(`Bad ci for ${name}. Use ${CI_STATES.join(', ')}.`)
+      continue
+    }
     const slot = index.get(name)
-    bots[slot] = { name, state, task: sanitizeTask(raw.task) }
+    const prev = bots[slot]
+    bots[slot] = {
+      name,
+      state,
+      task: sanitizeTask(raw.task),
+      plan: raw.plan === undefined ? (prev.plan || '') : sanitizePlan(raw.plan),
+      pr: raw.pr === undefined ? (prev.pr || '') : cleanOpsEnum(raw.pr, PR_STATES),
+      ci: raw.ci === undefined ? (prev.ci || '') : cleanOpsEnum(raw.ci, CI_STATES),
+    }
   }
 
   return { bots, errors }
