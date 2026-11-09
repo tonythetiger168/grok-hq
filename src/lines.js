@@ -116,6 +116,12 @@ export function pairLines(context, a, b, bucket) {
   const fact = a.fact && a.fact !== 'plan'
     ? a.fact
     : (b.fact && b.fact !== 'plan' ? b.fact : (a.fact || b.fact || 'plan'))
+  if (a.place === 'security' || context === 'security' || b.place === 'security') {
+    return [
+      `${a.def?.name || a.name}: The security desk is red. Shared access leaked.`,
+      `${b.def?.name || b.name}: I will keep the alarm up and tell musk.`,
+    ]
+  }
   if (a.place === 'servers' || context === 'servers' || b.place === 'servers') {
     return exchange(fact.startsWith('sandbox') ? fact : 'sandbox-leak', a, b)
   }
@@ -155,6 +161,13 @@ export function selfLine(bot, bucket) {
   const bit = bitOf(bot.def.id)
   if (bot.bark) return bot.bark
   if (bot.place === 'copy') return pick(['Copies for the standup.', 'One stack for musk.', 'The machine can take this page.'], bot, bucket)
+  if (bot.place === 'security') {
+    return pick([
+      'Alarm is up on the watch desk.',
+      'The monitor shows the leak. musk gets the report.',
+      'Keep watching. Do not call it locked yet.',
+    ], bot, bucket)
+  }
   if (bot.place === 'servers') {
     if (bot.fact === 'sandbox-ok') {
       return pick([
@@ -211,6 +224,13 @@ export function thinkLine(bot, bucket) {
   if (bot.place === 'copy') return pick(['These copies are for standup.', 'One page on the PR, not a book.'], bot, bucket)
   if (bot.place === 'rec') return pick(['One game of ping-pong.', 'The arcade can wait one point.', 'Break now. The plan is still there.'], bot, bucket)
   if (bot.place === 'library') return pick([`Library: next step for ${bit}.`, 'Read the failure, skip the trivia.', 'An open PR needs a note, not a number.'], bot, bucket)
+  if (bot.place === 'security') {
+    return pick([
+      'Watch desk: the sandbox breach is still open.',
+      'Keep the alarm lit until musk says otherwise.',
+      'Shared access leaked. The report is his to decide.',
+    ], bot, bucket)
+  }
   if (bot.place === 'servers' || bot.fact === 'sandbox-ok' || bot.fact === 'sandbox-leak') {
     if (bot.fact === 'sandbox-ok') {
       return pick([

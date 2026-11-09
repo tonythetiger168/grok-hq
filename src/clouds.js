@@ -114,14 +114,16 @@ function propose(slot, bots, booked, elapsed) {
     return { kind: 'speech', a: meet[0], b: meet[1], lineA, lineB, hold: 3.4, maxDist: 3.8, center: 'pair' }
   }
   if (slot.role === 'pair') {
-    const checking = bots.filter((bot) => (
-      bot.place === 'servers'
-      && !bot.moving
-      && bot.goals.length <= 1
-      && bot.spinLeft <= 0
-      && !bot.carrying
-      && !booked.has(bot)
-    ))
+    const settled = (bot) => !bot.moving && bot.goals.length <= 1 && bot.spinLeft <= 0 && !bot.carrying && !booked.has(bot)
+    const watching = bots.filter((bot) => bot.place === 'security' && settled(bot))
+    if (watching.length >= 2) {
+      const desk = bestPair(watching, 0.3, 3.4, bucket)
+      if (desk) {
+        const [lineA, lineB] = pairLines('security', desk[0], desk[1], bucket)
+        return { kind: 'speech', a: desk[0], b: desk[1], lineA, lineB, hold: 3.6, maxDist: 3.6, center: 'pair' }
+      }
+    }
+    const checking = bots.filter((bot) => bot.place === 'servers' && settled(bot))
     if (checking.length >= 2) {
       const rack = bestPair(checking, 0.3, 3.4, bucket)
       if (rack) {
@@ -150,7 +152,7 @@ function propose(slot, bots, booked, elapsed) {
   const free = (bot) => ready(bot, elapsed) && !booked.has(bot)
   let choice = null
   if (slot.role === 'muse') {
-    const working = bots.filter((bot) => free(bot) && bot.state === 'working' && ['desk', 'musk-desk', 'library', 'copy', 'servers'].includes(bot.place))
+    const working = bots.filter((bot) => free(bot) && bot.state === 'working' && ['desk', 'musk-desk', 'library', 'copy', 'servers', 'security'].includes(bot.place))
     choice = working.length ? working[Math.abs(bucket) % working.length] : null
   }
   if (!choice) {

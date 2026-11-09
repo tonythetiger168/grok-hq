@@ -21,8 +21,9 @@ export const ZONES = [
   { id: 'allhands', title: 'MEETING L', sub: 'All hands', carpet: 'MEETING L', x: 4.2, z: -9.4, w: 6.2, d: 5.6, color: '#d5d0c4' },
   { id: 'library', title: 'LIBRARY', sub: '', carpet: 'LIBRARY', x: 10.4, z: -9.4, w: 3.4, d: 5.6, color: '#ddd4c4' },
   { id: 'servers', title: 'SERVERS', sub: 'Room', carpet: 'SERVERS', x: 13.8, z: -9.4, w: 2.8, d: 5.6, color: '#c5d5e2' },
+  { id: 'security', title: 'SECURITY', sub: 'Watch', carpet: 'SECURITY', x: 13, z: -3.8, w: 3.6, d: 2.8, color: '#f3d3c4' },
   { id: 'pantry', title: 'SNACKS', sub: '', carpet: 'SNACKS', x: -13, z: -3.8, w: 8, d: 2.8, color: '#f0cbb8' },
-  { id: 'corridor', title: 'CORRIDOR', sub: '', carpet: '', x: -5, z: -3.8, w: 21.6, d: 2.8, color: '#f3e6cf' },
+  { id: 'corridor', title: 'CORRIDOR', sub: '', carpet: '', x: -5, z: -3.8, w: 18, d: 2.8, color: '#f3e6cf' },
   { id: 'huddle', title: 'MEETING S', sub: 'Huddle', carpet: 'MEETING S', x: 2.6, z: -1, w: 2, d: 3.6, color: '#e4ddd4' },
   { id: 'desk', title: 'DESKS', sub: 'The team', carpet: 'DESKS', x: -13, z: -1, w: 17.6, d: 6.6, color: '#d5e0d4' },
   { id: 'meeting', title: 'MEETING M', sub: 'Standup', carpet: 'MEETING M', x: 4.6, z: -1, w: 4, d: 6.6, color: '#d5dbe3' },
@@ -159,6 +160,12 @@ export const SERVER_SPOTS = [
   { x: 14.45, z: -6.2, yaw: Math.PI / 2, pose: 'stand' },
 ]
 
+/** Watch desk in the security post, facing the monitors on the east wall. */
+export const SECURITY_SPOTS = [
+  { x: 15.15, z: -2.45, yaw: Math.PI / 2, pose: 'sit' },
+  { x: 14.35, z: -2.15, yaw: Math.PI / 2, pose: 'stand' },
+]
+
 /** Seats inside the Rest room. Wind-down walks here. */
 export const REST_SPOTS = [
   { x: -4.35, z: 6.5, yaw: 0, pose: 'sit' },
@@ -222,7 +229,9 @@ export const PORTALS = [
   { a: 'allhands', b: 'corridor', x: 7.2, z: -3.8, dir: 'h', from: 4.2, to: 10.4, color: '#d9d3c4' },
   { a: 'library', b: 'corridor', x: 12.1, z: -3.8, dir: 'h', from: 10.4, to: 13.8, color: '#e4d7c0' },
   { a: 'library', b: 'servers', x: 13.8, z: -6.6, dir: 'v', from: -9.4, to: -3.8, color: '#c5d5e2' },
-  { a: 'servers', b: 'corridor', x: 15.2, z: -3.8, dir: 'h', from: 13.8, to: 16.6, color: '#b7c9d6' },
+  { a: 'servers', b: 'security', x: 15.2, z: -3.8, dir: 'h', from: 13.8, to: 16.6, color: '#e7cbb8' },
+  { a: 'corridor', b: 'security', x: 13, z: -2.4, dir: 'v', from: -3.8, to: -1, color: '#f3d3c4' },
+  { a: 'security', b: 'printers', x: 14.8, z: -1, dir: 'h', from: 13, to: 16.6, color: '#e4e8ea' },
   { a: 'huddle', b: 'desk', x: 2.6, z: 0.7, dir: 'v', from: -1, to: 2.6, color: '#e4ddd4' },
   { a: 'huddle', b: 'desk', x: 3.6, z: 2.6, dir: 'h', from: 2.6, to: 4.6, color: '#e4ddd4' },
   { a: 'pantry', b: 'corridor', x: -5, z: -2.4, dir: 'v', from: -3.8, to: -1, color: '#f3c4b0' },
@@ -239,7 +248,6 @@ export const PORTALS = [
   { a: 'desk', b: 'lounge', x: -0.5, z: 5.6, dir: 'h', from: -5.2, to: 4.6, color: '#ead4c4' },
   { a: 'rest', b: 'lounge', x: -5.2, z: 7.5, dir: 'v', from: 5.6, to: 9.2, color: '#f0d2c0' },
   { a: 'coffee', b: 'printers', x: 13, z: 2.2, dir: 'v', from: -1, to: 5.6, color: '#e7e4de' },
-  { a: 'corridor', b: 'printers', x: 14.8, z: -1, dir: 'h', from: 13, to: 16.6, color: '#e4e8ea' },
   { a: 'meeting', b: 'rec', x: 6.6, z: 5.6, dir: 'h', from: 4.6, to: 8.6, color: '#d9c8ee', glass: true },
   { a: 'coffee', b: 'rec', x: 10.8, z: 5.6, dir: 'h', from: 8.6, to: 13, color: '#e6d4f4' },
   { a: 'printers', b: 'rec', x: 14.8, z: 5.6, dir: 'h', from: 13, to: 16.6, color: '#ddd0ee' },
@@ -309,6 +317,7 @@ export const SIGNS = [
   { title: 'DESKS', sub: 'The team', x: 2.4, z: 2.4 },
   { title: 'LIBRARY', sub: '', x: 11.6, z: -8.5 },
   { title: 'SERVERS', sub: 'Room', x: 14.55, z: -4.85 },
+  { title: 'SECURITY', sub: 'Watch', x: 14.55, z: -3.15 },
   { title: 'SNACKS', sub: '', x: -12.15, z: -1.7 },
 ]
 
@@ -337,6 +346,7 @@ export const PRESETS = {
   pantry: { pos: [-7, 7, 1.5], target: [-9.2, 0.45, -2.5] },
   reception: { pos: [14.6, 6.2, 6.5], target: [14.8, 0.45, 1.6] },
   servers: { pos: [12.55, 3.5, -4.55], target: [15.15, 1.05, -6.85] },
+  security: { pos: [11.7, 3.7, -0.35], target: [15.15, 0.9, -2.45] },
   usage: { pos: [8, 4, 8.5], target: [12.2, 0.9, 6.8] },
   desk: deskShot,
   corridor: { pos: [2, 8, 2], target: [3, 0.4, -2.4] },
@@ -357,6 +367,7 @@ export const ZONE_CHIPS = [
   { id: 'desk', label: 'Desks' },
   { id: 'library', label: 'Library' },
   { id: 'servers', label: 'Servers' },
+  { id: 'security', label: 'Security' },
   { id: 'pantry', label: 'Snacks' },
   { id: 'lead', label: 'musk' },
 ]

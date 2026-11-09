@@ -41,6 +41,7 @@ function sandboxOf(task) {
 
 function simTask(bot, state, place) {
   if (place === 'handoff') return 'Simulated · handing work to musk'
+  if (place === 'security') return 'Simulated · watching the sandbox alarm'
   if (place === 'servers') {
     return bot.fact === 'sandbox-leak'
       ? 'Simulated · sandbox breach. Raising the alarm.'
@@ -123,9 +124,10 @@ export function arrangeOps(rows) {
     if (String(fact).startsWith('sandbox') && row.state !== 'idle') {
       const spot = rack % 2
       rack += 1
+      const watch = /watch|alarm|security/i.test(row.task || '')
       return {
         ...row,
-        place: 'servers',
+        place: watch ? 'security' : 'servers',
         spot,
         fact,
         task: row.task || (fact === 'sandbox-leak' ? 'Raising the sandbox alarm' : 'Checking sandbox security'),
@@ -203,9 +205,9 @@ export function createStatus() {
     for (const row of rows) {
       if (rack >= 2) break
       if (row.state === 'working' && row.place === 'desk' && row.id !== 'musk') {
-        row.place = 'servers'
-        row.spot = rack
-        row.fact = rack === 0 ? 'sandbox-leak' : 'sandbox-ok'
+        row.place = rack === 0 ? 'servers' : 'security'
+        row.spot = 0
+        row.fact = 'sandbox-leak'
         rack += 1
       }
     }
@@ -293,7 +295,9 @@ export function createStatus() {
           return {
             ...row,
             state: 'working',
-            place: String(order.fact).startsWith('sandbox') ? 'servers' : 'desk',
+            place: order.workPlace === 'security'
+              ? 'security'
+              : String(order.fact).startsWith('sandbox') ? 'servers' : 'desk',
             task: order.followTask,
             fact: order.fact,
             follow: order.follow,

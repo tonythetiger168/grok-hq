@@ -19,7 +19,7 @@ const REPORTS = [
 ]
 
 const WATCH = [
-  { id: 'minisim', start: 14 * 60 + 20, end: 16 * 60, task: 'On watch. Shared access is still leaking.' },
+  { id: 'minisim', start: 14 * 60 + 48, end: 16 * 60, task: 'On watch. The security desk still shows the leak.' },
 ]
 
 const COPIES = [
@@ -30,7 +30,8 @@ const COPIES = [
 const EXCHANGES = [
   { start: 10 * 60 + 46, end: 10 * 60 + 58, a: 'linkup', b: 'wavelive', fact: 'ci-failed', where: 'snack', spot: 0 },
   { start: 13 * 60 + 56, end: 14 * 60 + 8, a: 'aevum', b: 'julang', fact: 'ci-failed', where: 'library', spot: 0 },
-  { start: 13 * 60 + 16, end: 14 * 60 + 20, a: 'minisim', b: 'duckdb', fact: 'sandbox-leak', where: 'servers', spot: 0 },
+  { start: 13 * 60 + 16, end: 14 * 60, a: 'minisim', b: 'duckdb', fact: 'sandbox-leak', where: 'servers', spot: 0 },
+  { start: 14 * 60, end: 14 * 60 + 48, a: 'minisim', b: 'duckdb', fact: 'sandbox-leak', where: 'security', spot: 0 },
   { start: 14 * 60 + 46, end: 15 * 60, a: 'quant', b: 'julang', fact: 'pr-open', where: 'snack', spot: 3 },
   { start: 17 * 60 + 14, end: 17 * 60 + 26, a: 'helios-forge', b: 'vectorbt', fact: 'ci-green', where: 'lobby', spot: 0 },
 ]
@@ -185,7 +186,7 @@ export function parseWork(text) {
     fact = 'plan'
   }
   let workPlace = 'desk'
-  if (/sandbox|breach|jail/.test(t)) workPlace = 'servers'
+  if (/sandbox|breach|jail/.test(t)) workPlace = /watch|alarm|security/.test(t) ? 'security' : 'servers'
   else if (/ping|pong|arcade|jukebox/.test(t)) workPlace = 'rec'
   else if (/balcony|outside/.test(t)) workPlace = 'balcony'
   else if (/copy|print/.test(t)) workPlace = 'copy'
@@ -317,27 +318,31 @@ export function workdayAt(minute, intel = new Map()) {
         next = row(bot, {
           beat,
           state: 'working',
-          place: 'servers',
+          place: 'security',
           fact: 'sandbox-leak',
-          spot: 1,
+          spot: 0,
           task: watch.task,
         })
       } else if (exchange) {
         const listener = exchange.b === bot.id
         next = row(bot, {
           beat,
-          state: exchange.where === 'servers' ? 'working' : 'idle',
+          state: exchange.where === 'servers' || exchange.where === 'security' ? 'working' : 'idle',
           place: exchange.where === 'library'
             ? 'library'
             : exchange.where === 'lobby'
               ? 'lobby'
               : exchange.where === 'servers'
                 ? 'servers'
-                : 'snack',
+                : exchange.where === 'security'
+                  ? 'security'
+                  : 'snack',
           spot: exchange.spot + (listener ? 1 : 0),
           fact: exchange.fact,
           cup: exchange.where === 'snack' ? 'sip' : 'none',
-          task: exchange.where === 'servers'
+          task: exchange.where === 'security'
+            ? (listener ? 'Reviewing the breach on the security desk' : 'Alarming the sandbox breach')
+            : exchange.where === 'servers'
             ? (exchange.fact === 'sandbox-leak'
               ? (listener ? 'Hearing the sandbox breach' : 'Raising the sandbox alarm')
               : (listener ? 'Hearing the sandbox check' : 'Checking sandbox security'))
@@ -347,7 +352,9 @@ export function workdayAt(minute, intel = new Map()) {
         next = row(bot, {
           beat,
           state: 'working',
-          place: String(heard.fact).startsWith('sandbox') ? 'servers' : 'desk',
+          place: String(heard.fact).startsWith('sandbox')
+            ? (heard.where === 'security' ? 'security' : 'servers')
+            : 'desk',
           fact: heard.fact,
           task: factTask(bot, heard.fact).replace('Plan:', 'After the chat:'),
         })
@@ -407,6 +414,7 @@ export function workdayAt(minute, intel = new Map()) {
       && next.place !== 'meeting'
       && next.place !== 'copy'
       && next.place !== 'servers'
+      && next.place !== 'security'
     ) {
       next = {
         ...next,

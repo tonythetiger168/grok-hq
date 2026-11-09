@@ -103,9 +103,11 @@ if (!sandReport || sandReport.id !== 'duckdb' || sandReport.fact !== 'sandbox-le
 const hearing = workdayAt(15 * 60).find((row) => row.id === 'musk')
 if (!hearing || hearing.fact !== 'sandbox-leak') throw new Error('musk should hear the sandbox breach')
 const watch = workdayAt(15 * 60).find((row) => row.id === 'minisim')
-if (!watch || watch.place !== 'servers' || watch.fact !== 'sandbox-leak') {
-  throw new Error('Someone should keep watch while the breach is reported')
+if (!watch || watch.place !== 'security' || watch.fact !== 'sandbox-leak') {
+  throw new Error('Someone should keep watch at the security desk while the breach is reported')
 }
+const review = workdayAt(14 * 60 + 20).filter((row) => row.place === 'security' && row.fact === 'sandbox-leak')
+if (review.length < 2) throw new Error('The breach should be reviewed from the security room')
 const locked = workdayAt(15 * 60 + 40).find((row) => row.id === 'duckdb')
 if (!locked || locked.place !== 'servers' || !/sandbox/i.test(locked.task)) {
   throw new Error('The sandbox follow-up should return to the racks')
@@ -132,7 +134,9 @@ const wind = workdayAt(17 * 60 + 40).find((row) => row.id === 'aevum')
 if (!wind || wind.place !== 'lounge') throw new Error('Wind-down should walk into the rest room')
 if (!routeThrough(-2, 1.6, 11.9, -6.5).length) throw new Error('Library should be reachable from the desks')
 if (zoneAt(15.2, -6.6) !== 'servers') throw new Error('Servers should be its own room')
+if (zoneAt(15.1, -2.4) !== 'security') throw new Error('Security should be its own room beside the servers')
 if (!routeThrough(11.9, -6.5, 14.45, -6.2).length) throw new Error('Servers should be reachable from the library')
+if (!routeThrough(14.45, -6.2, 15.15, -2.45).length) throw new Error('Security should be reachable from the server room')
 if (zoneAt(2.3, -8) !== 'vacant') throw new Error('The former office should stay empty')
 if (zoneAt(3.6, 0.7) !== 'huddle') throw new Error('Small meeting should be its own room')
 if (zoneAt(7.3, -6.5) !== 'allhands') throw new Error('Large meeting should be its own room')

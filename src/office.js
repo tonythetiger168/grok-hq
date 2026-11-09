@@ -318,6 +318,51 @@ function addServers(parent, leds) {
   parent.add(cool)
 }
 
+function addSecurityRoom(parent) {
+  const desk = std('#f7f1e6', 0.75)
+  const leg = std('#6b4c38', 0.7)
+  const group = new THREE.Group()
+  group.position.set(15.85, 0, -2.45)
+  parent.add(group)
+  box(group, 0.56, 0.08, 1.15, 0, 0.74, 0, desk, true)
+  for (const [lx, lz] of [[-0.2, -0.45], [0.2, -0.45], [-0.2, 0.45], [0.2, 0.45]]) {
+    box(group, 0.06, 0.7, 0.06, lx, 0.35, lz, leg, true)
+  }
+  addChair(parent, 15.15, -2.45, Math.PI / 2, '#c46a4a', false)
+
+  const bezel = std('#241f1a', 0.6)
+  const screenMat = (color) => new THREE.MeshBasicMaterial({ color, toneMapped: false, side: THREE.DoubleSide })
+  const calm = screenMat('#3fba7a')
+  const alert = screenMat('#3fba7a')
+  for (const [z, mat] of [[-2.95, calm], [-1.95, alert]]) {
+    box(parent, 0.06, 0.46, 0.64, 16.38, 1.16, z, bezel, false)
+    const face = new THREE.Mesh(new THREE.PlaneGeometry(0.5, 0.32), mat)
+    face.position.set(16.33, 1.16, z)
+    face.rotation.y = Math.PI / 2
+    face.castShadow = false
+    parent.add(face)
+  }
+
+  box(parent, 0.62, 0.48, 0.06, 14.15, 1.18, -3.58, std('#fffaf3', 0.9), false)
+  box(parent, 0.7, 0.56, 0.05, 14.15, 1.18, -3.62, std('#6b4c38', 0.7), false)
+  for (const [dz, color] of [[-0.16, '#3fba7a'], [0, '#e2b340'], [0.16, '#7ec8ff']]) {
+    const tick = std(color, 0.4)
+    tick.emissive = new THREE.Color(color)
+    tick.emissiveIntensity = 0.35
+    box(parent, 0.12, 0.08, 0.02, 14.15 + dz, 1.18, -3.54, tick, false)
+  }
+
+  const lampMat = std('#3a2018', 0.4)
+  lampMat.emissive = new THREE.Color('#e2b340')
+  lampMat.emissiveIntensity = 0.3
+  cyl(parent, 0.02, 0.02, 0.16, 15.85, 0.82, -1.95, std('#241f1a', 0.6), 8, false)
+  const lamp = new THREE.Mesh(new THREE.SphereGeometry(0.07, 12, 10), lampMat)
+  lamp.position.set(15.85, 0.94, -1.95)
+  lamp.castShadow = false
+  parent.add(lamp)
+  return { calm, alert, lamp: lampMat }
+}
+
 function addUsage(parent) {
   const group = new THREE.Group()
   group.position.set(-12.55, 0.7, 7.35)
@@ -631,6 +676,7 @@ export function buildOffice(roster) {
   addCarpetLabel(group, 'REST', -0.3, 7.55, 2.3)
   addCarpetLabel(group, 'LIBRARY', 12.0, -7.7, 2.2)
   addCarpetLabel(group, 'SERVERS', 15.2, -4.7, 2.2)
+  addCarpetLabel(group, 'SECURITY', 15.05, -2.55, 2.3)
   addCarpetLabel(group, 'SNACKS', -9.1, -2.15, 2.6)
 
   const wallH = 1.08
@@ -715,6 +761,7 @@ export function buildOffice(roster) {
 
   const leds = []
   addServers(group, leds)
+  const watch = addSecurityRoom(group)
   addUsage(group)
   for (const sign of SIGNS) addSign(group, sign, mats.frame, mats.board)
 
@@ -726,6 +773,7 @@ export function buildOffice(roster) {
     research,
     leds,
     beacon: leds.beacon,
+    watch,
     clock,
     digital,
     copier,
@@ -1023,6 +1071,13 @@ export function updateOffice(office, time, stateById, clockSample = null, copyin
     const pulse = 0.5 + 0.5 * Math.sin(time * 6.2)
     office.beacon.emissive.set(breach ? '#e23b2f' : '#7ec8ff')
     office.beacon.emissiveIntensity = breach ? 0.7 + pulse * 1.15 : 0.08
+  }
+  if (office.watch) {
+    const pulse = 0.5 + 0.5 * Math.sin(time * (breach ? 6.4 : 1.7))
+    office.watch.calm.color.set('#3fba7a')
+    office.watch.alert.color.set(breach ? '#e23b2f' : '#3fba7a')
+    office.watch.lamp.emissive.set(breach ? '#e23b2f' : '#e2b340')
+    office.watch.lamp.emissiveIntensity = breach ? 0.75 + pulse * 1.05 : 0.28
   }
   const label = clockSample?.label
   if (label && label !== office.clockLabel) {
