@@ -34,8 +34,14 @@ export function placeFor(state, id, index = 0) {
   return 'desk'
 }
 
+function sandboxOf(task) {
+  if (!/sandbox/i.test(task || '')) return ''
+  return /leak|fail|open|loose|red/i.test(task) ? 'sandbox-leak' : 'sandbox-ok'
+}
+
 function simTask(bot, state, place) {
   if (place === 'handoff') return 'Simulated · handing work to musk'
+  if (place === 'servers') return 'Simulated · checking sandbox security'
   if (place === 'meeting') return 'Simulated · standup in the meeting room'
   if (state === 'working' && bot.id === 'musk') return 'Simulated · reviewing handoffs'
   if (state === 'working') return `Simulated · ${bot.sim}`
@@ -82,17 +88,20 @@ export function arrangeOps(rows) {
   const reporter = team.find((row) => row.state === 'done') || null
   const active = team.some((row) => row.state !== 'idle')
   let meet = 0
+  let rack = 0
   return rows.map((row) => {
-    const fact = factFromOps(row.pr, row.ci)
+    const fact = sandboxOf(row.task) || factFromOps(row.pr, row.ci)
     if (row.id === 'musk') {
       if (!active) return { ...row, state: 'idle', place: 'rest', fact: 'plan' }
-      const reportFact = reporter ? factFromOps(reporter.pr, reporter.ci) : 'plan'
+      const reportFact = reporter ? (sandboxOf(reporter.task) || factFromOps(reporter.pr, reporter.ci)) : 'plan'
       return {
         ...row,
         state: 'working',
         place: 'musk-desk',
         fact: reportFact,
-        task: reporter ? 'Deciding on a report' : 'Reading plan, PR, and CI',
+        task: reporter
+          ? (String(reportFact).startsWith('sandbox') ? 'Hearing the sandbox check' : 'Deciding on a report')
+          : 'Reading plan, PR, and CI',
       }
     }
     if (reporter && row.id === reporter.id) {
@@ -106,6 +115,11 @@ export function arrangeOps(rows) {
     }
     if (row.state === 'done') {
       return { ...row, place: 'desk', fact, task: row.task || 'Waiting to report to musk' }
+    }
+    if (String(fact).startsWith('sandbox') && row.state !== 'idle') {
+      const spot = rack % 2
+      rack += 1
+      return { ...row, place: 'servers', spot, fact, task: row.task || 'Checking sandbox security' }
     }
     if (standup && row.state === 'working' && meet < 4) {
       const meetIndex = meet
@@ -133,6 +147,8 @@ function orderPhase(t) {
 }
 
 function heardTask(bot, fact) {
+  if (fact === 'sandbox-leak') return 'Using the chat: a sandbox boundary looks open'
+  if (fact === 'sandbox-ok') return 'Using the chat: sandbox isolation looks tight'
   if (fact === 'ci-failed') return 'Using the chat: looking at failed CI'
   if (fact === 'ci-green') return 'Using the chat: CI is green, next step'
   if (fact === 'pr-open') return 'Using the chat: reviewing the open PR'
@@ -171,6 +187,16 @@ export function createStatus() {
           row.meetIndex = meet
           meet += 1
         }
+      }
+    }
+    let rack = 0
+    for (const row of rows) {
+      if (rack >= 2) break
+      if (row.state === 'working' && row.place === 'desk' && row.id !== 'musk') {
+        row.place = 'servers'
+        row.spot = rack
+        row.fact = rack === 0 ? 'sandbox-leak' : 'sandbox-ok'
+        rack += 1
       }
     }
     for (const row of rows) row.task = simTask(row, row.state, row.place)
@@ -257,7 +283,7 @@ export function createStatus() {
           return {
             ...row,
             state: 'working',
-            place: 'desk',
+            place: String(order.fact).startsWith('sandbox') ? 'servers' : 'desk',
             task: order.followTask,
             fact: order.fact,
             follow: order.follow,
@@ -271,7 +297,7 @@ export function createStatus() {
       return {
         ...row,
         state: 'working',
-        place: info.fact === 'pr-open' ? 'library' : 'desk',
+        place: String(info.fact).startsWith('sandbox') ? 'servers' : info.fact === 'pr-open' ? 'library' : 'desk',
         fact: info.fact,
         task: heardTask(botSafe(row), info.fact),
       }
@@ -390,13 +416,17 @@ export function createStatus() {
       if (!row) return { ok: false, reason: 'missing' }
       if (row.state !== 'idle' || orders.has(id)) return { ok: false, reason: 'busy' }
       const bot = ROSTER.find((item) => item.id === id)
-      const followTask = parsed.fact === 'ci-failed'
-        ? 'Fixing the failed CI'
-        : parsed.fact === 'pr-open'
-          ? 'Reviewing the open PR'
-          : parsed.fact === 'pr-closed'
-            ? 'Next plan step after the closed PR'
-            : 'Next plan step'
+      const followTask = parsed.fact === 'sandbox-leak'
+        ? 'Locking the sandbox'
+        : parsed.fact === 'sandbox-ok'
+          ? 'Noting the sandbox lock'
+          : parsed.fact === 'ci-failed'
+            ? 'Fixing the failed CI'
+            : parsed.fact === 'pr-open'
+              ? 'Reviewing the open PR'
+              : parsed.fact === 'pr-closed'
+                ? 'Next plan step after the closed PR'
+                : 'Next plan step'
       orders.set(id, {
         ...parsed,
         t: 0,

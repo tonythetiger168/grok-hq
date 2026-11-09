@@ -336,7 +336,7 @@ export const PRESETS = {
   allhands: { pos: [7.2, 8, -1], target: [7.3, 0.4, -6.6] },
   pantry: { pos: [-7, 7, 1.5], target: [-9.2, 0.45, -2.5] },
   reception: { pos: [14.6, 6.2, 6.5], target: [14.8, 0.45, 1.6] },
-  servers: { pos: [15.1, 6.2, -2.2], target: [15.3, 0.7, -6.8] },
+  servers: { pos: [12.55, 3.5, -4.55], target: [15.15, 1.05, -6.85] },
   usage: { pos: [8, 4, 8.5], target: [12.2, 0.9, 6.8] },
   desk: deskShot,
   corridor: { pos: [2, 8, 2], target: [3, 0.4, -2.4] },

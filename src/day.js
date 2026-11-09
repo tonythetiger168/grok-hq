@@ -13,7 +13,7 @@ const REPORTS = [
   { id: 'quant', start: 11 * 60 + 40, end: 12 * 60 + 14, fact: 'pr-open', ci: 'green', follow: 'review-pr' },
   { id: 'aevum', start: 13 * 60 + 10, end: 13 * 60 + 54, fact: 'ci-failed', ci: 'failed', follow: 'fix-ci' },
   { id: 'linkup', start: 14 * 60, end: 14 * 60 + 44, fact: 'pr-closed', ci: 'green', follow: 'next-step' },
-  { id: 'duckdb', start: 14 * 60 + 50, end: 15 * 60 + 34, fact: 'plan', ci: 'green', follow: 'write-plan' },
+  { id: 'duckdb', start: 14 * 60 + 50, end: 15 * 60 + 34, fact: 'sandbox-leak', ci: '', follow: 'lock-sandbox' },
   { id: 'freqtrade', start: 15 * 60 + 40, end: 16 * 60 + 24, fact: 'pr-open', ci: 'green', follow: 'keep-open' },
   { id: 'helios-forge', start: 16 * 60 + 30, end: 17 * 60 + 12, fact: 'ci-green', ci: 'green', follow: 'keep-open', update: true },
 ]
@@ -26,6 +26,7 @@ const COPIES = [
 const EXCHANGES = [
   { start: 10 * 60 + 46, end: 10 * 60 + 58, a: 'linkup', b: 'wavelive', fact: 'ci-failed', where: 'snack', spot: 0 },
   { start: 13 * 60 + 56, end: 14 * 60 + 8, a: 'aevum', b: 'julang', fact: 'ci-failed', where: 'library', spot: 0 },
+  { start: 13 * 60 + 16, end: 14 * 60 + 20, a: 'minisim', b: 'duckdb', fact: 'sandbox-leak', where: 'servers', spot: 0 },
   { start: 14 * 60 + 46, end: 15 * 60, a: 'quant', b: 'minisim', fact: 'pr-open', where: 'snack', spot: 3 },
   { start: 17 * 60 + 14, end: 17 * 60 + 26, a: 'helios-forge', b: 'vectorbt', fact: 'ci-green', where: 'lobby', spot: 0 },
 ]
@@ -151,7 +152,10 @@ export function parseWork(text) {
   const t = clipped.toLowerCase()
   let fact = 'plan'
   let ci = ''
-  if (/fail|red|broken/.test(t)) {
+  if (/sandbox/.test(t)) {
+    fact = /leak|fail|open|loose|red/.test(t) ? 'sandbox-leak' : 'sandbox-ok'
+    ci = ''
+  } else if (/fail|red|broken/.test(t)) {
     fact = 'ci-failed'
     ci = 'failed'
   } else if (/green|passing/.test(t)) {
@@ -173,17 +177,28 @@ export function parseWork(text) {
     fact = 'plan'
   }
   let workPlace = 'desk'
-  if (/ping|pong|arcade|jukebox/.test(t)) workPlace = 'rec'
+  if (/sandbox/.test(t)) workPlace = 'servers'
+  else if (/ping|pong|arcade|jukebox/.test(t)) workPlace = 'rec'
   else if (/balcony|outside/.test(t)) workPlace = 'balcony'
   else if (/copy|print/.test(t)) workPlace = 'copy'
   else if (/coffee|snack|tea|lobby/.test(t)) workPlace = 'snack'
   else if (/library|read/.test(t)) workPlace = 'library'
-  const follow = fact === 'ci-failed' ? 'fix-ci' : fact === 'pr-closed' ? 'next-step' : fact === 'pr-open' ? 'review-pr' : 'next-step'
+  const follow = fact === 'sandbox-leak'
+    ? 'lock-sandbox'
+    : fact === 'ci-failed'
+      ? 'fix-ci'
+      : fact === 'pr-closed'
+        ? 'next-step'
+        : fact === 'pr-open'
+          ? 'review-pr'
+          : 'next-step'
   return { text: clipped, fact, ci, follow, workPlace }
 }
 
 function factTask(bot, fact) {
   const bit = bitOf(bot.id)
+  if (fact === 'sandbox-leak') return `Sandbox check: a boundary looks open on ${bit}`
+  if (fact === 'sandbox-ok') return `Sandbox check: isolation looks tight on ${bit}`
   if (fact === 'ci-failed') return `Plan: failed CI on ${bit}`
   if (fact === 'ci-green') return `Plan: CI is green on ${bit}`
   if (fact === 'pr-open') return `Plan: PR still open for ${bit}`
@@ -194,6 +209,7 @@ function factTask(bot, fact) {
 function followTask(follow, bot) {
   const bit = bitOf(bot.id)
   if (follow === 'fix-ci') return `Fixing failed CI on ${bit}`
+  if (follow === 'lock-sandbox') return `Locking the sandbox on ${bit}`
   if (follow === 'review-pr') return `Reviewing the open PR for ${bit}`
   if (follow === 'keep-open') return `Keeping the PR open on ${bit}`
   if (follow === 'write-plan') return `Writing the next plan step for ${bit}`
@@ -205,12 +221,20 @@ function focusRow(bot, minute) {
   const u = unit(bot.id)
   const block = Math.floor(minute / 28)
   const roll = (u + block * 0.173) % 1
-  const facts = ['plan', 'pr-open', 'ci-green', 'ci-failed', 'pr-closed']
+  const facts = ['plan', 'pr-open', 'ci-green', 'ci-failed', 'pr-closed', 'sandbox-ok', 'sandbox-leak']
   const fact = facts[(block + Math.floor(u * 5)) % facts.length]
   const spot = Math.floor(u * 7)
   if (roll < 0.38) return { state: 'working', place: 'desk', fact, task: factTask(bot, fact), spot, cup: 'none' }
-  if (fact === 'ci-failed' && roll < 0.5) {
-    return { state: 'working', place: 'servers', fact, task: 'Checking the failed box', spot: spot % 2, cup: 'none' }
+  if ((fact === 'sandbox-ok' || fact === 'sandbox-leak') && roll < 0.52) {
+    const tight = fact === 'sandbox-ok'
+    return {
+      state: 'working',
+      place: 'servers',
+      fact,
+      task: tight ? 'Sandbox passed. Isolation looks tight.' : 'Sandbox check: a boundary looks open.',
+      spot: spot % 2,
+      cup: 'none',
+    }
   }
   if (roll < 0.5) return { state: 'working', place: 'library', fact, task: `Reading the plan for ${bitOf(bot.id)}`, spot: spot % 3, cup: 'none' }
   if (roll < 0.62) return { state: 'idle', place: 'snack', fact, task: `Snack break, still on ${bitOf(bot.id)}`, spot: spot % 7, cup: roll < 0.58 ? 'sip' : 'hand' }
@@ -269,7 +293,9 @@ export function workdayAt(minute, intel = new Map()) {
         ci: report.ci,
         follow: report.follow,
         returnPlace: 'desk',
-        task: report.update ? 'Update for musk' : 'Reporting plan, PR, and CI',
+        task: String(report.fact).startsWith('sandbox')
+          ? 'Reporting the sandbox check'
+          : report.update ? 'Update for musk' : 'Reporting plan, PR, and CI',
       })
     } else {
       const copy = COPIES.find((item) => item.id === bot.id && minute >= item.start && minute < item.end)
@@ -282,18 +308,26 @@ export function workdayAt(minute, intel = new Map()) {
         const listener = exchange.b === bot.id
         next = row(bot, {
           beat,
-          state: 'idle',
-          place: exchange.where === 'library' ? 'library' : exchange.where === 'lobby' ? 'lobby' : 'snack',
+          state: exchange.where === 'servers' ? 'working' : 'idle',
+          place: exchange.where === 'library'
+            ? 'library'
+            : exchange.where === 'lobby'
+              ? 'lobby'
+              : exchange.where === 'servers'
+                ? 'servers'
+                : 'snack',
           spot: exchange.spot + (listener ? 1 : 0),
           fact: exchange.fact,
           cup: exchange.where === 'snack' ? 'sip' : 'none',
-          task: listener ? 'Hearing a plan update' : 'Sharing a plan update',
+          task: exchange.where === 'servers'
+            ? (listener ? 'Hearing the sandbox check' : 'Checking sandbox security')
+            : (listener ? 'Hearing a plan update' : 'Sharing a plan update'),
         })
       } else if (heard) {
         next = row(bot, {
           beat,
           state: 'working',
-          place: 'desk',
+          place: String(heard.fact).startsWith('sandbox') ? 'servers' : 'desk',
           fact: heard.fact,
           task: factTask(bot, heard.fact).replace('Plan:', 'After the chat:'),
         })
@@ -301,7 +335,11 @@ export function workdayAt(minute, intel = new Map()) {
         next = row(bot, {
           beat,
           state: 'working',
-          place: follow.follow === 'write-plan' && minute < follow.end + 16 ? 'copy' : 'desk',
+          place: follow.follow === 'lock-sandbox'
+            ? 'servers'
+            : follow.follow === 'write-plan' && minute < follow.end + 16
+              ? 'copy'
+              : 'desk',
           fact: follow.fact,
           follow: follow.follow,
           ci: follow.ci,
@@ -348,11 +386,12 @@ export function workdayAt(minute, intel = new Map()) {
       && next.place !== 'handoff'
       && next.place !== 'meeting'
       && next.place !== 'copy'
+      && next.place !== 'servers'
     ) {
       next = {
         ...next,
         state: 'working',
-        place: info.fact === 'pr-open' ? 'library' : 'desk',
+        place: String(info.fact).startsWith('sandbox') ? 'servers' : info.fact === 'pr-open' ? 'library' : 'desk',
         fact: info.fact,
         task: `Using what I heard: ${factTask(bot, info.fact)}`,
       }

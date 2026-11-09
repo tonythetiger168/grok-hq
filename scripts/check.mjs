@@ -92,6 +92,19 @@ for (const minute of [9 * 60 + 10, 10 * 60 + 10, 12 * 60, 14 * 60 + 20, 17 * 60 
 }
 const reporting = workdayAt(10 * 60 + 10).find((row) => row.place === 'handoff')
 if (!reporting || reporting.fact !== 'pr-open') throw new Error('Morning report should be an open PR')
+const checkers = workdayAt(13 * 60 + 40).filter((row) => row.place === 'servers')
+if (checkers.length < 2 || checkers.some((row) => row.fact !== 'sandbox-leak')) {
+  throw new Error('A pair should check sandbox security in the server room')
+}
+const sandReport = workdayAt(15 * 60).find((row) => row.place === 'handoff')
+if (!sandReport || sandReport.id !== 'duckdb' || sandReport.fact !== 'sandbox-leak') {
+  throw new Error('The sandbox check should be reported to musk')
+}
+const locked = workdayAt(15 * 60 + 40).find((row) => row.id === 'duckdb')
+if (!locked || locked.place !== 'servers' || !/sandbox/i.test(locked.task)) {
+  throw new Error('The sandbox follow-up should return to the racks')
+}
+if (workdayAt(15 * 60).some((row) => row.place === 'vacant')) throw new Error('Nobody works in the vacant office')
 const after = workdayAt(10 * 60 + 50).find((row) => row.id === 'grok-bot')
 if (!after || after.place === 'handoff') throw new Error('Follow-up should leave musk')
 if (!/plan|PR|CI/i.test(after.task)) throw new Error('Follow-up task should stay on the plan')
@@ -131,5 +144,12 @@ if (!given.ok) throw new Error('Idle assign should work')
 const assigned = office.snapshot().bots.find((bot) => bot.id === 'quant')
 if (assigned.state === 'idle' || assigned.fact !== 'ci-failed') throw new Error('Assign did not start the CI work')
 if (office.assign('quant', 'Something else').ok) throw new Error('Busy assign should fail')
+const sandboxOffice = createStatus()
+if (!sandboxOffice.assign('minisim', 'Check sandbox isolation').ok) throw new Error('Sandbox assign should work')
+sandboxOffice.tick(4)
+const sandboxBot = sandboxOffice.snapshot().bots.find((bot) => bot.id === 'minisim')
+if (!sandboxBot || sandboxBot.place !== 'servers' || sandboxBot.fact !== 'sandbox-ok') {
+  throw new Error('A sandbox assignment should walk into the server room')
+}
 
 console.log(`ok ${ROSTER.length} bots`)
