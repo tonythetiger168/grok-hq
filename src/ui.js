@@ -12,6 +12,7 @@ const WHERE = {
   meeting: 'In the meeting room.',
   handoff: 'Reporting to musk.',
   library: 'In the library.',
+  servers: 'In the server room.',
   pantry: 'Getting coffee.',
   snack: 'At a snack bar.',
   copy: 'At the copier.',

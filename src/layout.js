@@ -19,7 +19,8 @@ export const ZONES = [
   { id: 'hall', title: 'TO MUSK', sub: 'Report path', carpet: '', x: 0.4, z: -6.2, w: 3.8, d: 2.4, color: '#ead7b0' },
   { id: 'vacant', title: 'VACANT', sub: 'Former office', carpet: 'VACANT', x: 0.4, z: -9.4, w: 3.8, d: 3.2, color: '#efe2c8' },
   { id: 'allhands', title: 'MEETING L', sub: 'All hands', carpet: 'MEETING L', x: 4.2, z: -9.4, w: 6.2, d: 5.6, color: '#d5d0c4' },
-  { id: 'library', title: 'LIBRARY', sub: '', carpet: 'LIBRARY', x: 10.4, z: -9.4, w: 6.2, d: 5.6, color: '#ddd4c4' },
+  { id: 'library', title: 'LIBRARY', sub: '', carpet: 'LIBRARY', x: 10.4, z: -9.4, w: 3.4, d: 5.6, color: '#ddd4c4' },
+  { id: 'servers', title: 'SERVERS', sub: 'Room', carpet: 'SERVERS', x: 13.8, z: -9.4, w: 2.8, d: 5.6, color: '#c5d5e2' },
   { id: 'pantry', title: 'SNACKS', sub: '', carpet: 'SNACKS', x: -13, z: -3.8, w: 8, d: 2.8, color: '#f0cbb8' },
   { id: 'corridor', title: 'CORRIDOR', sub: '', carpet: '', x: -5, z: -3.8, w: 21.6, d: 2.8, color: '#f3e6cf' },
   { id: 'huddle', title: 'MEETING S', sub: 'Huddle', carpet: 'MEETING S', x: 2.6, z: -1, w: 2, d: 3.6, color: '#e4ddd4' },
@@ -148,9 +149,14 @@ export const PLANTS = [
 ]
 
 export const LIBRARY_SPOTS = [
-  { x: 12.3, z: -6.3, yaw: 0 },
-  { x: 13.8, z: -6.3, yaw: 0 },
-  { x: 13.0, z: -7.6, yaw: Math.PI },
+  { x: 11.4, z: -6.4, yaw: 0 },
+  { x: 12.5, z: -6.4, yaw: 0 },
+  { x: 11.9, z: -7.5, yaw: Math.PI },
+]
+
+export const SERVER_SPOTS = [
+  { x: 14.45, z: -7.6, yaw: Math.PI / 2, pose: 'stand' },
+  { x: 14.45, z: -6.2, yaw: Math.PI / 2, pose: 'stand' },
 ]
 
 /** Seats inside the Rest room. Wind-down walks here. */
@@ -214,7 +220,9 @@ export const PORTALS = [
   { a: 'allhands', b: 'library', x: 10.4, z: -6.6, dir: 'v', from: -9.4, to: -3.8, color: '#ddd4c4' },
   { a: 'hall', b: 'corridor', x: -0.4, z: -3.8, dir: 'h', from: -5, to: 4.2, color: '#f6e2b8' },
   { a: 'allhands', b: 'corridor', x: 7.2, z: -3.8, dir: 'h', from: 4.2, to: 10.4, color: '#d9d3c4' },
-  { a: 'library', b: 'corridor', x: 13.4, z: -3.8, dir: 'h', from: 10.4, to: 16.6, color: '#e4d7c0' },
+  { a: 'library', b: 'corridor', x: 12.1, z: -3.8, dir: 'h', from: 10.4, to: 13.8, color: '#e4d7c0' },
+  { a: 'library', b: 'servers', x: 13.8, z: -6.6, dir: 'v', from: -9.4, to: -3.8, color: '#c5d5e2' },
+  { a: 'servers', b: 'corridor', x: 15.2, z: -3.8, dir: 'h', from: 13.8, to: 16.6, color: '#b7c9d6' },
   { a: 'huddle', b: 'desk', x: 2.6, z: 0.7, dir: 'v', from: -1, to: 2.6, color: '#e4ddd4' },
   { a: 'huddle', b: 'desk', x: 3.6, z: 2.6, dir: 'h', from: 2.6, to: 4.6, color: '#e4ddd4' },
   { a: 'pantry', b: 'corridor', x: -5, z: -2.4, dir: 'v', from: -3.8, to: -1, color: '#f3c4b0' },
@@ -299,7 +307,8 @@ export const SIGNS = [
   { title: 'PRINTERS', sub: 'Copy', x: 14.2, z: 4.55 },
   { title: 'REC', sub: 'Play', x: 11.4, z: 8.45 },
   { title: 'DESKS', sub: 'The team', x: 2.4, z: 2.4 },
-  { title: 'LIBRARY', sub: '', x: 14.6, z: -8.4 },
+  { title: 'LIBRARY', sub: '', x: 11.6, z: -8.5 },
+  { title: 'SERVERS', sub: 'Room', x: 14.55, z: -4.85 },
   { title: 'SNACKS', sub: '', x: -12.15, z: -1.7 },
 ]
 
@@ -327,7 +336,7 @@ export const PRESETS = {
   allhands: { pos: [7.2, 8, -1], target: [7.3, 0.4, -6.6] },
   pantry: { pos: [-7, 7, 1.5], target: [-9.2, 0.45, -2.5] },
   reception: { pos: [14.6, 6.2, 6.5], target: [14.8, 0.45, 1.6] },
-  servers: { pos: [7, 6, -2], target: [5.2, 0.6, -7.2] },
+  servers: { pos: [15.1, 6.2, -2.2], target: [15.3, 0.7, -6.8] },
   usage: { pos: [8, 4, 8.5], target: [12.2, 0.9, 6.8] },
   desk: deskShot,
   corridor: { pos: [2, 8, 2], target: [3, 0.4, -2.4] },
@@ -347,6 +356,7 @@ export const ZONE_CHIPS = [
   { id: 'balcony', label: 'Balcony' },
   { id: 'desk', label: 'Desks' },
   { id: 'library', label: 'Library' },
+  { id: 'servers', label: 'Servers' },
   { id: 'pantry', label: 'Snacks' },
   { id: 'lead', label: 'musk' },
 ]

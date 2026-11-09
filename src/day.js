@@ -209,6 +209,9 @@ function focusRow(bot, minute) {
   const fact = facts[(block + Math.floor(u * 5)) % facts.length]
   const spot = Math.floor(u * 7)
   if (roll < 0.38) return { state: 'working', place: 'desk', fact, task: factTask(bot, fact), spot, cup: 'none' }
+  if (fact === 'ci-failed' && roll < 0.5) {
+    return { state: 'working', place: 'servers', fact, task: 'Checking the failed box', spot: spot % 2, cup: 'none' }
+  }
   if (roll < 0.5) return { state: 'working', place: 'library', fact, task: `Reading the plan for ${bitOf(bot.id)}`, spot: spot % 3, cup: 'none' }
   if (roll < 0.62) return { state: 'idle', place: 'snack', fact, task: `Snack break, still on ${bitOf(bot.id)}`, spot: spot % 7, cup: roll < 0.58 ? 'sip' : 'hand' }
   if (roll < 0.74) return { state: 'idle', place: 'pantry', fact, task: 'Coffee in the kitchen, then the plan', spot: spot % 3, cup: 'hand' }

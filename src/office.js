@@ -259,9 +259,9 @@ function addCornerOffice(parent, mats) {
 
 function addResearch(parent, research) {
   const z = -5.15
-  const xs = [12.2, 14.3]
-  box(parent, 3.2, 0.08, 0.28, 13.25, 0.62, z + 0.16, std('#d9c7a4', 0.85))
-  for (const lx of [11.7, 14.8]) {
+  const xs = [11.3, 12.5]
+  box(parent, 2.1, 0.08, 0.28, 11.9, 0.62, z + 0.16, std('#d9c7a4', 0.85))
+  for (const lx of [10.95, 12.85]) {
     box(parent, 0.06, 0.62, 0.22, lx, 0.31, z + 0.16, std(WOOD_LEG, 0.75))
   }
   xs.forEach((x, index) => {
@@ -275,23 +275,36 @@ function addResearch(parent, research) {
 }
 
 function addServers(parent, leds) {
-  const spots = [[15.7, -8.2], [15.7, -6.7]]
-  const bodyMat = std('#262b30', 0.55, { metalness: 0.08 })
+  const tile = std('#d5e4ee', 0.85)
+  for (let x = 14.15; x <= 16.2; x += 0.55) {
+    box(parent, 0.02, 0.012, 4.8, x, 0.03, -6.6, tile, false)
+  }
+  for (let z = -8.8; z <= -4.4; z += 0.55) {
+    box(parent, 2.3, 0.012, 0.02, 15.2, 0.03, z, tile, false)
+  }
+  const cable = std('#243044', 0.5)
+  box(parent, 0.04, 0.02, 3.4, 14.7, 0.04, -6.7, cable, false)
+  box(parent, 1.1, 0.02, 0.04, 15.2, 0.04, -5.2, cable, false)
+  const spots = [[15.85, -8.15], [15.85, -6.65], [15.85, -5.15]]
+  const bodyMat = std('#1e2a36', 0.5, { metalness: 0.12 })
   spots.forEach(([x, z], rack) => {
     const group = new THREE.Group()
     group.position.set(x, 0, z)
     parent.add(group)
-    box(group, 0.72, 1.42, 0.46, 0, 0.71, 0, bodyMat)
-    for (let row = 0; row < 6; row += 1) {
-      const led = std('#14211b', 0.4)
-      led.emissive = new THREE.Color('#8dceb0')
-      led.emissiveIntensity = 0.25
-      led.userData.phase = rack * 1.3 + row * 0.6
-      const lamp = box(group, 0.46, 0.018, 0.02, 0, 0.28 + row * 0.18, 0.24, led, false)
+    box(group, 0.62, 1.5, 0.42, 0, 0.75, 0, bodyMat, true)
+    for (let row = 0; row < 7; row += 1) {
+      const led = std('#10202c', 0.4)
+      led.emissive = new THREE.Color(row % 5 === 0 ? '#e07a3d' : '#7ec8ff')
+      led.emissiveIntensity = 0.7
+      led.userData.phase = rack * 1.3 + row * 0.55
+      const lamp = box(group, 0.4, 0.016, 0.02, 0, 0.22 + row * 0.17, 0.22, led, false)
       lamp.castShadow = false
       leds.push(led)
     }
   })
+  const cool = new THREE.PointLight('#9ecbff', 0.35, 4.2, 2)
+  cool.position.set(14.8, 1.4, -6.6)
+  parent.add(cool)
 }
 
 function addUsage(parent) {
@@ -497,16 +510,15 @@ function addShelfUnit(parent, x, z, yaw) {
 }
 
 function addLibrary(parent) {
-  addShelfUnit(parent, 11.3, -8.55, 0)
-  addShelfUnit(parent, 13.1, -8.55, 0)
-  addShelfUnit(parent, 14.9, -8.55, 0)
+  addShelfUnit(parent, 11.15, -8.55, 0)
+  addShelfUnit(parent, 12.7, -8.55, 0)
   const wood = std(WOOD_TOP, 0.78)
-  box(parent, 1.6, 0.07, 0.8, 13.0, 0.72, -6.5, wood)
-  for (const [dx, dz] of [[-0.65, -0.28], [0.65, -0.28], [-0.65, 0.28], [0.65, 0.28]]) {
-    box(parent, 0.06, 0.68, 0.06, 13.0 + dx, 0.34, -6.5 + dz, std(WOOD_LEG, 0.72))
+  box(parent, 1.35, 0.07, 0.7, 11.9, 0.72, -6.55, wood)
+  for (const [dx, dz] of [[-0.5, -0.24], [0.5, -0.24], [-0.5, 0.24], [0.5, 0.24]]) {
+    box(parent, 0.06, 0.68, 0.06, 11.9 + dx, 0.34, -6.55 + dz, std(WOOD_LEG, 0.72))
   }
-  box(parent, 0.28, 0.04, 0.2, 12.55, 0.78, -6.5, std('#f4f1ea', 0.9))
-  box(parent, 0.22, 0.04, 0.16, 13.4, 0.78, -6.35, std('#3c4f73', 0.85))
+  box(parent, 0.24, 0.04, 0.18, 11.55, 0.78, -6.55, std('#f4f1ea', 0.9))
+  box(parent, 0.2, 0.04, 0.14, 12.25, 0.78, -6.4, std('#3c4f73', 0.85))
 }
 
 function addPantry(parent) {
@@ -606,7 +618,8 @@ export function buildOffice(roster) {
   addCarpetLabel(group, 'DESKS', -4.2, 2.5, 3.1)
   addCarpetLabel(group, 'LOBBY', -9.5, 7.7, 2.3)
   addCarpetLabel(group, 'REST', -0.3, 7.55, 2.3)
-  addCarpetLabel(group, 'LIBRARY', 13.4, -7.6, 2.6)
+  addCarpetLabel(group, 'LIBRARY', 12.0, -7.7, 2.2)
+  addCarpetLabel(group, 'SERVERS', 15.2, -4.7, 2.2)
   addCarpetLabel(group, 'SNACKS', -9.1, -2.15, 2.6)
 
   const wallH = 1.08

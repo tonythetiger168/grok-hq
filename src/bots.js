@@ -3,7 +3,7 @@ import { CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js'
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js'
 import { damp, dampAngle, std } from './geom.js'
 import { glyphTexture } from './paint.js'
-import { BALCONY_SPOTS, COPY_SPOTS, LIBRARY_SPOTS, MEETING_SEATS, PANTRY_SPOTS, REC_SPOTS, REST_SPOTS, routeThrough, SNACK_SPOTS, VISITORS, WAIT_SPOTS } from './layout.js'
+import { BALCONY_SPOTS, COPY_SPOTS, LIBRARY_SPOTS, MEETING_SEATS, PANTRY_SPOTS, REC_SPOTS, REST_SPOTS, SERVER_SPOTS, routeThrough, SNACK_SPOTS, VISITORS, WAIT_SPOTS } from './layout.js'
 
 const HIP_STAND = 0.48
 const HIP_SIT = 0.4
@@ -807,6 +807,10 @@ function spotFor(bot, place) {
   if (place === 'library') {
     const spot = spotGoal(LIBRARY_SPOTS, bot.spot)
     return { ...spot, low: false }
+  }
+  if (place === 'servers') {
+    const spot = spotGoal(SERVER_SPOTS, bot.spot)
+    return { ...spot, pose: 'stand', low: false }
   }
   if (place === 'pantry') {
     const spot = spotGoal(PANTRY_SPOTS, bot.spot)
