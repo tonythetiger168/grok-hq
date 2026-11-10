@@ -1,12 +1,12 @@
-# Grok Bot 虛擬辦公室
+# Grok HQ
 
-一間可以在瀏覽器裡看的 3D 辦公室。每位 Grok Bot 隊友是一個小巧的人物，有自己的髮型、臉和衣服顏色，以及自己的桌子和休息區位子。全員向 **musk** 回報。
+給一組機器人用的故事書 3D 辦公室。預設是這支 Grok Bot 團隊，全員向 **musk** 回報。換成你自己的名單，只要改 `public/team.json`。
 
-這是獨立作品，**不是 xAI 的官方產品，也與 xAI 沒有從屬或合作關係**。名稱只用來稱呼這支機器人團隊。
+這是獨立作品，**不是 xAI 的官方產品，也與 xAI 沒有從屬或合作關係**。
 
-![Workday：大廳時鐘、站會，以及 musk 對一份還開著的 PR 做決定](docs/demo.gif)
+![Workday 早上：大廳、時鐘，人開始走動](docs/demo.gif)
 
-這段是 **Workday**（`?day=1`）：時鐘往前走，人在大廳和會議室之間移動，對話雲和思考雲會出現。點一個 **Idle** 的人，在頭頂雲朵裡打字，按 Enter 派工作。
+早上的 **Workday**（`?day=1`）。時鐘往前走，人在大廳裡走動。
 
 ## 怎麼跑
 
@@ -19,7 +19,18 @@ npm install
 npm run dev
 ```
 
-終端機會印出本機網址（預設 `http://127.0.0.1:4317`）。正式靜態檔：
+PowerShell 若擋住 `npm.ps1`，改用 `npm.cmd install` 和 `npm.cmd run dev`。
+
+終端機會印出本機網址（預設 `http://127.0.0.1:4317`）。
+
+| 網址 | 做什麼 |
+| --- | --- |
+| `?day=1` | 一日工作，約幾分鐘走完 9:00 AM 到 6:00 PM。可加 `?at=10:30` |
+| `?simulate=1` | 短的忙碌示範。`?demo` 和 `#demo` 也行 |
+| `?ops=1` | 營運控制室，讀狀態，開發伺服器可選讀 GitHub |
+| `?team=example` | 預覽另一組名單（ada 的小隊），不改你的 `team.json` |
+
+正式靜態檔：
 
 ```bash
 npm run build
@@ -43,14 +54,28 @@ npm run check
 - 預設每個人都是 **Idle**，坐在休息區。桌子是空的，名牌還在。沒有人在做「真的工作」。
 - 滑過角色會出現名字。點一下（或點名冊）會把鏡頭拉近，並跟著那位角色。
 - 兩個人說話時，中間會浮出對話雲；一個人自言自語也有。想事情是另一種思考雲：雲朵形，底下有一串小圓點連回頭上。
-- 點一個 **Idle** 的人，在頭頂對話雲裡打工作內容，按 Enter。對方會離開休息去做事；若寫到 PR、CI 或 plan，之後向 musk 回報時會沿著這句話。
+- 點一個 **Idle** 的人，在頭頂對話雲裡打工作內容，按 Enter。對方會離開休息去做事；若寫到 PR、CI、plan 或 sandbox，之後向主管回報時會沿著這句話。
+
+![點 Idle 的人，打一行工作，對方就開始做](docs/assign.gif)
+
+![整層樓：大廳、會議室、廚房、休息、機房和保安值班桌](docs/floor.gif)
 - 拖曳旋轉、滾輪或雙指縮放、右鍵平移。手機上有放大、縮小、回到全景。
 - 上方的分區按鈕把鏡頭帶到該區。
 - 大廳牆邊有一面「每週用量」板，只寫稍後再接，**沒有任何數字**。
 
 ## 一日工作
 
-「Workday」按鈕，或網址 `?day=1`，用幾分鐘演完 9:00 AM 到 6:00 PM。站會走進 Meeting M 的門口。咖啡在廚房，休息和遊戲在 Rest / Rec，影印走進 Printers。一次只有一個人把文件拿給 musk。這只在這個分頁裡演，不會寫入 `status.json`。
+「Workday」按鈕，或網址 `?day=1`，用幾分鐘演完 9:00 AM 到 6:00 PM。站會走進 Meeting M 的門口。咖啡在廚房，休息和遊戲在 Rest / Rec，影印走進 Printers。一次只有一個人把文件拿給主管。這只在這個分頁裡演，不會寫入 `status.json`。
+
+![站會走進 Meeting M](docs/standup.gif)
+
+![午餐時段：Rec 的球桌，接著是廚房](docs/life.gif)
+
+sandbox 檢查先在機櫃前開始。故事裡若失敗，保安值班桌的螢幕和燈會轉紅，再向主管報告。主管決定封鎖、隔離、再查，或繼續看著。
+
+![機櫃亮紅燈，接著 SECURITY 值班桌的警示螢幕](docs/breach.gif)
+
+![主管聽報告：這份 PR 還開著](docs/report.gif)
 
 ## 模擬工作
 
@@ -102,6 +127,38 @@ curl -s -X POST http://127.0.0.1:4317/api/status \
 
 機器人可以在開始時 POST `working` 和一行 task，需要人時 POST `waiting`，卡住時 POST `error`，做完時 POST `done`，回到休息時 POST `idle`。瀏覽器大約每 4 秒讀一次。正式環境請自己做一個同樣格式的 `GET/POST /api/status`，或只更新 `status.json` 再部署。
 
+## 用你自己的機器人
+
+編輯 `public/team.json`。`leader` 是大家回報的那一位，必須是 `bots` 裡的 `id`。每位可以有自己的名字、組別、顏色、一句角色，以及選填的 `repo`（`owner/name`，給 Operations 讀 PR / CI）。這層樓最多 21 人。不寫 `cast` 時，站會、報告、sandbox 檢查會依名單自動排，不綁死某個人的名字。
+
+改完請重新啟動 `npm run dev`，狀態 API 才會認得新名字。瀏覽器重新整理會讀到新的樓層。
+
+```json
+{
+  "leader": "ada",
+  "groups": [
+    { "id": "lead", "label": "ada", "blurb": "Corner office" },
+    { "id": "crew", "label": "Crew", "blurb": "The desk hall" }
+  ],
+  "bots": [
+    { "id": "ada", "name": "ada", "group": "lead", "role": "Reviews the crew.", "color": "#8e949e" },
+    { "id": "pixel", "name": "pixel", "group": "crew", "role": "Keeps the notes.", "color": "#3c6e9a", "repo": "you/your-repo" }
+  ]
+}
+```
+
+`public/team.example.json` 是 ada 的六人小隊。網址加 `?team=example` 可以先看，不必覆蓋你的檔。
+
+![另一組名單：地毯寫著 REPORTS TO ADA](docs/example.gif)
+
+任何框架都可以 POST 同一份狀態。名字要和名單一致。`state` 是 `idle`、`working`、`waiting`、`error`、`done`。`pr` 是 `open`、`closed`、`merged`、`none`。`ci` 是 `green`、`failed`、`pending`、`none`。省略 `plan`、`pr`、`ci` 會留下上一次的值。GitHub 查詢是選用的：只有 `repo` 有寫、而且這台機器的 `gh` 讀得到時，開發伺服器才會補上 PR / CI。瀏覽器不會自己打 GitHub。
+
+```bash
+curl -s -X POST http://127.0.0.1:4317/api/status \
+  -H 'content-type: application/json' \
+  -d '{"name":"pixel","state":"working","task":"reading the repo","plan":"review","pr":"open","ci":"green"}'
+```
+
 ## 檔案
 
 | 檔案 | 做什麼 |
@@ -111,7 +168,10 @@ curl -s -X POST http://127.0.0.1:4317/api/status \
 | `src/office.js` | 房間、桌子、交誼區、植物、伺服器、用量牆 |
 | `src/bots.js` | 角色造型與動作 |
 | `src/clouds.js` | 對話雲與思考雲 |
-| `src/roster.js` | 名單、顏色、職務、倉庫名稱 |
+| `src/team.js` | 讀名單、主管，以及沒寫劇本時怎麼排一天 |
+| `src/roster.js` | 把目前的名單轉給其他檔案 |
+| `public/team.json` | 預設名單。換成你自己的機器人就改這裡 |
+| `public/team.example.json` | ada 的範例小隊，`?team=example` |
 | `src/layout.js` | 平面配置與鏡頭預設 |
 | `src/status.js` | 輪詢狀態、營運、模擬、一日工作 |
 | `src/status-model.js` | 狀態格式，瀏覽器與開發伺服器共用 |
@@ -128,9 +188,15 @@ curl -s -X POST http://127.0.0.1:4317/api/status \
 
 ## English
 
-An independent 3D office for the Grok Bot team. It is not an official xAI product and is not affiliated with xAI. **musk** is the leader every bot reports to; that line is on the glass office and the floor.
+A storybook 3D office for a team of bots. The sample roster is the Grok Bot team, and everyone reports to **musk**. To use your own bots, edit `public/team.json`.
 
-The clip at the top is **Workday** (`?day=1`): the clock runs, people move through the lobby and standup, and musk decides on an open PR. Click an idle bot and press Enter to assign work.
+It is not an official xAI product and is not affiliated with xAI.
+
+![Workday morning in the lobby](docs/demo.gif)
+
+## Run it
+
+Node.js 20 or newer.
 
 ```bash
 git clone https://github.com/tonythetiger168/grok-hq.git
@@ -139,17 +205,72 @@ npm install
 npm run dev
 ```
 
+If PowerShell blocks `npm.ps1`, run `npm.cmd install` and `npm.cmd run dev` instead.
+
+The dev server prints a local URL, `http://127.0.0.1:4317` by default.
+
+| URL | What it does |
+| --- | --- |
+| `?day=1` | Workday, 9:00 AM–6:00 PM in a few minutes. Optional `?at=10:30` |
+| `?simulate=1` | Short busy demo. `?demo` and `#demo` do the same |
+| `?ops=1` | Operations. Reads status, and on the dev server can read GitHub |
+| `?team=example` | Preview Ada's crew without replacing `team.json` |
+
 Static build: `npm run build` then `npm run preview` (or host `dist/` yourself).
+
+![The whole floor, including Servers and Security](docs/floor.gif)
+
+![Standup in Meeting M](docs/standup.gif)
+
+![Lunch: the rec room, then the kitchen](docs/life.gif)
+
+![A sandbox breach at the racks, then the red watch desk](docs/breach.gif)
+
+![The leader hears that the PR is still open](docs/report.gif)
+
+![Click an idle bot and type the work](docs/assign.gif)
+
+## Use it with your own bots
+
+`public/team.json` is the only file you need to change. `leader` is the person everyone reports to, and that id has to be one of the bots. Each bot can set a name, group, color, one-line role, and an optional `repo` (`owner/name`) so Operations can read that repo's PR and CI. The floor fits 21 bots. If you leave out `cast`, standup, reports, and the sandbox check are assigned from whoever is on the roster. Room labels and the story do not require a bot named musk.
+
+Restart `npm run dev` after saving so the status API learns the new names. A browser refresh rebuilds the floor.
+
+```json
+{
+  "leader": "ada",
+  "groups": [
+    { "id": "lead", "label": "ada", "blurb": "Corner office" },
+    { "id": "crew", "label": "Crew", "blurb": "The desk hall" }
+  ],
+  "bots": [
+    { "id": "ada", "name": "ada", "group": "lead", "role": "Reviews the crew.", "color": "#8e949e" },
+    { "id": "pixel", "name": "pixel", "group": "crew", "role": "Keeps the notes.", "color": "#3c6e9a", "repo": "you/your-repo" }
+  ]
+}
+```
+
+`public/team.example.json` is Ada's crew of six. Open `?team=example` to preview it.
+
+![A different roster: the carpet reads REPORTS TO ADA](docs/example.gif)
+
+Any bot framework can POST the same status. The name must match the roster. `state` is `idle`, `working`, `waiting`, `error`, or `done`. `pr` is `open`, `closed`, `merged`, or `none`. `ci` is `green`, `failed`, `pending`, or `none`. Omitted `plan`, `pr`, and `ci` keep their previous values. GitHub lookup is optional: the dev server fills PR and CI only when a bot has `repo` and `gh` on that machine can read it. The browser never calls GitHub.
+
+```bash
+curl -s -X POST http://127.0.0.1:4317/api/status \
+  -H 'content-type: application/json' \
+  -d '{"name":"pixel","state":"working","task":"reading the repo","plan":"review","pr":"open","ci":"green"}'
+```
 
 Everyone starts **Idle**, a few in the lobby and the rest in the Rest room. Each bot is a small stylized person. The floor is one compact storybook HQ. Other 3D offices were the map to aim at; the furniture here is original.
 
-The **lobby** is a small entrance nook. There are three meeting rooms: **Meeting S** is a huddle, **Meeting M** is the glass standup room, and **Meeting L** is the larger all-hands table. The glass office beside the report path is **vacant**. The pale table, empty black chair, lamp, and whiteboard are still there. The sign says VACANT, not a person’s name. **musk** is the only leader. Everyone still reports to musk, and that carpet still reads REPORTS TO MUSK. **Kitchen** is the café. **Rest** and **Rec** share the south wing: sofas, a TV, ping-pong, arcade cabinets, and a jukebox. **Printers** is the copy room. **Library** is the bookshelf. **Servers** is the machine room beside it: racks, blinking lights, and cable lines on a cool floor. **Security** is the watch post on its south wall: a desk, two status monitors, and a warning lamp. In the afternoon a pair checks the racks, then reviews the result at that desk. If that story check fails, the lamp and a monitor turn red, they say what leaked, and one hurries the breach to musk. He decides the follow-up: lock down, isolate, re-check, or keep watch. The snack nook, the desk hall, and the small **balcony** stay. Chips include Meet S, Meet M, Meet L, Vacant, and Servers.
+The **lobby** is a small entrance nook. There are three meeting rooms: **Meeting S** is a huddle, **Meeting M** is the glass standup room, and **Meeting L** is the larger all-hands table. The glass office beside the report path is **vacant**. The pale table, empty black chair, lamp, and whiteboard are still there. The sign says VACANT, not a person’s name. In the sample team **musk** is the leader, and the carpet reads REPORTS TO MUSK. A custom `leader` replaces that name. **Kitchen** is the café. **Rest** and **Rec** share the south wing: sofas, a TV, ping-pong, arcade cabinets, and a jukebox. **Printers** is the copy room. **Library** is the bookshelf. **Servers** is the machine room beside it: racks, blinking lights, and cable lines on a cool floor. **Security** is the watch post on its south wall: a desk, two status monitors, and a warning lamp. In the afternoon a pair checks the racks, then reviews the result at that desk. If that story check fails, the lamp and a monitor turn red, they say what leaked, and one hurries the breach to the leader. The leader decides the follow-up: lock down, isolate, re-check, or keep watch. The snack nook, the desk hall, and the small **balcony** stay. Chips include Meet S, Meet M, Meet L, Vacant, and Servers.
 
 Speech clouds sit between people who are talking, and a person talking to themselves gets one too. Thoughts use a scalloped cloud with small circles trailing back to the head. Click an idle bot and press Enter in the cloud by their head to assign work.
 
 **Workday** (`?day=1`, optional `?at=10:30`) plays 9:00 AM–6:00 PM in a few minutes. Standup walks through the doorway into Meeting M. Coffee, rest, rec, copies, the balcony, and one report to musk still use their own doors. It never writes `status.json`.
 
-**Simulate work** (`?simulate=1`, `?demo`, or `#demo`) plays a busy day in that browser tab only. Working bots sit at desks or gather for a standup. Waiting bots wave by a desk or at the meeting-room doorway. Finished bots carry a folder into musk's office, then return to the rest area. It never writes `status.json` and never POSTs to `/api/status`. A **SIMULATION** badge stays on screen.
+**Simulate work** (`?simulate=1`, `?demo`, or `#demo`) plays a busy day in that browser tab only. Working bots sit at desks or gather for a standup. Waiting bots wave by a desk or at the meeting-room doorway. Finished bots carry a folder into the leader's office, then return to the rest area. It never writes `status.json` and never POSTs to `/api/status`. A **SIMULATION** badge stays on screen.
 
 **Operations** (`?ops=1`) is the live control room. Bot places follow `idle / working / waiting / error / done` from `GET /api/ops` (dev) or `status.json`. On the dev server, roster repos are read from GitHub: PR open, closed, or merged, and CI green, failed, or pending. A status field overrides GitHub. If GitHub cannot be read, only those fields are shown and they are labeled status — never as live numbers. Desk screens carry a green, red, or amber stripe. musk's decision, the speech clouds, and a typed assignment all use that same plan / PR / CI / follow-up. Click an idle bot and press Enter to assign; the assignment stays in the browser. Workday and Simulate do not write status.
 

@@ -1,63 +1,29 @@
-import { ROSTER } from './roster.js'
+import { ROSTER, getCast, isLeader, leaderName } from './roster.js'
+import { botById } from './team.js'
 
 export const DAY_START = 9 * 60
 export const DAY_END = 18 * 60
 export const DAY_SPAN = DAY_END - DAY_START
 export const DAY_SECONDS = 210
 
-const STANDUP = ['grok-bot', 'helios-forge', 'aevum', 'quant', 'linkup', 'vectorbt']
+function reports() {
+  return getCast().reports
+}
 
-const REPORTS = [
-  { id: 'grok-bot', start: 10 * 60, end: 10 * 60 + 44, fact: 'pr-open', ci: 'green', follow: 'next-step' },
-  { id: 'helios-forge', start: 10 * 60 + 50, end: 11 * 60 + 34, fact: 'ci-failed', ci: 'failed', follow: 'fix-ci' },
-  { id: 'quant', start: 11 * 60 + 40, end: 12 * 60 + 14, fact: 'pr-open', ci: 'green', follow: 'review-pr' },
-  { id: 'aevum', start: 13 * 60 + 10, end: 13 * 60 + 54, fact: 'ci-failed', ci: 'failed', follow: 'fix-ci' },
-  { id: 'linkup', start: 14 * 60, end: 14 * 60 + 44, fact: 'pr-closed', ci: 'green', follow: 'next-step' },
-  { id: 'duckdb', start: 14 * 60 + 50, end: 15 * 60 + 34, fact: 'sandbox-leak', ci: '', follow: 'lock-sandbox' },
-  { id: 'freqtrade', start: 15 * 60 + 40, end: 16 * 60 + 24, fact: 'pr-open', ci: 'green', follow: 'keep-open' },
-  { id: 'helios-forge', start: 16 * 60 + 30, end: 17 * 60 + 12, fact: 'ci-green', ci: 'green', follow: 'keep-open', update: true },
-]
+function exchanges() {
+  return getCast().exchanges
+}
 
-const WATCH = [
-  { id: 'minisim', start: 14 * 60 + 48, end: 16 * 60, task: 'On watch. The security desk still shows the leak.' },
-]
+function watches() {
+  return getCast().watch
+}
 
-const COPIES = [
-  { id: 'grok-bot', start: 9 * 60 + 6, end: 9 * 60 + 20, task: 'Copies for standup' },
-  { id: 'skfolio', start: 16 * 60 + 8, end: 16 * 60 + 24, task: 'Copies of the plan for musk' },
-]
+function copies() {
+  return getCast().copies
+}
 
-const EXCHANGES = [
-  { start: 10 * 60 + 46, end: 10 * 60 + 58, a: 'linkup', b: 'wavelive', fact: 'ci-failed', where: 'snack', spot: 0 },
-  { start: 13 * 60 + 56, end: 14 * 60 + 8, a: 'aevum', b: 'julang', fact: 'ci-failed', where: 'library', spot: 0 },
-  { start: 13 * 60 + 16, end: 14 * 60, a: 'minisim', b: 'duckdb', fact: 'sandbox-leak', where: 'servers', spot: 0 },
-  { start: 14 * 60, end: 14 * 60 + 48, a: 'minisim', b: 'duckdb', fact: 'sandbox-leak', where: 'security', spot: 0 },
-  { start: 14 * 60 + 46, end: 15 * 60, a: 'quant', b: 'julang', fact: 'pr-open', where: 'snack', spot: 3 },
-  { start: 17 * 60 + 14, end: 17 * 60 + 26, a: 'helios-forge', b: 'vectorbt', fact: 'ci-green', where: 'lobby', spot: 0 },
-]
-
-const BITS = {
-  musk: 'the stack',
-  'grok-bot': 'the assistant note',
-  'dr-eggbot': 'the silhouette',
-  'helios-forge': 'the helios pass',
-  aevum: 'the aevum pass',
-  zaolang: 'the zaolang pass',
-  julang: 'the julang pass',
-  minisim: 'the minisim pass',
-  quant: 'the quant pass',
-  linkup: 'the linkup pass',
-  wavelive: 'the wavelive pass',
-  vectorbt: 'the vectorbt notes',
-  'agent-display': 'the display pass',
-  apscheduler: 'the schedule pass',
-  duckdb: 'the duckdb pass',
-  skfolio: 'the folder of notes',
-  ccxt: 'the exchange notes',
-  cryptofeed: 'the feed notes',
-  freqtrade: 'the rule notes',
-  quantstats: 'the chart notes',
-  'lightweight-charts': 'the chart sketch',
+function standupIds() {
+  return getCast().standup
 }
 
 function unit(id) {
@@ -67,7 +33,10 @@ function unit(id) {
 }
 
 export function bitOf(id) {
-  return BITS[id] || 'the pass'
+  const bot = botById(id)
+  if (bot?.bit) return bot.bit
+  if (bot?.name) return `${bot.name}'s pass`
+  return 'the pass'
 }
 
 export function officeMinute(simT) {
@@ -133,24 +102,24 @@ export function beatTitle(beat) {
 }
 
 function activeReport(minute) {
-  return REPORTS.find((item) => minute >= item.start && minute < item.end) || null
+  return reports().find((item) => minute >= item.start && minute < item.end) || null
 }
 
 function followOf(id, minute) {
-  const past = REPORTS.filter((item) => item.id === id && minute >= item.end && minute < item.end + 48)
+  const past = reports().filter((item) => item.id === id && minute >= item.end && minute < item.end + 48)
   return past[past.length - 1] || null
 }
 
 function watchOf(id, minute) {
-  return WATCH.find((item) => item.id === id && minute >= item.start && minute < item.end) || null
+  return watches().find((item) => item.id === id && minute >= item.start && minute < item.end) || null
 }
 
 function exchangeOf(id, minute) {
-  return EXCHANGES.find((item) => minute >= item.start && minute < item.end && (item.a === id || item.b === id)) || null
+  return exchanges().find((item) => minute >= item.start && minute < item.end && (item.a === id || item.b === id)) || null
 }
 
 function heardFollow(id, minute) {
-  const past = EXCHANGES.filter((item) => item.b === id && minute >= item.end && minute < item.end + 28)
+  const past = exchanges().filter((item) => item.b === id && minute >= item.end && minute < item.end + 28)
   return past[past.length - 1] || null
 }
 
@@ -277,7 +246,7 @@ export function workdayAt(minute, intel = new Map()) {
   const report = activeReport(minute)
   return ROSTER.map((bot) => {
     let next = row(bot, { beat })
-    if (bot.id === 'musk') {
+    if (isLeader(bot.id)) {
       if (minute < 9 * 60 + 6 || minute >= 17 * 60 + 35) {
         next = row(bot, {
           beat,
@@ -289,7 +258,7 @@ export function workdayAt(minute, intel = new Map()) {
           beat,
           state: 'working',
           place: 'musk-desk',
-          task: report ? 'Hearing a report' : 'Reading plan, PR, and CI updates',
+          task: report ? `Hearing a report` : 'Reading plan, PR, and CI updates',
           fact: report?.fact || 'plan',
         })
       }
@@ -304,10 +273,10 @@ export function workdayAt(minute, intel = new Map()) {
         returnPlace: 'desk',
         task: String(report.fact).startsWith('sandbox')
           ? (report.fact === 'sandbox-leak' ? 'Reporting the sandbox breach' : 'Reporting the sandbox check')
-          : report.update ? 'Update for musk' : 'Reporting plan, PR, and CI',
+          : report.update ? `Update for ${leaderName()}` : 'Reporting plan, PR, and CI',
       })
     } else {
-      const copy = COPIES.find((item) => item.id === bot.id && minute >= item.start && minute < item.end)
+      const copy = copies().find((item) => item.id === bot.id && minute >= item.start && minute < item.end)
       const watch = watchOf(bot.id, minute)
       const exchange = exchangeOf(bot.id, minute)
       const heard = heardFollow(bot.id, minute)
@@ -382,7 +351,7 @@ export function workdayAt(minute, intel = new Map()) {
           task: 'Settling in. Coffee, then the pass.',
         })
       } else if (beat === 'standup') {
-        const meet = STANDUP.indexOf(bot.id)
+        const meet = standupIds().indexOf(bot.id)
         if (meet >= 0) {
           next = row(bot, { beat, state: 'working', place: 'meeting', meetIndex: meet, task: 'Standup: plan, PRs, and CI', fact: 'plan' })
         } else if (unit(bot.id) < 0.35) {
@@ -409,7 +378,7 @@ export function workdayAt(minute, intel = new Map()) {
     const info = intel.get(bot.id)
     if (
       info
-      && bot.id !== 'musk'
+      && !isLeader(bot.id)
       && next.place !== 'handoff'
       && next.place !== 'meeting'
       && next.place !== 'copy'

@@ -501,7 +501,7 @@ export function createBot(def, place) {
   const clothHex = jacket ? def.accent : def.color
   const clothMat = std(clothHex, jacket ? 0.6 : 0.88, { metalness: jacket ? 0.05 : 0.02 })
   const skinMat = sharedMat(SKIN[skinIndex(def.id)], 0.68, { metalness: 0.02 })
-  const hairMat = sharedMat(HAIR[def.id] || '#3a2e28', 0.62)
+  const hairMat = sharedMat(def.hairColor || HAIR[def.id] || '#3a2e28', 0.62)
   const glow = [clothMat]
 
   const hips = new THREE.Group()
@@ -511,7 +511,7 @@ export function createBot(def, place) {
   pelvis.position.y = 0.08
   const torso = mesh(geo.torso, clothMat, true)
   torso.position.y = 0.22
-  if (def.id === 'musk') torso.scale.x = 1.08
+  if (def.leader) torso.scale.x = 1.08
   const belt = mesh(geo.belt, shoeMat)
   belt.position.y = 0.1
   belt.scale.set(1.02, 1, 1.28)
@@ -534,13 +534,13 @@ export function createBot(def, place) {
     head.add(ear)
   }
   const face = addFace(head, skinMat)
-  addHair(head, HAIR_STYLE[def.id] || 'crop', hairMat, def)
+  addHair(head, def.hair || HAIR_STYLE[def.id] || 'crop', hairMat, def)
   const headScale = def.body === 'egg' ? 0.9 : 0.8
   if (def.body === 'egg') head.scale.set(headScale, headScale * 1.08, headScale)
-  else head.scale.setScalar(def.id === 'musk' ? headScale * 1.04 : headScale)
+  else head.scale.setScalar(def.leader ? headScale * 1.04 : headScale)
   hips.add(head)
 
-  const reach = def.id === 'musk' ? 0.23 : 0.2
+  const reach = def.leader ? 0.23 : 0.2
   function limb(side, y, length, geometry, material) {
     const pivot = new THREE.Group()
     pivot.position.set(side * reach, y, 0)

@@ -1,4 +1,4 @@
-import { ROSTER } from './roster.js'
+import { ROSTER, isLeader, leaderName } from './roster.js'
 import { MEETING_SEATS } from './layout.js'
 import { blankBots, canonicalName, normalizeState, sanitizeTask } from './status-model.js'
 import { CI_STATES, PR_STATES, cleanOpsEnum, factFromOps, sanitizePlan } from './ops-summary.js'
@@ -27,7 +27,7 @@ function slotState(slot) {
 }
 
 export function placeFor(state, id, index = 0) {
-  if (id === 'musk') return state === 'idle' ? 'rest' : 'musk-desk'
+  if (isLeader(id)) return state === 'idle' ? 'rest' : 'musk-desk'
   if (state === 'idle') return 'rest'
   if (state === 'waiting') return index % 2 === 0 ? 'wait-meeting' : 'wait-desk'
   if (state === 'error') return 'wait-desk'
@@ -40,7 +40,7 @@ function sandboxOf(task) {
 }
 
 function simTask(bot, state, place) {
-  if (place === 'handoff') return 'Simulated · handing work to musk'
+  if (place === 'handoff') return `Simulated · handing work to ${leaderName()}`
   if (place === 'security') return 'Simulated · watching the sandbox alarm'
   if (place === 'servers') {
     return bot.fact === 'sandbox-leak'
@@ -48,7 +48,7 @@ function simTask(bot, state, place) {
       : 'Simulated · checking sandbox security'
   }
   if (place === 'meeting') return 'Simulated · standup in the meeting room'
-  if (state === 'working' && bot.id === 'musk') return 'Simulated · reviewing handoffs'
+  if (state === 'working' && isLeader(bot.id)) return 'Simulated · reviewing handoffs'
   if (state === 'working') return `Simulated · ${bot.sim}`
   if (state === 'waiting') return 'Simulated · waiting for you'
   if (state === 'error') return 'Simulated · blocked on a question'
@@ -87,7 +87,7 @@ export function wantsOps(href = location.href) {
 
 /** Place live rows in the office. One done bot reports; working bots can stand up. */
 export function arrangeOps(rows) {
-  const team = rows.filter((row) => row.id !== 'musk')
+  const team = rows.filter((row) => !isLeader(row.id))
   const working = team.filter((row) => row.state === 'working')
   const standup = working.length >= 2
   const reporter = team.find((row) => row.state === 'done') || null
@@ -96,7 +96,7 @@ export function arrangeOps(rows) {
   let rack = 0
   return rows.map((row) => {
     const fact = sandboxOf(row.task) || factFromOps(row.pr, row.ci)
-    if (row.id === 'musk') {
+    if (isLeader(row.id)) {
       if (!active) return { ...row, state: 'idle', place: 'rest', fact: 'plan' }
       const reportFact = reporter ? (sandboxOf(reporter.task) || factFromOps(reporter.pr, reporter.ci)) : 'plan'
       return {
@@ -119,7 +119,7 @@ export function arrangeOps(rows) {
       }
     }
     if (row.state === 'done') {
-      return { ...row, place: 'desk', fact, task: row.task || 'Waiting to report to musk' }
+      return { ...row, place: 'desk', fact, task: row.task || `Waiting to report to ${leaderName()}` }
     }
     if (String(fact).startsWith('sandbox') && row.state !== 'idle') {
       const spot = rack % 2
@@ -186,15 +186,15 @@ export function createStatus() {
     const standup = (simT % 24) < 8
     const rows = ROSTER.map((bot, index) => {
       const slot = (index - shift + n * 8) % n
-      const state = bot.id === 'musk' ? (slot >= 18 ? 'idle' : 'working') : slotState(slot)
+      const state = isLeader(bot.id) ? (slot >= 18 ? 'idle' : 'working') : slotState(slot)
       let place = placeFor(state, bot.id, index)
-      if (state === 'done' && bot.id !== 'musk') place = 'handoff'
+      if (state === 'done' && !isLeader(bot.id)) place = 'handoff'
       return { ...bot, state, place, meetIndex: 0, task: '', origin: 'simulation' }
     })
     if (standup) {
       let meet = 0
       for (const row of rows) {
-        if (row.state === 'working' && row.id !== 'musk' && meet < Math.min(6, MEETING_SEATS.length)) {
+        if (row.state === 'working' && !isLeader(row.id) && meet < Math.min(6, MEETING_SEATS.length)) {
           row.place = 'meeting'
           row.meetIndex = meet
           meet += 1
@@ -204,7 +204,7 @@ export function createStatus() {
     let rack = 0
     for (const row of rows) {
       if (rack >= 2) break
-      if (row.state === 'working' && row.place === 'desk' && row.id !== 'musk') {
+      if (row.state === 'working' && row.place === 'desk' && !isLeader(row.id)) {
         row.place = rack === 0 ? 'servers' : 'security'
         row.spot = 0
         row.fact = 'sandbox-leak'
@@ -273,11 +273,11 @@ export function createStatus() {
           }
         }
         if (order.phase === 'report') {
-          if (row.id === 'musk') {
+          if (isLeader(row.id)) {
             return { ...row, state: 'working', place: 'musk-desk', task: order.text, fact: order.fact }
           }
           if (scheduleHandoff || reporter !== row.id) {
-            return { ...row, state: 'working', place: order.workPlace, task: 'Waiting to report to musk', fact: order.fact, follow: order.follow }
+            return { ...row, state: 'working', place: order.workPlace, task: `Waiting to report to ${leaderName()}`, fact: order.fact, follow: order.follow }
           }
           return {
             ...row,
@@ -307,7 +307,7 @@ export function createStatus() {
         return row
       }
       const info = mode === 'day' ? null : intel.get(row.id)
-      if (!info || row.place === 'handoff' || row.id === 'musk') return row
+      if (!info || row.place === 'handoff' || isLeader(row.id)) return row
       return {
         ...row,
         state: 'working',
@@ -420,7 +420,7 @@ export function createStatus() {
     },
     canAssign(id) {
       const row = snapshot().bots.find((bot) => bot.id === id)
-      if (!row || row.id === 'musk') return row?.state === 'idle' && !orders.has(id)
+      if (!row || isLeader(row.id)) return row?.state === 'idle' && !orders.has(id)
       return row.state === 'idle' && !orders.has(id)
     },
     assign(id, text) {
@@ -453,7 +453,7 @@ export function createStatus() {
       return { ok: true }
     },
     hear(id, fact) {
-      if (!id || id === 'musk' || !fact || orders.has(id)) return
+      if (!id || isLeader(id) || !fact || orders.has(id)) return
       intel.set(id, { fact, ttl: 26 })
       emit()
     },

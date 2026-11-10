@@ -1,4 +1,5 @@
 import { bitOf } from './day.js'
+import { leaderName } from './team.js'
 
 function pick(list, bot, bucket) {
   if (!list?.length) return 'On the plan.'
@@ -62,7 +63,7 @@ export function ackFor(bot, order) {
   if (order.fact === 'ci-green') return 'CI is green. I will take the next step.'
   if (order.fact === 'pr-open') return 'PR stays open. I will work the review.'
   if (order.fact === 'pr-closed') return 'PR is closed. Next plan step.'
-  if (order.fact === 'sandbox-leak') return 'Breach. I will raise the alarm and tell musk.'
+  if (order.fact === 'sandbox-leak') return `Breach. I will raise the alarm and tell ${leaderName()}.`
   if (order.fact === 'sandbox-ok') return 'I will confirm the sandbox is locked.'
   if (order.workPlace === 'copy') return 'I will run the copies.'
   if (order.workPlace === 'snack') return 'Coffee first, then the work.'
@@ -86,16 +87,16 @@ function exchange(fact, a, b) {
     return [`${left}: That PR is closed.`, `${right}: I will start the next plan step.`]
   }
   if (fact === 'sandbox-ok') {
-    return [`${left}: Sandbox passed. Isolation looks tight.`, `${right}: I will note the lock and tell musk.`]
+    return [`${left}: Sandbox passed. Isolation looks tight.`, `${right}: I will note the lock and tell ${leaderName()}.`]
   }
   if (fact === 'sandbox-leak') {
-    return [`${left}: Breach. This sandbox is leaking shared access.`, `${right}: Alarm it. I will take the leak to musk.`]
+    return [`${left}: Breach. This sandbox is leaking shared access.`, `${right}: Alarm it. I will take the leak to ${leaderName()}.`]
   }
   return [`${left}: Next plan step is still open.`, `${right}: I will pick it up at my desk.`]
 }
 
 const MEET = {
-  'grok-bot': ['Do we have copies for standup?', 'Anything blocked before musk?'],
+  'grok-bot': ['Do we have copies for standup?', 'Anything blocked before the lead?'],
   'helios-forge': ['CI is red on the helios pass.', 'Should the PR stay open?'],
   aevum: ['I can pair on the failed checks.', 'Want me on the open PR?'],
   quant: ['No fake figures. PR is open.', 'CI is green on my page.'],
@@ -119,7 +120,7 @@ export function pairLines(context, a, b, bucket) {
   if (a.place === 'security' || context === 'security' || b.place === 'security') {
     return [
       `${a.def?.name || a.name}: The security desk is red. Shared access leaked.`,
-      `${b.def?.name || b.name}: I will keep the alarm up and tell musk.`,
+      `${b.def?.name || b.name}: I will keep the alarm up and tell ${leaderName()}.`,
     ]
   }
   if (a.place === 'servers' || context === 'servers' || b.place === 'servers') {
@@ -130,7 +131,9 @@ export function pairLines(context, a, b, bucket) {
   }
   if (a.place === 'meeting' || context === 'meet') {
     if (fact && fact !== 'plan') return exchange(fact, a, b)
-    const ask = pick(MEET[a.def.id] || ['Anything blocked on the pass?', 'Is CI green or red?'], a, bucket)
+    const ask = a.def.id === 'grok-bot'
+      ? pick(['Do we have copies for standup?', `Anything blocked before ${leaderName()}?`], a, bucket)
+      : pick(MEET[a.def.id] || ['Anything blocked on the pass?', 'Is CI green or red?'], a, bucket)
     const reply = pick(MEET_REPLY[b.def.id] || ['I will take a piece and report.', 'PR stays where it is.'], b, bucket + 1)
     return [ask, reply]
   }
@@ -140,13 +143,13 @@ export function pairLines(context, a, b, bucket) {
       pick([`${bitOf(b.def.id)} is next.`, 'I heard a PR is still open.'], b, bucket),
     ]
   }
-  if (a.def.id === 'musk') {
+  if (a.def.leader) {
     return ['Bring the PR state, not a novel.', pick(['Open, and CI is green.', 'CI failed. PR stays open.'], b, bucket)]
   }
   return [
     pick([
       `How is ${bitOf(a.def.id)}?`,
-      'Did musk assign a follow-up?',
+      `Did ${leaderName()} assign a follow-up?`,
       'Is that PR open or closed?',
     ], a, bucket),
     pick([
@@ -160,11 +163,11 @@ export function pairLines(context, a, b, bucket) {
 export function selfLine(bot, bucket) {
   const bit = bitOf(bot.def.id)
   if (bot.bark) return bot.bark
-  if (bot.place === 'copy') return pick(['Copies for the standup.', 'One stack for musk.', 'The machine can take this page.'], bot, bucket)
+  if (bot.place === 'copy') return pick(['Copies for the standup.', `One stack for ${leaderName()}.`, 'The machine can take this page.'], bot, bucket)
   if (bot.place === 'security') {
     return pick([
       'Alarm is up on the watch desk.',
-      'The monitor shows the leak. musk gets the report.',
+      `The monitor shows the leak. ${leaderName()} gets the report.`,
       'Keep watching. Do not call it locked yet.',
     ], bot, bucket)
   }
@@ -172,22 +175,22 @@ export function selfLine(bot, bucket) {
     if (bot.fact === 'sandbox-ok') {
       return pick([
         'Sandbox passed. Isolation looks tight.',
-        'Permissions match the jail. I will tell musk.',
+        `Permissions match the jail. I will tell ${leaderName()}.`,
       ], bot, bucket)
     }
     return pick([
       'Breach. Shared access is leaking out of the jail.',
-      'Raise the alarm. musk decides the lockdown.',
-      'Do not walk away. Tell musk what escaped.',
+      `Raise the alarm. ${leaderName()} decides the lockdown.`,
+      `Do not walk away. Tell ${leaderName()} what escaped.`,
     ], bot, bucket)
   }
   if (bot.cup === 'sip' || bot.cup === 'hand') return pick(['Coffee, then the plan.', 'Cup down after this thought.', 'Warm cup. Cold CI if it is red.'], bot, bucket)
   if (bot.follow === 'lock-sandbox') return 'I will isolate it, re-check, and keep watch.'
   if (bot.follow === 'fix-ci') return 'I will fix CI and come back.'
-  if (bot.follow === 'review-pr') return 'Review the open PR, then musk.'
+  if (bot.follow === 'review-pr') return `Review the open PR, then ${leaderName()}.`
   if (bot.follow === 'next-step') return 'Next plan step. Then I report.'
   if (bot.state === 'waiting') return 'Waiting on a look before the next step.'
-  if (bot.state === 'error') return 'Blocked. I should tell musk.'
+  if (bot.state === 'error') return `Blocked. I should tell ${leaderName()}.`
   return pick([
     `Note to self: ${bit}.`,
     'Say the PR state in one line.',
@@ -201,17 +204,17 @@ export function thinkLine(bot, bucket) {
   if (bot.carrying || bot.place === 'handoff') {
     if (bot.fact === 'sandbox-leak') {
       return pick([
-        'Taking the sandbox breach to musk.',
+        `Taking the sandbox breach to ${leaderName()}.`,
         'Shared access leaked. He decides the lockdown.',
       ], bot, bucket)
     }
     return pick([
-      `Taking ${bit} to musk.`,
+      `Taking ${bit} to ${leaderName()}.`,
       'PR state first, story second.',
       'Say if CI is green or failed.',
     ], bot, bucket)
   }
-  if (bot.def.id === 'musk') {
+  if (bot.def.leader) {
     const fact = bot.fact || 'plan'
     if (fact === 'ci-failed') return 'Red CI. Who owns the fix?'
     if (fact === 'pr-open') return 'Open PR. Who reviews it?'
@@ -227,7 +230,7 @@ export function thinkLine(bot, bucket) {
   if (bot.place === 'security') {
     return pick([
       'Watch desk: the sandbox breach is still open.',
-      'Keep the alarm lit until musk says otherwise.',
+      `Keep the alarm lit until ${leaderName()} says otherwise.`,
       'Shared access leaked. The report is his to decide.',
     ], bot, bucket)
   }
@@ -242,7 +245,7 @@ export function thinkLine(bot, bucket) {
       return pick([
         'Breach. Shared access is leaking. Raise the alarm.',
         'Jail escape in this story. Do not walk away.',
-        'musk should decide: lock down, isolate, or keep watch.',
+        `${leaderName()} should decide: lock down, isolate, or keep watch.`,
       ], bot, bucket)
     }
     return pick([
@@ -255,7 +258,7 @@ export function thinkLine(bot, bucket) {
       `Chewing on ${bit}.`,
       'If CI is red, I go back to the desk.',
       'Snack now. Report when the step is real.',
-      'Lobby thought: what do I tell musk?',
+      `Lobby thought: what do I tell ${leaderName()}?`,
     ], bot, bucket)
   }
   if (bot.place === 'meeting') return pick(['Say the blocker in one line.', 'Copies, CI, then the ask.'], bot, bucket)
