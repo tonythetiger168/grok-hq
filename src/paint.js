@@ -26,25 +26,44 @@ export function canvasTexture(width, height, draw) {
   return { tex, canvas, ctx }
 }
 
+const PLATE_FONT = 'Outfit, "WenQuanYi Micro Hei", "Noto Sans CJK TC", sans-serif'
+
+function fitLine(ctx, text, maxWidth, start, min) {
+  let size = start
+  do {
+    ctx.font = `600 ${size}px ${PLATE_FONT}`
+    size -= 2
+  } while (ctx.measureText(text).width > maxWidth && size > min)
+  return size + 2
+}
+
 export function nameplateTexture(name, color) {
   return canvasTexture(1024, 256, (ctx) => {
     ctx.clearRect(0, 0, 1024, 256)
-    roundRect(ctx, 12, 40, 1000, 176, 56)
+    roundRect(ctx, 12, 28, 1000, 200, 56)
     ctx.fillStyle = 'rgba(247, 244, 238, 0.96)'
     ctx.fill()
     ctx.beginPath()
-    ctx.arc(118, 128, 42, 0, Math.PI * 2)
+    ctx.arc(110, 128, 40, 0, Math.PI * 2)
     ctx.fillStyle = color
     ctx.fill()
     ctx.fillStyle = '#241f1a'
     ctx.textAlign = 'left'
     ctx.textBaseline = 'middle'
-    let size = 104
-    do {
-      ctx.font = `600 ${size}px Outfit, sans-serif`
-      size -= 4
-    } while (ctx.measureText(name).width > 780 && size > 60)
-    ctx.fillText(name, 186, 132)
+    const parts = String(name).split(' · ')
+    if (parts.length === 2) {
+      const title = fitLine(ctx, parts[0], 760, 72, 36)
+      ctx.font = `600 ${title}px ${PLATE_FONT}`
+      ctx.fillText(parts[0], 176, 100)
+      const work = fitLine(ctx, parts[1], 760, 42, 24)
+      ctx.font = `500 ${work}px ${PLATE_FONT}`
+      ctx.fillStyle = '#5c564e'
+      ctx.fillText(parts[1], 176, 168)
+    } else {
+      const size = fitLine(ctx, name, 760, 84, 36)
+      ctx.font = `600 ${size}px ${PLATE_FONT}`
+      ctx.fillText(name, 176, 132)
+    }
   }).tex
 }
 
