@@ -6,102 +6,127 @@
       "task": ""
     },
     {
-      "name": "dr eggbot",
+      "name": "dr eggbot · HR head",
       "state": "idle",
       "task": ""
     },
     {
-      "name": "musk",
+      "name": "Elon Musk",
       "state": "idle",
       "task": ""
     },
     {
-      "name": "helios forge",
+      "name": "Helia · helioslm",
       "state": "idle",
       "task": ""
     },
     {
-      "name": "aevum",
+      "name": "Ava · aevum-platform",
       "state": "idle",
       "task": ""
     },
     {
-      "name": "zaolang",
+      "name": "朗澤 · zaolang",
       "state": "idle",
       "task": ""
     },
     {
-      "name": "julang",
+      "name": "劇辰 · julang-platform",
       "state": "idle",
       "task": ""
     },
     {
-      "name": "minisim",
+      "name": "Mina · minisim",
       "state": "idle",
       "task": ""
     },
     {
-      "name": "quant",
+      "name": "Quinn · helios-quant-ai",
       "state": "idle",
       "task": ""
     },
     {
-      "name": "linkup",
+      "name": "Luca · linkup-messenger",
       "state": "idle",
       "task": ""
     },
     {
-      "name": "wavelive",
+      "name": "Willa · wavelive-ai-platform",
       "state": "idle",
       "task": ""
     },
     {
-      "name": "vectorbt",
+      "name": "Victor · vectorbt",
       "state": "idle",
       "task": ""
     },
     {
-      "name": "agent-display",
+      "name": "Tess · agent-display",
       "state": "idle",
       "task": ""
     },
     {
-      "name": "apscheduler",
+      "name": "Asher · apscheduler",
       "state": "idle",
       "task": ""
     },
     {
-      "name": "duckdb",
+      "name": "Dex · duckdb",
       "state": "idle",
       "task": ""
     },
     {
-      "name": "skfolio",
+      "name": "Sofia · skfolio",
       "state": "idle",
       "task": ""
     },
     {
-      "name": "ccxt",
+      "name": "Cass · ccxt",
       "state": "idle",
       "task": ""
     },
     {
-      "name": "cryptofeed",
+      "name": "Reed · cryptofeed",
       "state": "idle",
       "task": ""
     },
     {
-      "name": "freqtrade",
+      "name": "Frey · freqtrade",
       "state": "idle",
       "task": ""
     },
     {
-      "name": "quantstats",
+      "name": "Stella · quantstats",
       "state": "idle",
       "task": ""
     },
     {
-      "name": "lightweight-charts",
+      "name": "Chloe · lightweight-charts",
+      "state": "idle",
+      "task": ""
+    },
+    {
+      "name": "Vera · open-vip-portfolio",
+      "state": "idle",
+      "task": ""
+    },
+    {
+      "name": "Otto · aios-core",
+      "state": "idle",
+      "task": ""
+    },
+    {
+      "name": "Ira · open-ip-portfolio",
+      "state": "idle",
+      "task": ""
+    },
+    {
+      "name": "Talib · ta-lib-python",
+      "state": "idle",
+      "task": ""
+    },
+    {
+      "name": "Dante · QuantDinger",
       "state": "idle",
       "task": ""
     }

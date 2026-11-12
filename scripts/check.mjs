@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { DEPARTMENTS, ROSTER, leaderId, setTeam } from '../src/roster.js'
 import { assertLayout, routeThrough, zoneAt } from '../src/layout.js'
-import { blankBots, mergeStatus, STATES } from '../src/status-model.js'
+import { blankBots, canonicalName, mergeStatus, STATES } from '../src/status-model.js'
 import { formatOfficeTime, workdayAt } from '../src/day.js'
 import { factFromOps, summarizePulls } from '../src/ops-summary.js'
 import { arrangeOps, createStatus } from '../src/status.js'
@@ -15,7 +15,7 @@ const names = new Set(ROSTER.map((bot) => bot.name))
 if (ids.size !== ROSTER.length || names.size !== ROSTER.length) {
   throw new Error('Roster ids or names are not unique')
 }
-if (ROSTER.length !== 21) throw new Error(`Expected 21 bots, found ${ROSTER.length}`)
+if (ROSTER.length !== 26) throw new Error(`Expected 26 bots, found ${ROSTER.length}`)
 
 for (const bot of ROSTER) {
   if (!DEPARTMENTS.some((dept) => dept.id === bot.dept)) {
@@ -33,8 +33,12 @@ for (const bot of seeded.bots) {
   if (!names.has(bot.name)) throw new Error(`Unexpected name ${bot.name}`)
 }
 
+const quantName = ROSTER.find((bot) => bot.id === 'quant').name
+if (canonicalName('quant') !== quantName || canonicalName(quantName) !== quantName) {
+  throw new Error('Status should accept the id or the full name')
+}
 const updated = mergeStatus(seeded.bots, { name: 'quant', state: 'working', task: '  reading notes \n', pr: 'open', ci: 'failed', plan: 'review the pass' })
-const quant = updated.bots.find((bot) => bot.name === 'quant')
+const quant = updated.bots.find((bot) => bot.name === quantName)
 if (quant.state !== 'working' || quant.task !== 'reading notes') {
   throw new Error('POST merge failed')
 }
@@ -42,12 +46,12 @@ if (quant.pr !== 'open' || quant.ci !== 'failed' || quant.plan !== 'review the p
   throw new Error('PR, CI, and plan should be kept')
 }
 const kept = mergeStatus(updated.bots, { name: 'quant', state: 'done', task: 'report' })
-const keptQuant = kept.bots.find((bot) => bot.name === 'quant')
+const keptQuant = kept.bots.find((bot) => bot.name === quantName)
 if (keptQuant.pr !== 'open' || keptQuant.ci !== 'failed' || keptQuant.plan !== 'review the pass') {
   throw new Error('Omitting PR or CI should keep the previous values')
 }
 const badPr = mergeStatus(blankBots(), { name: 'quant', state: 'working', pr: '42' })
-if (!badPr.errors.length || badPr.bots.find((bot) => bot.name === 'quant').state !== 'idle') {
+if (!badPr.errors.length || badPr.bots.find((bot) => bot.name === quantName).state !== 'idle') {
   throw new Error('A bad PR value should be rejected')
 }
 const openFail = summarizePulls([{ state: 'OPEN', title: 'Fix clock', statusCheckRollup: [{ conclusion: 'FAILURE' }] }])
@@ -114,7 +118,7 @@ const locked = workdayAt(15 * 60 + 40).find((row) => row.id === 'duckdb')
 if (!locked || locked.place !== 'servers' || !/sandbox/i.test(locked.task)) {
   throw new Error('The sandbox follow-up should return to the racks')
 }
-if (workdayAt(15 * 60).some((row) => row.place === 'vacant')) throw new Error('Nobody works in the vacant office')
+if (workdayAt(15 * 60).some((row) => row.place === 'vacant')) throw new Error('The vacant office is gone')
 const after = workdayAt(10 * 60 + 50).find((row) => row.id === 'grok-bot')
 if (!after || after.place === 'handoff') throw new Error('Follow-up should leave musk')
 if (!/plan|PR|CI/i.test(after.task)) throw new Error('Follow-up task should stay on the plan')
@@ -139,7 +143,8 @@ if (zoneAt(15.2, -6.6) !== 'servers') throw new Error('Servers should be its own
 if (zoneAt(15.1, -2.4) !== 'security') throw new Error('Security should be its own room beside the servers')
 if (!routeThrough(11.9, -6.5, 14.45, -6.2).length) throw new Error('Servers should be reachable from the library')
 if (!routeThrough(14.45, -6.2, 15.15, -2.45).length) throw new Error('Security should be reachable from the server room')
-if (zoneAt(2.3, -8) !== 'vacant') throw new Error('The former office should stay empty')
+if (zoneAt(2.3, -8) !== 'annex') throw new Error('The old vacant room should be the north desk bay')
+if (!routeThrough(2.3, -8, -9, -6.6).length) throw new Error('North desks should reach musk')
 if (zoneAt(3.6, 0.7) !== 'huddle') throw new Error('Small meeting should be its own room')
 if (zoneAt(7.3, -6.5) !== 'allhands') throw new Error('Large meeting should be its own room')
 if (!routeThrough(-2, 1.6, 6.6, 3.6).length) throw new Error('Standup should reach the medium meeting room')

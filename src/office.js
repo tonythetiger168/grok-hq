@@ -471,31 +471,6 @@ function addLargeMeeting(parent) {
   for (const [x, z, yaw] of seats) addChair(parent, x, z, yaw, '#3e534c', true)
 }
 
-function addVacantOffice(parent) {
-  const wood = std('#e7d3b0', 0.7)
-  box(parent, 1.7, 0.06, 0.7, 2.3, 0.74, -8.05, wood, true)
-  for (const [dx, dz] of [[-0.7, -0.25], [0.7, -0.25], [-0.7, 0.25], [0.7, 0.25]]) {
-    box(parent, 0.05, 0.7, 0.05, 2.3 + dx, 0.35, -8.05 + dz, std('#2c2926', 0.55), true)
-  }
-  addChair(parent, 2.3, -7.35, Math.PI, '#1c1e20', true)
-  const lamp = new THREE.Group()
-  lamp.position.set(3.55, 0, -8.7)
-  parent.add(lamp)
-  cyl(lamp, 0.12, 0.16, 0.04, 0, 0.04, 0, std('#c9845a', 0.7), 10, true)
-  cyl(lamp, 0.025, 0.025, 1.15, 0, 0.6, 0, std('#5c4636', 0.6), 6, false)
-  const shade = std('#ffe7c2', 0.4)
-  shade.emissive = new THREE.Color('#ffc56a')
-  shade.emissiveIntensity = 0.7
-  const shadeMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.22, 0.16, 12), shade)
-  shadeMesh.position.y = 1.2
-  lamp.add(shadeMesh)
-  const bulb = new THREE.PointLight('#ffc56a', 0.45, 3.5, 2)
-  bulb.position.set(3.55, 1.05, -8.7)
-  parent.add(bulb)
-  box(parent, 1.15, 0.7, 0.04, 2.2, 1.15, -9.15, std('#f7f4ee', 0.9), false)
-  box(parent, 0.9, 0.02, 0.01, 2.2, 1.15, -9.12, std('#3c4f73', 0.5), false)
-}
-
 function addCoffeeRoom(parent) {
   const wood = std('#c9845a', 0.72)
   const cream = std('#f6efe4', 0.8)
@@ -667,7 +642,6 @@ export function buildOffice(roster) {
   addCarpetLabel(group, 'MEETING M', 6.6, 4.95, 2.3)
   addCarpetLabel(group, 'MEETING S', 3.6, 2.15, 1.8)
   addCarpetLabel(group, 'MEETING L', 7.3, -8.35, 2.6)
-  addCarpetLabel(group, 'VACANT', 2.3, -8.55, 2.2)
   addCarpetLabel(group, 'KITCHEN', 10.7, 4.85, 2.4)
   addCarpetLabel(group, 'PRINTERS', 14.7, 4.7, 2.1)
   addCarpetLabel(group, 'REC', 11.2, 8.35, 2.2)
@@ -693,7 +667,6 @@ export function buildOffice(roster) {
   addMeeting(group)
   addSmallMeeting(group)
   addLargeMeeting(group)
-  addVacantOffice(group)
   addCoffeeRoom(group)
   addRestRoom(group)
   addRecRoom(group)

@@ -49,7 +49,7 @@ npm run check
 
 - **musk** 坐在玻璃隔間的角落辦公室。地毯與玻璃上都寫著大家向 musk 回報。
 - **Grok Bot** 是個人助理，桌子在 Assistant，不是主管。
-- 一層樓的故事總部，樣子參考過別的 3D 辦公室，家具是自己畫的。入口是一小間大廳。會議室有三間：Meeting S 是小間，Meeting M 是玻璃站會間，Meeting L 是大桌。Jobs 已離職。那間玻璃辦公室還在，桌子、空椅子、燈和白板都留著，牌子改成 VACANT，沒有人坐在裡面。唯一的主管仍是 musk，地上寫著 REPORTS TO MUSK。Kitchen 是廚房兼咖啡室。Rest 和 Rec 在同一翼：沙發、電視、乒乓球、街機、點唱機。Printers 是影印室。Library 是書架。東邊是 SERVERS 機房：機櫃、閃燈、地上有線。機房南邊是 SECURITY 值班桌，有螢幕和警示燈。下午有人先看機櫃，再到值班桌看 sandbox。若故事裡的檢查失敗，警示燈會亮，他們說漏了什麼，再趕去向 musk 回報。musk 決定封鎖、隔離、再查，或繼續看著。Rec 外面是小陽台。團隊坐同一間桌子廳。走廊岔出點心吧。
+- 一層樓的故事總部，樣子參考過別的 3D 辦公室，家具是自己畫的。入口是一小間大廳。會議室有三間：Meeting S 是小間，Meeting M 是玻璃站會間，Meeting L 是大桌。唯一的主管仍是 musk，地上寫著 REPORTS TO MUSK。北面原本的空辦公室改成桌子灣，多坐五個人。Kitchen 是廚房兼咖啡室。Rest 和 Rec 在同一翼：沙發、電視、乒乓球、街機、點唱機。Printers 是影印室。Library 是書架。東邊是 SERVERS 機房：機櫃、閃燈、地上有線。機房南邊是 SECURITY 值班桌，有螢幕和警示燈。下午有人先看機櫃，再到值班桌看 sandbox。若故事裡的檢查失敗，警示燈會亮，他們說漏了什麼，再趕去向 musk 回報。musk 決定封鎖、隔離、再查，或繼續看著。Rec 外面是小陽台。團隊坐同一間桌子廳。走廊岔出點心吧。
 - 開源研究的十位跟大家坐在同一間桌子廳。
 - 預設每個人都是 **Idle**，坐在休息區。桌子是空的，名牌還在。沒有人在做「真的工作」。
 - 滑過角色會出現名字。點一下（或點名冊）會把鏡頭拉近，並跟著那位角色。
@@ -129,7 +129,7 @@ curl -s -X POST http://127.0.0.1:4317/api/status \
 
 ## 用你自己的機器人
 
-編輯 `public/team.json`。`leader` 是大家回報的那一位，必須是 `bots` 裡的 `id`。每位可以有自己的名字、組別、顏色、一句角色，以及選填的 `repo`（`owner/name`，給 Operations 讀 PR / CI）。這層樓最多 21 人。不寫 `cast` 時，站會、報告、sandbox 檢查會依名單自動排，不綁死某個人的名字。
+編輯 `public/team.json`。`leader` 是大家回報的那一位，必須是 `bots` 裡的 `id`。每位可以有自己的名字、組別、顏色、一句角色，以及選填的 `repo`（`owner/name`，給 Operations 讀 PR / CI）。這層樓最多 26 人。名牌是「名字 · 工作」。狀態 API 的 `name` 可以寫 id，也可以寫完整名牌。不寫 `cast` 時，站會、報告、sandbox 檢查會依名單自動排，不綁死某個人的名字。
 
 改完請重新啟動 `npm run dev`，狀態 API 才會認得新名字。瀏覽器重新整理會讀到新的樓層。
 
@@ -232,7 +232,7 @@ Static build: `npm run build` then `npm run preview` (or host `dist/` yourself).
 
 ## Use it with your own bots
 
-`public/team.json` is the only file you need to change. `leader` is the person everyone reports to, and that id has to be one of the bots. Each bot can set a name, group, color, one-line role, and an optional `repo` (`owner/name`) so Operations can read that repo's PR and CI. The floor fits 21 bots. If you leave out `cast`, standup, reports, and the sandbox check are assigned from whoever is on the roster. Room labels and the story do not require a bot named musk.
+`public/team.json` is the only file you need to change. `leader` is the person everyone reports to, and that id has to be one of the bots. Each bot can set a name, group, color, one-line role, and an optional `repo` (`owner/name`) so Operations can read that repo's PR and CI. The floor fits 26 bots. Name tags read “Name · work”. A status `name` can be the bot id or that full label. If you leave out `cast`, standup, reports, and the sandbox check are assigned from whoever is on the roster. Room labels and the story do not require a bot named musk.
 
 Restart `npm run dev` after saving so the status API learns the new names. A browser refresh rebuilds the floor.
 
@@ -264,7 +264,7 @@ curl -s -X POST http://127.0.0.1:4317/api/status \
 
 Everyone starts **Idle**, a few in the lobby and the rest in the Rest room. Each bot is a small stylized person. The floor is one compact storybook HQ. Other 3D offices were the map to aim at; the furniture here is original.
 
-The **lobby** is a small entrance nook. There are three meeting rooms: **Meeting S** is a huddle, **Meeting M** is the glass standup room, and **Meeting L** is the larger all-hands table. The glass office beside the report path is **vacant**. The pale table, empty black chair, lamp, and whiteboard are still there. The sign says VACANT, not a person’s name. In the sample team **musk** is the leader, and the carpet reads REPORTS TO MUSK. A custom `leader` replaces that name. **Kitchen** is the café. **Rest** and **Rec** share the south wing: sofas, a TV, ping-pong, arcade cabinets, and a jukebox. **Printers** is the copy room. **Library** is the bookshelf. **Servers** is the machine room beside it: racks, blinking lights, and cable lines on a cool floor. **Security** is the watch post on its south wall: a desk, two status monitors, and a warning lamp. In the afternoon a pair checks the racks, then reviews the result at that desk. If that story check fails, the lamp and a monitor turn red, they say what leaked, and one hurries the breach to the leader. The leader decides the follow-up: lock down, isolate, re-check, or keep watch. The snack nook, the desk hall, and the small **balcony** stay. Chips include Meet S, Meet M, Meet L, Vacant, and Servers.
+The **lobby** is a small entrance nook. There are three meeting rooms: **Meeting S** is a huddle, **Meeting M** is the glass standup room, and **Meeting L** is the larger all-hands table. The bay beside the report path is more desks, not an empty office. In the sample team **musk** is the leader, and the carpet reads REPORTS TO MUSK. A custom `leader` replaces that name. **Kitchen** is the café. **Rest** and **Rec** share the south wing: sofas, a TV, ping-pong, arcade cabinets, and a jukebox. **Printers** is the copy room. **Library** is the bookshelf. **Servers** is the machine room beside it: racks, blinking lights, and cable lines on a cool floor. **Security** is the watch post on its south wall: a desk, two status monitors, and a warning lamp. In the afternoon a pair checks the racks, then reviews the result at that desk. If that story check fails, the lamp and a monitor turn red, they say what leaked, and one hurries the breach to the leader. The leader decides the follow-up: lock down, isolate, re-check, or keep watch. The snack nook, the desk hall, and the small **balcony** stay. Chips include Meet S, Meet M, Meet L, Vacant, and Servers.
 
 Speech clouds sit between people who are talking, and a person talking to themselves gets one too. Thoughts use a scalloped cloud with small circles trailing back to the head. Click an idle bot and press Enter in the cloud by their head to assign work.
 

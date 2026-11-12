@@ -17,7 +17,7 @@ export const ZONES = [
   { id: 'lead', title: 'MUSK', sub: 'Reports to musk', carpet: '', x: -13, z: -9.4, w: 8, d: 5.6, color: '#d9d0c2' },
   { id: 'hall', title: 'TO MUSK', sub: 'Report path', carpet: '', x: -5, z: -9.4, w: 5.4, d: 5.6, color: '#ead7b0' },
   { id: 'hall', title: 'TO MUSK', sub: 'Report path', carpet: '', x: 0.4, z: -6.2, w: 3.8, d: 2.4, color: '#ead7b0' },
-  { id: 'vacant', title: 'VACANT', sub: 'Former office', carpet: 'VACANT', x: 0.4, z: -9.4, w: 3.8, d: 3.2, color: '#efe2c8' },
+  { id: 'annex', title: 'DESKS', sub: 'North', carpet: 'DESKS', x: 0.4, z: -9.4, w: 3.8, d: 3.2, color: '#d5e0d4' },
   { id: 'allhands', title: 'MEETING L', sub: 'All hands', carpet: 'MEETING L', x: 4.2, z: -9.4, w: 6.2, d: 5.6, color: '#d5d0c4' },
   { id: 'library', title: 'LIBRARY', sub: '', carpet: 'LIBRARY', x: 10.4, z: -9.4, w: 3.4, d: 5.6, color: '#ddd4c4' },
   { id: 'servers', title: 'SERVERS', sub: 'Room', carpet: 'SERVERS', x: 13.8, z: -9.4, w: 2.8, d: 5.6, color: '#c5d5e2' },
@@ -78,6 +78,11 @@ export const DESKS = [
     z: 4.25,
     yaw: Math.PI,
   })),
+  { id: '', x: 3.15, z: 4.25, yaw: Math.PI },
+  { id: '', x: 3.9, z: 4.25, yaw: Math.PI },
+  { id: '', x: 1.05, z: -8.55, yaw: Math.PI },
+  { id: '', x: 2.3, z: -8.55, yaw: Math.PI },
+  { id: '', x: 3.55, z: -8.55, yaw: Math.PI },
 ]
 
 export const MEETING_TABLE = { x: 6.6, z: 3.6 }
@@ -131,6 +136,11 @@ export const LOUNGE = [
   { bot: 'dr-eggbot', x: -0.15, z: 7.45, yaw: 0.2, seat: 'chair' },
   { bot: 'apscheduler', x: 1.15, z: 7.45, yaw: -0.4, seat: 'chair' },
   { bot: 'quantstats', x: 0.5, z: 7.95, yaw: 2.4, seat: 'chair' },
+  { bot: '', x: 1.05, z: -7.25, yaw: Math.PI, seat: 'chair' },
+  { bot: '', x: 2.3, z: -7.25, yaw: Math.PI, seat: 'chair' },
+  { bot: '', x: 3.55, z: -7.25, yaw: Math.PI, seat: 'chair' },
+  { bot: '', x: 1.55, z: -6.75, yaw: Math.PI, seat: 'chair' },
+  { bot: '', x: 3.15, z: -6.75, yaw: Math.PI, seat: 'chair' },
 ]
 
 export const LOUNGE_CHAIR_COLORS = ['#3e5a50', '#6e4f45', '#343c48', '#a6846c', '#3e5a50', '#6e4f45', '#8d9074']
@@ -221,8 +231,9 @@ export const COPIER = { x: 15.45, z: 1.55 }
  */
 export const PORTALS = [
   { a: 'lead', b: 'hall', x: DOOR.x, z: DOOR.z, dir: 'none' },
-  { a: 'vacant', b: 'hall', x: 2.2, z: -6.2, dir: 'h', from: 0.4, to: 4.2, color: '#f0e2c4', glass: true },
-  { a: 'vacant', b: 'allhands', x: 4.2, z: -7.8, dir: 'v', from: -9.4, to: -6.2, color: '#e7dcc4', glass: true },
+  { a: 'annex', b: 'hall', x: 2.2, z: -6.2, dir: 'h', from: 0.4, to: 4.2, color: '#d7e4d4' },
+  { a: 'annex', b: 'hall', x: 0.4, z: -7.8, dir: 'v', from: -9.4, to: -6.2, color: '#ead7b0' },
+  { a: 'annex', b: 'allhands', x: 4.2, z: -7.8, dir: 'v', from: -9.4, to: -6.2, color: '#d5d0c4' },
   { a: 'hall', b: 'allhands', x: 4.2, z: -5.0, dir: 'v', from: -6.2, to: -3.8, color: '#ead7b0' },
   { a: 'allhands', b: 'library', x: 10.4, z: -6.6, dir: 'v', from: -9.4, to: -3.8, color: '#ddd4c4' },
   { a: 'hall', b: 'corridor', x: -0.4, z: -3.8, dir: 'h', from: -5, to: 4.2, color: '#f6e2b8' },
@@ -307,7 +318,7 @@ export function routeThrough(ax, az, bx, bz) {
 export const SIGNS = [
   { title: 'LOBBY', sub: 'Arrive', x: -12.15, z: 7.55 },
   { title: 'REST', sub: 'Sit', x: 0.2, z: 7.05 },
-  { title: 'VACANT', sub: 'Former office', x: 2.3, z: -8.7 },
+  { title: 'DESKS', sub: 'North', x: 2.3, z: -8.85 },
   { title: 'MEETING S', sub: 'Huddle', x: 3.55, z: 1.7 },
   { title: 'MEETING M', sub: 'Standup', x: 5.35, z: 4.85 },
   { title: 'MEETING L', sub: 'All hands', x: 6.2, z: -8.5 },
@@ -340,7 +351,7 @@ export const PRESETS = {
   rest: { pos: [-9.4, 9.5, 11.2], target: [-9.6, 0.2, 7.6] },
   lounge: { pos: [-0.2, 9.2, 11.4], target: [-0.3, 0.2, 7.5] },
   library: { pos: [13.2, 7.5, 1], target: [13.4, 0.5, -6.6] },
-  vacant: { pos: [2.2, 6.5, -2.5], target: [2.3, 0.5, -7.8] },
+  annex: { pos: [2.2, 6.2, -4.6], target: [2.3, 0.6, -8.1] },
   huddle: { pos: [3.6, 6, 4.2], target: [3.6, 0.4, 0.8] },
   allhands: { pos: [7.2, 8, -1], target: [7.3, 0.4, -6.6] },
   pantry: { pos: [-7, 7, 1.5], target: [-9.2, 0.45, -2.5] },
@@ -359,7 +370,7 @@ export const ZONE_CHIPS = [
   { id: 'huddle', label: 'Meet S' },
   { id: 'meeting', label: 'Meet M' },
   { id: 'allhands', label: 'Meet L' },
-  { id: 'vacant', label: 'Vacant' },
+  { id: 'annex', label: 'Desks N' },
   { id: 'coffee', label: 'Kitchen' },
   { id: 'printers', label: 'Printers' },
   { id: 'rec', label: 'Rec' },
@@ -384,12 +395,12 @@ export function assignSeats(roster, leader) {
   const loungeLeft = []
   for (const bot of roster) {
     if (bot.id === leader) continue
-    const pref = DESKS.find((desk) => desk.id === bot.id)
+    const pref = DESKS.find((desk) => desk.id && desk.id === bot.id)
     if (pref && !deskTaken.has(key(pref.x, pref.z))) {
       desks.push({ ...pref, id: bot.id, extras: bot.extras || pref.extras })
       deskTaken.add(key(pref.x, pref.z))
     } else deskLeft.push(bot)
-    const seat = LOUNGE.find((item) => item.bot === bot.id)
+    const seat = LOUNGE.find((item) => item.bot && item.bot === bot.id)
     if (seat && !loungeTaken.has(key(seat.x, seat.z))) {
       lounge.push({ ...seat, bot: bot.id })
       loungeTaken.add(key(seat.x, seat.z))

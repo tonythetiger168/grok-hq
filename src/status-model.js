@@ -29,7 +29,7 @@ export function blankBots() {
 export function canonicalName(name) {
   if (typeof name !== 'string') return null
   const key = name.trim().toLowerCase()
-  const bot = ROSTER.find((item) => item.name.toLowerCase() === key)
+  const bot = ROSTER.find((item) => item.name.toLowerCase() === key || item.id.toLowerCase() === key)
   return bot?.name || null
 }
 

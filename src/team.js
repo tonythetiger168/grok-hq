@@ -1,7 +1,7 @@
 /** Active team. public/team.json is the file people edit. */
 
 const HAIR_STYLES = ['crop', 'swept', 'tuft', 'quiff', 'bun', 'side', 'bob', 'part', 'bangs', 'curly']
-const SEAT_LIMIT = 21
+const SEAT_LIMIT = 26
 
 let state = emptyState()
 
@@ -139,7 +139,7 @@ export function normalizeTeam(raw) {
   const used = new Set()
   const bots = []
   for (const rawBot of botsIn) {
-    const name = String(rawBot?.name || '').trim().slice(0, 40)
+    const name = String(rawBot?.name || '').trim().slice(0, 64)
     if (!name) continue
     let id = slug(rawBot?.id || name, '')
     if (!id) continue
@@ -173,6 +173,7 @@ export function normalizeTeam(raw) {
       bit: rawBot?.bit ? String(rawBot.bit).slice(0, 40) : null,
       project: rawBot?.project ? String(rawBot.project).slice(0, 40) : null,
       extras: rawBot?.desk === 'files' || rawBot?.desk === 'studio' ? rawBot.desk : null,
+      spoken: rawBot?.spoken ? String(rawBot.spoken).trim().slice(0, 32) : '',
       leader: false,
     })
   }
@@ -184,7 +185,7 @@ export function normalizeTeam(raw) {
   const cast = cleanCast(raw?.cast, used) || buildCast(bots, leader.id)
   return {
     leaderId: leader.id,
-    leaderName: leader.name,
+    leaderName: leader.spoken || leader.name,
     groups,
     bots,
     cast,

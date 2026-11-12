@@ -52,7 +52,7 @@
     },
     {
       "id": "dr-eggbot",
-      "name": "dr eggbot",
+      "name": "dr eggbot · HR head",
       "group": "assistant",
       "role": "Designs Grok Bots",
       "repo": null,
@@ -69,7 +69,7 @@
     },
     {
       "id": "musk",
-      "name": "musk",
+      "name": "Elon Musk",
       "group": "lead",
       "role": "Reviews everyone's work. The team reports to musk.",
       "repo": null,
@@ -82,11 +82,12 @@
       "sim": "reviewing handoffs",
       "bit": "the stack",
       "desk": null,
-      "project": null
+      "project": null,
+      "spoken": "musk"
     },
     {
       "id": "helios-forge",
-      "name": "helios forge",
+      "name": "Helia · helioslm",
       "group": "product",
       "role": "Production-grade work on tonythetiger168/helioslm",
       "repo": "tonythetiger168/helioslm",
@@ -103,7 +104,7 @@
     },
     {
       "id": "aevum",
-      "name": "aevum",
+      "name": "Ava · aevum-platform",
       "group": "product",
       "role": "Product work on tonythetiger168/aevum-platform",
       "repo": "tonythetiger168/aevum-platform",
@@ -120,7 +121,7 @@
     },
     {
       "id": "zaolang",
-      "name": "zaolang",
+      "name": "朗澤 · zaolang",
       "group": "product",
       "role": "Product work on tonythetiger168/zaolang",
       "repo": "tonythetiger168/zaolang",
@@ -137,7 +138,7 @@
     },
     {
       "id": "julang",
-      "name": "julang",
+      "name": "劇辰 · julang-platform",
       "group": "product",
       "role": "Product work on tonythetiger168/julang-platform",
       "repo": "tonythetiger168/julang-platform",
@@ -154,7 +155,7 @@
     },
     {
       "id": "minisim",
-      "name": "minisim",
+      "name": "Mina · minisim",
       "group": "product",
       "role": "Grow tonythetiger168/minisim",
       "repo": "tonythetiger168/minisim",
@@ -171,7 +172,7 @@
     },
     {
       "id": "quant",
-      "name": "quant",
+      "name": "Quinn · helios-quant-ai",
       "group": "markets",
       "role": "Markets work on tonythetiger168/helios-quant-ai",
       "repo": "tonythetiger168/helios-quant-ai",
@@ -188,7 +189,7 @@
     },
     {
       "id": "linkup",
-      "name": "linkup",
+      "name": "Luca · linkup-messenger",
       "group": "reviews",
       "role": "Review tonythetiger168/linkup-messenger",
       "repo": "tonythetiger168/linkup-messenger",
@@ -205,7 +206,7 @@
     },
     {
       "id": "wavelive",
-      "name": "wavelive",
+      "name": "Willa · wavelive-ai-platform",
       "group": "reviews",
       "role": "Review tonythetiger168/wavelive-ai-platform",
       "repo": "tonythetiger168/wavelive-ai-platform",
@@ -222,7 +223,7 @@
     },
     {
       "id": "vectorbt",
-      "name": "vectorbt",
+      "name": "Victor · vectorbt",
       "group": "opensource",
       "role": "Study and improve vectorbt",
       "repo": null,
@@ -239,7 +240,7 @@
     },
     {
       "id": "agent-display",
-      "name": "agent-display",
+      "name": "Tess · agent-display",
       "group": "opensource",
       "role": "Study and improve agent-display",
       "repo": null,
@@ -256,7 +257,7 @@
     },
     {
       "id": "apscheduler",
-      "name": "apscheduler",
+      "name": "Asher · apscheduler",
       "group": "opensource",
       "role": "Study and improve APScheduler",
       "repo": null,
@@ -273,7 +274,7 @@
     },
     {
       "id": "duckdb",
-      "name": "duckdb",
+      "name": "Dex · duckdb",
       "group": "opensource",
       "role": "Study and improve DuckDB",
       "repo": null,
@@ -290,7 +291,7 @@
     },
     {
       "id": "skfolio",
-      "name": "skfolio",
+      "name": "Sofia · skfolio",
       "group": "opensource",
       "role": "Study and improve skfolio",
       "repo": null,
@@ -307,7 +308,7 @@
     },
     {
       "id": "ccxt",
-      "name": "ccxt",
+      "name": "Cass · ccxt",
       "group": "opensource",
       "role": "Study and improve CCXT",
       "repo": null,
@@ -324,7 +325,7 @@
     },
     {
       "id": "cryptofeed",
-      "name": "cryptofeed",
+      "name": "Reed · cryptofeed",
       "group": "opensource",
       "role": "Study and improve cryptofeed",
       "repo": null,
@@ -341,7 +342,7 @@
     },
     {
       "id": "freqtrade",
-      "name": "freqtrade",
+      "name": "Frey · freqtrade",
       "group": "opensource",
       "role": "Study and improve freqtrade",
       "repo": null,
@@ -358,7 +359,7 @@
     },
     {
       "id": "quantstats",
-      "name": "quantstats",
+      "name": "Stella · quantstats",
       "group": "opensource",
       "role": "Study and improve QuantStats",
       "repo": null,
@@ -375,7 +376,7 @@
     },
     {
       "id": "lightweight-charts",
-      "name": "lightweight-charts",
+      "name": "Chloe · lightweight-charts",
       "group": "opensource",
       "role": "Study and improve Lightweight Charts",
       "repo": null,
@@ -389,6 +390,83 @@
       "bit": "the chart sketch",
       "desk": null,
       "project": "Lightweight Charts"
+    },
+    {
+      "id": "open-vip-portfolio",
+      "name": "Vera · open-vip-portfolio",
+      "group": "product",
+      "role": "Production-grade work on tonythetiger168/open-vip-portfolio",
+      "repo": "tonythetiger168/open-vip-portfolio",
+      "focus": "Product",
+      "color": "#c45b7a",
+      "accent": "#f8d5df",
+      "accessory": "chevron",
+      "hair": "bob",
+      "hairColor": "#3a242c",
+      "sim": "open-vip-portfolio",
+      "bit": "the vip pass"
+    },
+    {
+      "id": "aios-core",
+      "name": "Otto · aios-core",
+      "group": "product",
+      "role": "Production-grade work on tonythetiger168/aios-core",
+      "repo": "tonythetiger168/aios-core",
+      "focus": "Product",
+      "color": "#3d5a80",
+      "accent": "#d5e2f2",
+      "accessory": "clock",
+      "hair": "crop",
+      "hairColor": "#241f1c",
+      "sim": "aios-core",
+      "bit": "the core pass"
+    },
+    {
+      "id": "open-ip-portfolio",
+      "name": "Ira · open-ip-portfolio",
+      "group": "product",
+      "role": "Production-grade work on tonythetiger168/open-ip-portfolio",
+      "repo": "tonythetiger168/open-ip-portfolio",
+      "focus": "Product",
+      "color": "#c4962a",
+      "accent": "#f8efc8",
+      "accessory": "dish",
+      "hair": "bun",
+      "hairColor": "#4a3428",
+      "sim": "open-ip-portfolio",
+      "bit": "the ip pass"
+    },
+    {
+      "id": "ta-lib-python",
+      "name": "Talib · ta-lib-python",
+      "group": "opensource",
+      "role": "Study and improve ta-lib-python",
+      "repo": null,
+      "project": "ta-lib-python",
+      "focus": "Open-source study",
+      "color": "#6b3fa0",
+      "accent": "#eadcf6",
+      "accessory": "bars",
+      "hair": "part",
+      "hairColor": "#2a2228",
+      "sim": "studying ta-lib-python",
+      "bit": "the indicator notes"
+    },
+    {
+      "id": "quantdinger",
+      "name": "Dante · QuantDinger",
+      "group": "opensource",
+      "role": "Study and improve QuantDinger",
+      "repo": null,
+      "project": "QuantDinger",
+      "focus": "Open-source study",
+      "color": "#b3472d",
+      "accent": "#f6d2c8",
+      "accessory": "candle",
+      "hair": "quiff",
+      "hairColor": "#3a241c",
+      "sim": "studying QuantDinger",
+      "bit": "the dinger notes"
     }
   ],
   "cast": {

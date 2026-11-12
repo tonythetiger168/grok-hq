@@ -295,7 +295,13 @@ a:focus-visible {
 }
 
 .bot-copy { display: flex; flex-direction: column; min-width: 0; }
-.bot-name { font-weight: 600; font-size: 14px; }
+.bot-name {
+  font-weight: 600;
+  font-size: 13px;
+  line-height: 1.25;
+  white-space: normal;
+  font-family: Outfit, "WenQuanYi Micro Hei", "Noto Sans CJK TC", sans-serif;
+}
 .bot-role {
   color: var(--muted);
   font-size: 11px;
@@ -385,6 +391,7 @@ a:focus-visible {
   flex-direction: column;
   align-items: center;
   gap: 2px;
+  max-width: 168px;
   padding: 4px 8px 8px;
   border-radius: 999px;
   background: rgba(247, 244, 238, 0.96);
@@ -393,7 +400,21 @@ a:focus-visible {
   white-space: nowrap;
 }
 
-.tag-name { font-size: 13px; font-weight: 650; color: var(--ink); }
+.tag.is-long {
+  border-radius: 14px;
+  white-space: normal;
+  text-align: center;
+}
+
+.tag-name {
+  font-size: 13px;
+  font-weight: 650;
+  line-height: 1.2;
+  color: var(--ink);
+  font-family: Outfit, "WenQuanYi Micro Hei", "Noto Sans CJK TC", sans-serif;
+}
+
+.tag.is-long .tag-name { font-size: 11px; }
 .tag-state { font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
 .tag-state[hidden] { display: none; }
 

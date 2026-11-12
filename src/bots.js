@@ -631,7 +631,7 @@ export function createBot(def, place) {
   hips.add(bang, check)
 
   const tag = document.createElement('div')
-  tag.className = 'tag'
+  tag.className = def.name.length > 16 ? 'tag is-long' : 'tag'
   const nameEl = document.createElement('span')
   nameEl.className = 'tag-name'
   nameEl.textContent = def.name
